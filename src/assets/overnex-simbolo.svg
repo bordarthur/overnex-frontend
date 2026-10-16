@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 363.95 161.57">
+<!-- Vetor oficial extraído do mockup overnex-mockup-parcial-G1-m1.6 (símbolo #ovx-sym), sem alteração dos paths.
+     O app referencia o <symbol> com <use href=".../arquivo.svg#ovx-sym">; o <use> abaixo só faz o arquivo aparecer quando aberto sozinho. -->
+<symbol id="ovx-sym" viewBox="424.80 461.09 363.95 161.57"><path fill="#00FF6A" d="M 599.261719 553.429688 L 613.847656 553.429688 L 630.359375 620.652344 L 786.753906 616.605469 L 774.359375 571.488281 L 643.320312 580.195312 L 639.964844 567.976562 L 757.0625 508.515625 L 744.582031 463.085938 L 606.78125 544.589844 L 606.839844 545.15625 L 606.71875 545.164062 L 606.78125 544.589844 L 468.976562 463.085938 L 456.5 508.515625 L 573.59375 567.976562 L 570.238281 580.195312 L 439.199219 571.488281 L 426.804688 616.605469 L 583.132812 620.648438 Z M 599.261719 553.429688 "/></symbol>
+<use href="#ovx-sym" width="363.95" height="161.57"/>
+</svg>

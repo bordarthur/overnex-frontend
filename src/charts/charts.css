@@ -1,0 +1,75 @@
+.chart {
+  width: 100%;
+  position: relative;
+}
+.chart svg {
+  display: block;
+  overflow: visible;
+}
+.gl {
+  stroke: var(--line-soft);
+  stroke-width: 1;
+}
+.ax {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+.ln {
+  fill: none;
+  stroke: var(--series);
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.ref {
+  stroke: var(--series-2);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+.reflabel {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  fill: var(--ink-2);
+}
+.mk {
+  fill: var(--surface);
+  stroke: var(--series);
+  stroke-width: 2;
+}
+.mklabel {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+.guide {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  opacity: 0;
+}
+.guide.on {
+  opacity: 1;
+}
+.ov {
+  cursor: crosshair;
+}
+
+/* barra empilhada */
+.barra-empilhada {
+  display: flex;
+  height: 16px;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 4px 0 10px;
+  gap: 2px;
+}
+.be-ok {
+  background: color-mix(in srgb, var(--ok) 55%, var(--surface));
+}
+.be-warn {
+  background: var(--warn-mark);
+}
+.be-crit {
+  background: var(--crit);
+}

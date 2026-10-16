@@ -1,0 +1,67 @@
+{
+  "tela": "visao-geral",
+  "versaoContrato": "1.0",
+  "cliente": { "nome": "Cliente Teste", "sigla": "CT", "logoUrl": null },
+  "dadosAte": "2026-10-12",
+  "atualizadoEm": "2026-10-13T09:02:00-03:00",
+  "periodos": [
+    { "id": "mes", "rotulo": "Outubro, projeção" },
+    { "id": "ano", "rotulo": "Acumulado 2026" }
+  ],
+  "secoes": [
+    {
+      "id": "secao-de-teste",
+      "titulo": "Seção de teste",
+      "modulo": "Distribuidora",
+      "resumo": "Uma seção que pertence a um módulo.",
+      "kpis": [
+        { "rotulo": "KPI de teste", "valor": { "valor": 2000000, "unidade": "brl" }, "contexto": "contexto" }
+      ],
+      "cartoes": [],
+      "indicadores": [
+        {
+          "id": "indicador-de-teste",
+          "nome": "Indicador de teste",
+          "origem": "dw",
+          "gauge": {
+            "min": 80,
+            "max": 140,
+            "meta": 100,
+            "unidade": "pct",
+            "faixas": [
+              { "de": 80, "ate": 100, "status": "saudavel" },
+              { "de": 100, "ate": 110, "status": "atencao" },
+              { "de": 110, "ate": 140, "status": "critico" }
+            ]
+          },
+          "periodos": {
+            "mes": {
+              "status": "critico",
+              "valor": { "valor": 126.5, "unidade": "pct", "casas": 1 },
+              "ponteiro": 126.5,
+              "delta": { "valor": 26.5, "unidade": "pct", "casas": 1 },
+              "deltaRuim": true,
+              "referencia": "referência"
+            },
+            "ano": {
+              "status": "critico",
+              "valor": { "valor": 115, "unidade": "pct", "casas": 0 },
+              "ponteiro": 115,
+              "delta": { "valor": 15, "unidade": "pct", "casas": 0 },
+              "deltaRuim": true,
+              "referencia": "referência"
+            }
+          },
+          "tendencia": {
+            "rotulos": ["mai", "jun", "jul", "ago", "set", "out"],
+            "real": [120, 110, 125, 115, 120, 126.5],
+            "referencia": [100, 100, 100, 100, 100, 100],
+            "faixa": [80, 100],
+            "unidade": "pct",
+            "casas": 0
+          }
+        }
+      ]
+    }
+  ]
+}

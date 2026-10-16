@@ -1,0 +1,48 @@
+/* minitendência */
+.mt {
+  margin-top: 6px;
+  min-height: 58px;
+}
+.mt svg {
+  display: block;
+  overflow: visible;
+}
+.mt .mt-band {
+  fill: var(--bok);
+  opacity: 0.7;
+}
+.mt .mt-ref {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.3;
+  stroke-dasharray: 4 3;
+}
+.mt .mt-real {
+  fill: none;
+  stroke: var(--series);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+.mt .mt-dot {
+  fill: var(--series);
+}
+.mt .mt-last.ok {
+  fill: var(--ok);
+}
+.mt .mt-last.warn {
+  fill: var(--warn-mark);
+}
+.mt .mt-last.crit {
+  fill: var(--crit);
+}
+.mt .mt-lab {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10.5px;
+  fill: var(--ink-3);
+}
+.mt .mt-vl {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--ink);
+}

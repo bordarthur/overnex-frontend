@@ -1,0 +1,195 @@
+/* Base global, portada do mockup. Os estilos de cada componente ficam ao lado dele. */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  min-height: 100%;
+}
+body {
+  font-family:
+    'Poppins',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font: inherit;
+  color: inherit;
+}
+h1 {
+  font-family: 'Saira', sans-serif;
+  font-weight: 900;
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: -0.005em;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+[hidden] {
+  display: none !important;
+}
+
+/* utilitários de status e texto */
+.t-ok {
+  color: var(--ok);
+}
+.t-warn {
+  color: var(--warn);
+}
+.t-crit {
+  color: var(--crit);
+}
+.r-sub {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.note {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 8px;
+}
+.link {
+  all: unset;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--link);
+  white-space: nowrap;
+}
+.link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.btn {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--verde);
+  padding: 7px 14px;
+  border-radius: 9px;
+  white-space: nowrap;
+}
+.btn:hover {
+  filter: brightness(1.08);
+}
+.link:focus-visible,
+.btn:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+}
+
+/* cartão genérico */
+.card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px 22px 30px;
+  min-width: 0;
+}
+.card-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.card-h > div:first-child {
+  flex: 1 1 300px;
+}
+.card h2 {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.sub {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+
+/* painel: entra deslizando, acima da marca d'água */
+.panel {
+  display: block;
+  position: relative;
+  z-index: 1;
+  animation: entrar 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* atalho de teclado para pular a navegação */
+.pular {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: 100;
+  background: var(--grafite);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pular:focus {
+  top: 12px;
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
+.main:focus {
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  h1 {
+    font-size: 32px;
+  }
+  .card {
+    padding: 16px 16px 30px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

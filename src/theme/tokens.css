@@ -1,0 +1,128 @@
+/* Tokens do mockup overnex-mockup-parcial-G1-m1.6, com os mesmos nomes e valores.
+   Status usa só --ok, --warn e --crit (e variações); as cores da marca (--neon, --verde) nunca indicam status. */
+
+:root {
+  color-scheme: light;
+  /* marca */
+  --grafite: #2f2f2f;
+  --grafite-2: #242424;
+  --grafite-3: #1a1a1a;
+  --neon: #00ff6a;
+  --verde: #0f8633;
+  --verde-texto: #127a2e;
+  /* superfícies */
+  --bg: #f5f5f5;
+  --surface: #fcfcfb;
+  --surface-2: #ededed;
+  --line: #e0e0e0;
+  --line-soft: #ebebeb;
+  /* texto */
+  --ink: #2f2f2f;
+  --ink-2: #5c5c5c;
+  --ink-3: #767676;
+  /* status */
+  --ok: #2a6fb0;
+  --ok-bg: #e5eef7;
+  --warn: #9a5b00;
+  --warn-bg: #fbefd9;
+  --warn-mark: #d98a00;
+  --crit: #b3342a;
+  --crit-bg: #f8e3e0;
+  /* séries */
+  --series: #2f2f2f;
+  --series-2: #9a9a9a;
+  --series-3: #c4c4c4;
+  --c0: #2f2f2f;
+  --c1: #5e5e5e;
+  --c2: #8e8e8e;
+  --c3: #bdbdbd;
+  --c4: #2a6fb0;
+  --c5: #8db6dd;
+  --c6: #d98a00;
+  /* faixas */
+  --band: rgba(42, 111, 176, 0.08);
+  --negfill: rgba(179, 52, 42, 0.14);
+  --areafill: rgba(47, 47, 47, 0.05);
+  --rangefill: rgba(47, 47, 47, 0.07);
+  --bok: rgba(42, 111, 176, 0.2);
+  --bwarn: rgba(217, 138, 0, 0.26);
+  --bcrit: rgba(179, 52, 42, 0.2);
+  /* links verdes (no escuro o mockup clareia para #5FD18E) */
+  --link: var(--verde-texto);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #1c1c1c;
+    --surface: #252525;
+    --surface-2: #2f2f2f;
+    --line: #3a3a3a;
+    --line-soft: #333;
+    --ink: #ededed;
+    --ink-2: #bdbdbd;
+    --ink-3: #a0a0a0;
+    --ok: #7ab3ea;
+    --ok-bg: #1e2b38;
+    --warn: #f0ae4a;
+    --warn-bg: #3a2d17;
+    --warn-mark: #f0ae4a;
+    --crit: #f48a7e;
+    --crit-bg: #3d2420;
+    --series: #ededed;
+    --series-2: #8e8e8e;
+    --series-3: #5a5a5a;
+    --c0: #ededed;
+    --c1: #bdbdbd;
+    --c2: #8e8e8e;
+    --c3: #5e5e5e;
+    --c4: #7ab3ea;
+    --c5: #3f6f9c;
+    --c6: #f0ae4a;
+    --band: rgba(122, 179, 234, 0.1);
+    --negfill: rgba(244, 138, 126, 0.18);
+    --areafill: rgba(237, 237, 237, 0.05);
+    --rangefill: rgba(237, 237, 237, 0.08);
+    --bok: rgba(122, 179, 234, 0.24);
+    --bwarn: rgba(240, 174, 74, 0.26);
+    --bcrit: rgba(244, 138, 126, 0.24);
+    --link: #5fd18e;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #1c1c1c;
+  --surface: #252525;
+  --surface-2: #2f2f2f;
+  --line: #3a3a3a;
+  --line-soft: #333;
+  --ink: #ededed;
+  --ink-2: #bdbdbd;
+  --ink-3: #a0a0a0;
+  --ok: #7ab3ea;
+  --ok-bg: #1e2b38;
+  --warn: #f0ae4a;
+  --warn-bg: #3a2d17;
+  --warn-mark: #f0ae4a;
+  --crit: #f48a7e;
+  --crit-bg: #3d2420;
+  --series: #ededed;
+  --series-2: #8e8e8e;
+  --series-3: #5a5a5a;
+  --c0: #ededed;
+  --c1: #bdbdbd;
+  --c2: #8e8e8e;
+  --c3: #5e5e5e;
+  --c4: #7ab3ea;
+  --c5: #3f6f9c;
+  --c6: #f0ae4a;
+  --band: rgba(122, 179, 234, 0.1);
+  --negfill: rgba(244, 138, 126, 0.18);
+  --areafill: rgba(237, 237, 237, 0.05);
+  --rangefill: rgba(237, 237, 237, 0.08);
+  --bok: rgba(122, 179, 234, 0.24);
+  --bwarn: rgba(240, 174, 74, 0.26);
+  --bcrit: rgba(244, 138, 126, 0.24);
+  --link: #5fd18e;
+}

@@ -1,0 +1,27 @@
+/* Valores efetivos do mockup (a regra da V1.5 sobrepõe as anteriores, inclusive no celular). */
+.wm {
+  position: fixed;
+  right: -70px;
+  bottom: -30px;
+  width: 680px;
+  height: auto;
+  pointer-events: none;
+  opacity: 0.09;
+  z-index: 0;
+}
+.wm-cartao {
+  position: absolute;
+  right: 14px;
+  bottom: 10px;
+  width: 64px;
+  height: 11px;
+  color: #8c8c8c;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+@media print {
+  .wm {
+    position: absolute;
+  }
+}

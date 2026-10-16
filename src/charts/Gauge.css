@@ -1,0 +1,82 @@
+/* velocímetro */
+.gauge {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 2px 0 0;
+}
+.gz {
+  fill: none;
+}
+.gz.ok {
+  stroke: color-mix(in srgb, var(--ok) 70%, var(--surface));
+}
+.gz.warn {
+  stroke: color-mix(in srgb, var(--warn-mark) 82%, var(--surface));
+}
+.gz.crit {
+  stroke: color-mix(in srgb, var(--crit) 74%, var(--surface));
+}
+.gsep {
+  stroke: var(--surface);
+  stroke-width: 2.5;
+}
+.gb {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--ink-2);
+}
+.gt {
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.gn {
+  fill: var(--ink);
+  stroke: none;
+}
+.gh {
+  fill: var(--ink);
+}
+.ghi {
+  fill: var(--surface);
+}
+.gneedle {
+  transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.gs {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  fill: var(--ink-3);
+}
+.gleg {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px 10px;
+  font-size: 11px;
+  color: var(--ink-2);
+  margin: 2px 0 6px;
+}
+.gleg span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.gleg i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.gleg .gl-ok i {
+  background: color-mix(in srgb, var(--ok) 70%, var(--surface));
+}
+.gleg .gl-warn i {
+  background: color-mix(in srgb, var(--warn-mark) 82%, var(--surface));
+}
+.gleg .gl-crit i {
+  background: color-mix(in srgb, var(--crit) 74%, var(--surface));
+}
