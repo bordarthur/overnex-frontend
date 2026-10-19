@@ -1,11 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { ApiClientContext, type ApiClient } from '../api/client';
+import { criarHttpClient } from '../api/httpClient';
 import { criarMockClient } from '../api/mockClient';
+import { useAuth } from '../auth/auth';
 import { AuthProviderFake } from '../auth/AuthProviderFake';
 import { TemaProvider } from '../theme/TemaProvider';
 
 const atrasoMock = Number(import.meta.env.VITE_MOCK_ATRASO_MS ?? 300);
+const usarApi = import.meta.env.VITE_API_MODO === 'api';
 
 interface PropsProviders {
   children: ReactNode;
@@ -15,8 +18,6 @@ interface PropsProviders {
 }
 
 export function Providers({ children, apiClient, queryClient }: PropsProviders) {
-  // TODO(api): trocar o mock pelo cliente HTTP real (com token de useAuth) quando a API existir.
-  const [api] = useState(() => apiClient ?? criarMockClient({ atrasoMs: atrasoMock }));
   const [qc] = useState(
     () =>
       queryClient ??
@@ -27,10 +28,20 @@ export function Providers({ children, apiClient, queryClient }: PropsProviders) 
   return (
     <TemaProvider>
       <AuthProviderFake>
-        <ApiClientContext.Provider value={api}>
+        <ApiProvider apiClient={apiClient}>
           <QueryClientProvider client={qc}>{children}</QueryClientProvider>
-        </ApiClientContext.Provider>
+        </ApiProvider>
       </AuthProviderFake>
     </TemaProvider>
   );
+}
+
+// Fica dentro do AuthProvider porque o cliente HTTP pede o token a cada chamada.
+function ApiProvider({ apiClient, children }: { apiClient?: ApiClient; children: ReactNode }) {
+  const { getToken } = useAuth();
+  const api = useMemo(
+    () => apiClient ?? (usarApi ? criarHttpClient({ getToken }) : criarMockClient({ atrasoMs: atrasoMock })),
+    [apiClient, getToken],
+  );
+  return <ApiClientContext.Provider value={api}>{children}</ApiClientContext.Provider>;
 }

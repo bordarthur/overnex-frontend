@@ -3,6 +3,20 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
+.fgrid.n-1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+.fgrid.n-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.fgrid.n-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+/* Com poucos cartões na linha, o cartão alarga mas o velocímetro não passa deste tamanho. */
+.gt-tile .gauge {
+  max-width: 400px;
+  margin: 2px auto 0;
+}
 .ftile {
   position: relative;
   display: flex;
@@ -85,12 +99,15 @@
 }
 
 @media (max-width: 1240px) {
-  .fgrid {
+  .fgrid,
+  .fgrid.n-3 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 760px) {
-  .fgrid {
+  .fgrid,
+  .fgrid.n-2,
+  .fgrid.n-3 {
     grid-template-columns: minmax(0, 1fr);
   }
 }

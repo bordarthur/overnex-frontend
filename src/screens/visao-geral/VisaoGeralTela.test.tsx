@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import type { VisaoGeralPayload } from '../../contracts/visaoGeral';
@@ -66,6 +66,17 @@ describe('Visão geral', () => {
     const etiqueta = await screen.findByTestId('etiqueta-modulo');
     expect(etiqueta).toHaveTextContent('Módulo Distribuidora');
     expect(screen.getByRole('heading', { level: 3, name: 'Seção de teste' })).toBeInTheDocument();
+  });
+
+  it('a grade de velocímetros tem tantas colunas quantos indicadores, até 4', async () => {
+    renderizarApp('/demo/visao-geral', fixtureModulo as unknown as VisaoGeralPayload);
+    const unico = await screen.findByRole('article', { name: /./ });
+    expect(unico.closest('.fgrid')).toHaveClass('n-1');
+
+    cleanup();
+    renderizarApp('/demo/visao-geral');
+    const vendas = await screen.findByRole('article', { name: 'Linhas por cliente' });
+    expect(vendas.closest('.fgrid')).toHaveClass('n-4');
   });
 
   it('avisa quando não há acesso ao cliente', async () => {

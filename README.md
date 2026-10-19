@@ -33,7 +33,9 @@ A rota é `/:clienteSlug/visao-geral`; `/` redireciona para `/demo/visao-geral`.
 - `erro`: falha de servidor, para ver o estado de erro
 - qualquer outro: sem permissão (403), como a API responderia
 
-Não há login nesta entrega: o `AuthProviderFake` devolve sempre um usuário de desenvolvimento. O login com o Microsoft Entra entra em outra entrega.
+Com `VITE_API_MODO=api` no `.env`, o front usa o cliente HTTP (`src/api/httpClient.ts`) em vez do mock. Em dev, o Vite repassa `/api` para a API local em `http://127.0.0.1:8000` (a API não tem CORS; em produção, front e API dividem o domínio).
+
+Não há login nesta entrega: o `AuthProviderFake` devolve sempre um usuário de desenvolvimento, com o token `fake:<object_id>` que a API local aceita quando roda com `AMBIENTE=dev` e `AUTH_FAKE=1`. O padrão é a Ana do seed do back; troque com `VITE_AUTH_FAKE_OBJECT_ID`. O login com o Microsoft Entra entra em outra entrega.
 
 ## Regras do projeto
 
@@ -62,7 +64,7 @@ src/
   components/  Rail, Cabecalho, BarraFiltros, Chip, Segmentado, FaixaSecao, Kpi, IndicadorGauge,
                CartaoInadimplencia, Pill, Tooltip, Assinatura, MarcaDagua, Marca, Trechos, EstadoTela
   contracts/   tipos do JSON (no futuro, gerados do OpenAPI)
-  api/         client.ts (interface), mockClient.ts, fixtures/
+  api/         client.ts (interface), httpClient.ts, mockClient.ts, fixtures/
   auth/        interface de autenticação e implementação fake
   format/      formatadores pt-BR
   theme/       tokens.css, fontes, tema claro/escuro/automático, status
