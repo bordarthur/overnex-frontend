@@ -61,7 +61,8 @@ export function CartaoInadimplencia({ cartao }: { cartao: Dados }) {
             rotulos={serie.rotulos}
             valores={serie.valores}
             altura={150}
-            xGap={40}
+            // rótulos com o ano ("out-26"): mais espaço entre eles no eixo
+            xGap={56}
             padL={30}
             padR={12}
             piso={0}

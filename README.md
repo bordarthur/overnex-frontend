@@ -35,7 +35,7 @@ A rota é `/:clienteSlug/visao-geral`; `/` redireciona para `/demo/visao-geral`.
 
 Com `VITE_API_MODO=api` no `.env`, o front usa o cliente HTTP (`src/api/httpClient.ts`) em vez do mock. Em dev, o Vite repassa `/api` para a API local em `http://127.0.0.1:8000` (a API não tem CORS; em produção, front e API dividem o domínio).
 
-Não há login nesta entrega: o `AuthProviderFake` devolve sempre um usuário de desenvolvimento, com o token `fake:<object_id>` que a API local aceita quando roda com `AMBIENTE=dev` e `AUTH_FAKE=1`. O padrão é a Ana do seed do back; troque com `VITE_AUTH_FAKE_OBJECT_ID`. O login com o Microsoft Entra entra em outra entrega.
+Não há login nesta entrega: o `AuthProviderFake` devolve sempre um usuário de desenvolvimento, com o token `fake:<object_id>` que a API local aceita quando roda com `AMBIENTE=dev` e `AUTH_FAKE=1`. O padrão é o usuário de desenvolvimento do back (`…0000000001a1`, ligado à PJ Cortes); troque com `VITE_AUTH_FAKE_OBJECT_ID`. O login com o Microsoft Entra entra em outra entrega.
 
 ## Regras do projeto
 

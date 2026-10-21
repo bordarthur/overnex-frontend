@@ -60,7 +60,11 @@ export function VisaoGeralTela() {
       <Cabecalho
         titulo={TITULO}
         pergunta={PERGUNTA}
-        atualizacao={dados ? formatarAtualizacao(dados.dadosAte, dados.atualizadoEm) : undefined}
+        atualizacao={
+          dados?.dadosAte && dados.atualizadoEm
+            ? formatarAtualizacao(dados.dadosAte, dados.atualizadoEm)
+            : undefined
+        }
         cliente={dados?.cliente}
       />
       <BarraFiltros

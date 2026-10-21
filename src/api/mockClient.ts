@@ -9,7 +9,7 @@ export const fixtureVisaoGeral = fixture as unknown as VisaoGeralPayload;
 /**
  * Cliente de desenvolvimento. Slugs especiais para ver os estados da tela:
  * - demo: a fixture completa
- * - vazio: sem seções ("Ainda não há dados para este período.")
+ * - vazio: sem seções e sem data de carga ("Ainda não há dados para este período.")
  * - erro: falha de servidor
  * - qualquer outro: sem permissão (403), como a API real responderia
  */
@@ -32,7 +32,8 @@ export function criarMockClient({
     async obterVisaoGeral(clienteSlug, opcoes) {
       await esperar(opcoes?.signal);
       if (clienteSlug === 'demo') return payload;
-      if (clienteSlug === 'vazio') return { ...payload, secoes: [] };
+      // Como a API responde antes da primeira carga do cliente.
+      if (clienteSlug === 'vazio') return { ...payload, dadosAte: null, atualizadoEm: null, secoes: [] };
       if (clienteSlug === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
       throw new ApiErro(403, 'Sem acesso a este cliente.');
     },

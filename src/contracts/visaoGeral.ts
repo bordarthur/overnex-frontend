@@ -86,9 +86,9 @@ export interface VisaoGeralPayload {
   tela: 'visao-geral';
   versaoContrato: '1.0';
   cliente: { nome: string; sigla: string; logoUrl: string | null };
-  // ISO 8601
-  dadosAte: string;
-  atualizadoEm: string;
+  // ISO 8601. null até a primeira carga do cliente terminar (nesse caso secoes vem []).
+  dadosAte: string | null;
+  atualizadoEm: string | null;
   periodos: { id: PeriodoId; rotulo: string }[];
   secoes: Secao[];
 }

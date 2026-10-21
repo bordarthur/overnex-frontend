@@ -89,6 +89,9 @@ describe('Visão geral', () => {
   it('avisa quando não há dados', async () => {
     renderizarApp('/vazio/visao-geral');
     expect(await screen.findByText('Ainda não há dados para este período.')).toBeInTheDocument();
+    // Antes da primeira carga, dadosAte e atualizadoEm vêm null: nada de data inventada.
+    expect(screen.queryByText(/Dados até/)).toBeNull();
+    expect(screen.getByText(/Ainda não houve carga\./)).toBeInTheDocument();
   });
 
   it('o chip de filtro abre um menu navegável por teclado e só troca o rótulo', async () => {

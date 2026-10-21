@@ -53,7 +53,7 @@
             }
           },
           "tendencia": {
-            "rotulos": ["mai", "jun", "jul", "ago", "set", "out"],
+            "rotulos": ["mai-26", "jun-26", "jul-26", "ago-26", "set-26", "out-26"],
             "real": [120, 110, 125, 115, 120, 126.5],
             "referencia": [100, 100, 100, 100, 100, 100],
             "faixa": [80, 100],

@@ -2,7 +2,7 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 19/10/2026
+Última atualização: 21/10/2026
 
 ## Em andamento
 
@@ -22,7 +22,9 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Parâmetros da Visão geral.** A API não usa o slug da URL (o cliente sai do token) e pede `empresa` (UUID) e `mes` (`AAAA-MM`). `obterVisaoGeral` e a `queryKey` de `useVisaoGeral` devem receber esses valores dos filtros quando o `GET /api/telas/visao-geral` existir. Ver [httpClient.ts](src/api/httpClient.ts) e [useVisaoGeral.ts](src/api/useVisaoGeral.ts).
 - [ ] **Testar o cliente HTTP contra a API local** com `VITE_API_MODO=api`, quando a API subir nesta máquina (depende do item abaixo).
 - [ ] **Gerar os tipos do contrato a partir do OpenAPI do back**, quando o contrato da Visão geral existir lá, e apagar `src/contracts/visaoGeral.ts` escrito à mão.
-- [ ] **Consumir `GET /api/sessao`:** cliente e logo no cabeçalho, empresas no filtro "Empresa", telas liberadas no menu.
+- [ ] **Consumir `GET /api/sessao`:** cliente e logo no cabeçalho, empresas no filtro "Empresa", telas liberadas no menu. Hoje o filtro "Empresa" mostra empresas fictícias ("Matriz Fortaleza", "Filial Maracanaú"); a PJ Cortes tem uma só. Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
+- [ ] **Telas que lerem `GET /api/dados/{tabela}`:** nenhuma lê hoje. Quando alguma ler, pegar nomes de tabela e coluna da PJ Cortes (`f_vendas_pj`, `d_cliente_pj`…), não os da Nilo Maia, que foram apagados do banco.
+- [ ] **Conferir Resultado e Financeiro com a API** depois da primeira carga da PJ Cortes. As duas seções agora vêm do back, com regras provisórias, e mostram menos que a fixture: sem "EBITDA projetado", "Dívida líquida / EBITDA", "Saldo em conta", "Cobertura de caixa" e "Ciclo de caixa" (o back não tem fonte para eles). Ver o `TODO.md` do `overnex-backend`.
 - [ ] **Ambiente local da API.** Esta máquina não tem Docker nem Supabase CLI, e o `api/.env` do back não existe.
 
 ## A decidir
@@ -33,12 +35,17 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Contra qual banco testar localmente.** Supabase local (precisa de Docker) ou o de produção (precisa da senha do `api_site`, ainda não definida).
 
 - [ ] **Legenda dos velocímetros.** Foi incluída a pedido, mas o mockup não a mostra e ela deixa cada cartão 48px mais alto. Manter ou tirar?
-- [ ] **Rótulos da série de inadimplência.** O contrato traz só "jun"; o tooltip do mockup mostra "jun/26". Mandar o rótulo completo na série?
 - [ ] **Título e subtítulo do cartão de Inadimplência.** Hoje estão fixos no componente porque o contrato não os traz. Incluir no contrato?
 - [ ] **Aviso "este filtro só muda o rótulo".** O mockup mostra um aviso ao trocar filtro; ficou de fora. Incluir enquanto os filtros não funcionam?
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 21/10/2026 · Meses dos gráficos com o ano ("out-26", "mai-25"): a API manda o rótulo pronto (`rotulo_eixo` em `contra_referencia.py` do back), e as fixtures seguem o mesmo formato. Mais espaço entre os rótulos no gráfico do cartão de inadimplência. Ver [CartaoInadimplencia.tsx](src/components/CartaoInadimplencia.tsx).
+
+- [x] 21/10/2026 · Seções Resultado e Financeiro da Visão geral montadas no back (`overnex-backend`, `resultado.py` e `financeiro.py`), no mesmo contrato: o front já as desenha sem mudança.
+
+- [x] 21/10/2026 · Troca da Nilo Maia pela PJ Cortes no back: nada da Nilo Maia estava fixo no front. `dadosAte` e `atualizadoEm` aceitam `null` (antes da primeira carga), sem data inventada no cabeçalho e no rodapé; o mock `vazio` responde assim. Token fake padrão passa a ser o do usuário de desenvolvimento (`…0000000001a1`). Ver [visaoGeral.ts](src/contracts/visaoGeral.ts), [VisaoGeralTela.tsx](src/screens/visao-geral/VisaoGeralTela.tsx), [Assinatura.tsx](src/components/Assinatura.tsx) e [AuthProviderFake.tsx](src/auth/AuthProviderFake.tsx).
 
 - [x] 19/10/2026 · Grade de velocímetros com tantas colunas quantos indicadores (até 4), e velocímetro limitado a 400px de largura quando o cartão alarga. Ver [SecaoVisaoGeral.tsx](src/screens/visao-geral/SecaoVisaoGeral.tsx) e [IndicadorGauge.css](src/components/IndicadorGauge.css).
 
