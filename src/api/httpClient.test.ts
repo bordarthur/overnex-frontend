@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fixtureVisaoGeral } from './mockClient';
+import { fixtureSessao, fixtureVisaoGeral } from './mockClient';
 import { ApiErro, semPermissao } from './client';
 import { criarHttpClient } from './httpClient';
 
@@ -17,7 +17,7 @@ describe('cliente HTTP', () => {
     const { api, fetch } = criar(json(fixtureVisaoGeral));
     const controle = new AbortController();
 
-    await expect(api.obterVisaoGeral('demo', { signal: controle.signal })).resolves.toEqual(
+    await expect(api.obterVisaoGeral('demo', {}, { signal: controle.signal })).resolves.toEqual(
       fixtureVisaoGeral,
     );
 
@@ -26,6 +26,20 @@ describe('cliente HTTP', () => {
     expect(init?.headers).toMatchObject({ Authorization: 'Bearer fake:abc' });
     expect(init?.signal).toBe(controle.signal);
     expect(api.dadosFicticios).toBe(false);
+  });
+
+  it('manda o mês e a empresa escolhidos na query', async () => {
+    const { api, fetch } = criar(json(fixtureVisaoGeral));
+    await api.obterVisaoGeral('demo', { mes: '2026-09', empresa: '0e000000-0000-4000-8000-000000000001' });
+    expect(fetch.mock.calls[0]![0]).toBe(
+      '/api/telas/visao-geral?mes=2026-09&empresa=0e000000-0000-4000-8000-000000000001',
+    );
+  });
+
+  it('pede a sessão', async () => {
+    const { api, fetch } = criar(json(fixtureSessao));
+    await expect(api.obterSessao()).resolves.toEqual(fixtureSessao);
+    expect(fetch.mock.calls[0]![0]).toBe('/api/sessao');
   });
 
   it('não manda Authorization sem token', async () => {

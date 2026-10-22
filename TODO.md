@@ -2,7 +2,7 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 21/10/2026
+Última atualização: 22/10/2026
 
 ## Em andamento
 
@@ -11,7 +11,7 @@ _Nada no momento._
 ## A fazer
 
 - [ ] **Login com Microsoft Entra.** Trocar o `AuthProviderFake` por um provider com MSAL. Ver [AuthProviderFake.tsx](src/auth/AuthProviderFake.tsx).
-- [ ] **Filtros de verdade.** As opções de Período, Comparar com e Empresa devem vir da API, e o valor escolhido deve ir na consulta. Hoje só o rótulo do chip muda. Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
+- [ ] **Filtro "Comparar com" de verdade.** Período e Empresa já vêm de `/api/sessao` e vão na consulta; "Comparar com" ainda só troca o rótulo (a API não tem esse parâmetro). Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
 - [ ] **Clique no indicador.** O cartão deve virar link para a tela em `telaDestino` assim que ela existir. Ver [IndicadorGauge.tsx](src/components/IndicadorGauge.tsx).
 - [ ] **Logo do cliente no co-branding.** A CSP só aceita `img-src 'self'`, então a API precisa servir o logo. Ver [Cabecalho.tsx](src/components/Cabecalho.tsx).
 
@@ -19,10 +19,10 @@ _Nada no momento._
 
 O que o back precisa criar está na seção "Para o front consumir (Visão geral)" do `TODO.md` do `overnex-backend`. Do lado do front:
 
-- [ ] **Parâmetros da Visão geral.** A API não usa o slug da URL (o cliente sai do token) e pede `empresa` (UUID) e `mes` (`AAAA-MM`). `obterVisaoGeral` e a `queryKey` de `useVisaoGeral` devem receber esses valores dos filtros quando o `GET /api/telas/visao-geral` existir. Ver [httpClient.ts](src/api/httpClient.ts) e [useVisaoGeral.ts](src/api/useVisaoGeral.ts).
 - [ ] **Testar o cliente HTTP contra a API local** com `VITE_API_MODO=api`, quando a API subir nesta máquina (depende do item abaixo).
 - [ ] **Gerar os tipos do contrato a partir do OpenAPI do back**, quando o contrato da Visão geral existir lá, e apagar `src/contracts/visaoGeral.ts` escrito à mão.
-- [ ] **Consumir `GET /api/sessao`:** cliente e logo no cabeçalho, empresas no filtro "Empresa", telas liberadas no menu. Hoje o filtro "Empresa" mostra empresas fictícias ("Matriz Fortaleza", "Filial Maracanaú"); a PJ Cortes tem uma só. Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
+- [ ] **Resto do `GET /api/sessao`:** cliente e logo no cabeçalho e telas liberadas no menu. Os filtros Período e Empresa já usam a sessão ([filtros.ts](src/screens/visao-geral/filtros.ts)).
+- [ ] **`?mes=` no back.** O front já manda `mes` (AAAA-MM) e `empresa` na Visão geral, mas a API ainda ignora `mes` e lista só o mês do snapshot em `/api/sessao`: escolher outro mês devolve os mesmos números. Pedido ao back em 22/10/2026.
 - [ ] **Telas que lerem `GET /api/dados/{tabela}`:** nenhuma lê hoje. Quando alguma ler, pegar nomes de tabela e coluna da PJ Cortes (`f_vendas_pj`, `d_cliente_pj`…), não os da Nilo Maia, que foram apagados do banco.
 - [ ] **Conferir Resultado e Financeiro com a API** depois da primeira carga da PJ Cortes. As duas seções agora vêm do back, com regras provisórias, e mostram menos que a fixture: sem "EBITDA projetado", "Dívida líquida / EBITDA", "Saldo em conta", "Cobertura de caixa" e "Ciclo de caixa" (o back não tem fonte para eles). Ver o `TODO.md` do `overnex-backend`.
 - [ ] **Ambiente local da API.** Esta máquina não tem Docker nem Supabase CLI, e o `api/.env` do back não existe.
@@ -40,6 +40,8 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 22/10/2026 · Filtros Período e Empresa ligados à API: opções de `/api/sessao` e valor escolhido em `?mes=` e `?empresa=` na Visão geral, com nova consulta a cada troca (os números anteriores ficam esmaecidos até os novos chegarem). Empresa só aparece com mais de uma no vínculo. Ver [filtros.ts](src/screens/visao-geral/filtros.ts), [useVisaoGeral.ts](src/api/useVisaoGeral.ts) e [httpClient.ts](src/api/httpClient.ts).
 
 - [x] 21/10/2026 · Meses dos gráficos com o ano ("out-26", "mai-25"): a API manda o rótulo pronto (`rotulo_eixo` em `contra_referencia.py` do back), e as fixtures seguem o mesmo formato. Mais espaço entre os rótulos no gráfico do cartão de inadimplência. Ver [CartaoInadimplencia.tsx](src/components/CartaoInadimplencia.tsx).
 

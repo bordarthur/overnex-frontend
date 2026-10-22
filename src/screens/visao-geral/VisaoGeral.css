@@ -1,3 +1,8 @@
+/* Filtro trocado: números anteriores esmaecidos enquanto a nova consulta chega. */
+.panel[aria-busy='true'] {
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
 .vg-top {
   display: flex;
   justify-content: space-between;

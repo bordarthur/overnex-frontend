@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router';
 import { semPermissao } from '../../api/client';
+import { useSessao } from '../../api/useSessao';
 import { useVisaoGeral } from '../../api/useVisaoGeral';
 import { Assinatura } from '../../components/Assinatura';
 import { BarraFiltros } from '../../components/BarraFiltros';
@@ -9,7 +10,7 @@ import { EstadoTela } from '../../components/EstadoTela';
 import { Segmentado } from '../../components/Segmentado';
 import type { PeriodoId } from '../../contracts/visaoGeral';
 import { formatarAtualizacao } from '../../format';
-import { FILTROS_GLOBAIS, valoresPadrao } from './filtrosDemo';
+import { montarFiltros } from './filtros';
 import { SecaoVisaoGeral } from './SecaoVisaoGeral';
 import './VisaoGeral.css';
 
@@ -18,9 +19,12 @@ const PERGUNTA = 'Como está a empresa hoje, área por área, contra o orçado e
 
 export function VisaoGeralTela() {
   const { clienteSlug = '' } = useParams();
-  const consulta = useVisaoGeral(clienteSlug);
+  const sessao = useSessao();
+  const filtros = useMemo(() => montarFiltros(sessao.data), [sessao.data]);
+  // Só os chips que o usuário trocou; os outros ficam no padrão do FiltroDef.
+  const [valores, setValores] = useState<Record<string, string>>({});
+  const consulta = useVisaoGeral(clienteSlug, filtros.consulta(valores));
   const [periodoEscolhido, setPeriodo] = useState<PeriodoId | null>(null);
-  const [filtros, setFiltros] = useState(valoresPadrao);
 
   useEffect(() => {
     document.title = `Overnex · ${TITULO}`;
@@ -68,12 +72,13 @@ export function VisaoGeralTela() {
         cliente={dados?.cliente}
       />
       <BarraFiltros
-        filtros={FILTROS_GLOBAIS}
-        valores={filtros}
-        onMudar={(id, valor) => setFiltros((atual) => ({ ...atual, [id]: valor }))}
-        onLimpar={() => setFiltros(valoresPadrao())}
+        filtros={filtros.defs}
+        valores={valores}
+        onMudar={(id, valor) => setValores((atual) => ({ ...atual, [id]: valor }))}
+        onLimpar={() => setValores({})}
       />
-      <section className="panel" aria-label={TITULO}>
+      {/* Com o filtro trocado, os números anteriores ficam esmaecidos até os novos chegarem. */}
+      <section className="panel" aria-label={TITULO} aria-busy={consulta.isPlaceholderData}>
         {conteudo}
         {dados && <Assinatura atualizadoEm={dados.atualizadoEm} />}
       </section>

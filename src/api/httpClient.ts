@@ -1,3 +1,4 @@
+import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
 import { ApiErro, type ApiClient } from './client';
 
@@ -28,10 +29,16 @@ export function criarHttpClient({
 
   return {
     dadosFicticios: false,
+    obterSessao(opcoes) {
+      return obter<SessaoPayload>('/sessao', opcoes?.signal);
+    },
     // O slug da URL não vai para a API: o cliente sai do token.
-    // TODO(api): mandar empresa e mês quando o GET /api/telas/visao-geral existir no back.
-    obterVisaoGeral(_clienteSlug, opcoes) {
-      return obter<VisaoGeralPayload>('/telas/visao-geral', opcoes?.signal);
+    obterVisaoGeral(_clienteSlug, filtros = {}, opcoes) {
+      const params = new URLSearchParams();
+      if (filtros.mes) params.set('mes', filtros.mes);
+      if (filtros.empresa) params.set('empresa', filtros.empresa);
+      const consulta = params.toString();
+      return obter<VisaoGeralPayload>(`/telas/visao-geral${consulta ? `?${consulta}` : ''}`, opcoes?.signal);
     },
   };
 }

@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
 
 // Segurança: o cliente (e, depois, a empresa) que aparece na URL serve só para navegar.
@@ -17,10 +18,23 @@ export class ApiErro extends Error {
 export const semPermissao = (erro: unknown) =>
   erro instanceof ApiErro && (erro.status === 401 || erro.status === 403 || erro.status === 404);
 
+/** Filtros da consulta da Visão geral. Sem valor, a API usa o mês mais recente e todas as empresas. */
+export interface FiltrosVisaoGeral {
+  // AAAA-MM, um dos períodos de /api/sessao
+  mes?: string;
+  // UUID de uma empresa de /api/sessao
+  empresa?: string;
+}
+
 export interface ApiClient {
   /** true enquanto o cliente for o mock com dado fictício. */
   readonly dadosFicticios: boolean;
-  obterVisaoGeral(clienteSlug: string, opcoes?: { signal?: AbortSignal }): Promise<VisaoGeralPayload>;
+  obterSessao(opcoes?: { signal?: AbortSignal }): Promise<SessaoPayload>;
+  obterVisaoGeral(
+    clienteSlug: string,
+    filtros?: FiltrosVisaoGeral,
+    opcoes?: { signal?: AbortSignal },
+  ): Promise<VisaoGeralPayload>;
 }
 
 export const ApiClientContext = createContext<ApiClient | null>(null);

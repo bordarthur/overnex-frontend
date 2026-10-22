@@ -1,6 +1,7 @@
 import { cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { criarMockClient } from '../../api/mockClient';
 import type { VisaoGeralPayload } from '../../contracts/visaoGeral';
 import fixtureModulo from '../../test/fixtures/visao-geral-modulo.json';
 import { renderizarApp } from '../../test/renderizar';
@@ -92,6 +93,40 @@ describe('Visão geral', () => {
     // Antes da primeira carga, dadosAte e atualizadoEm vêm null: nada de data inventada.
     expect(screen.queryByText(/Dados até/)).toBeNull();
     expect(screen.getByText(/Ainda não houve carga\./)).toBeInTheDocument();
+  });
+
+  it('período e empresa vêm da sessão e vão na consulta da Visão geral', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const consultar = vi.spyOn(api, 'obterVisaoGeral');
+    renderizarApp('/demo/visao-geral', undefined, api);
+    await screen.findByRole('heading', { level: 3, name: 'Vendas' });
+
+    // sem filtro, a consulta não leva mês nem empresa: a API usa o mais recente
+    expect(consultar).toHaveBeenLastCalledWith('demo', {}, expect.anything());
+
+    const periodo = await screen.findByRole('button', { name: /Período/ });
+    expect(periodo).toHaveTextContent('Outubro de 2026');
+    await user.click(periodo);
+    const meses = within(screen.getByRole('menu', { name: 'Período' })).getAllByRole('menuitemradio');
+    expect(meses.map((m) => m.textContent)).toEqual([
+      'Outubro de 2026',
+      'Setembro de 2026',
+      'Agosto de 2026',
+    ]);
+    await user.click(meses[1]!);
+    expect(consultar).toHaveBeenLastCalledWith('demo', { mes: '2026-09' }, expect.anything());
+
+    await user.click(screen.getByRole('button', { name: /Empresa/ }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Filial Maracanaú' }));
+    expect(consultar).toHaveBeenLastCalledWith(
+      'demo',
+      { mes: '2026-09', empresa: '0e000000-0000-4000-8000-000000000002' },
+      expect.anything(),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+    expect(consultar).toHaveBeenLastCalledWith('demo', {}, expect.anything());
   });
 
   it('o chip de filtro abre um menu navegável por teclado e só troca o rótulo', async () => {
