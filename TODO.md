@@ -2,13 +2,15 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 22/10/2026
+Última atualização: 23/10/2026
 
 ## Em andamento
 
 _Nada no momento._
 
 ## A fazer
+
+- [ ] **Configurar o GitHub para colaboradores** (front e back), como em [CONTRIBUTING.md](CONTRIBUTING.md): branch `dev`, GitHub App com `APP_ID` e `APP_PRIVATE_KEY`, rulesets em `main` e `dev` (PR com 1 aprovação, CODEOWNERS, checks obrigatórios `verificar` no front e `api` e `carga` no back, App e Admin no bypass) e colaboradores com papel Write. Sem isso, o CI roda mas a automação de PR falha no primeiro passo.
 
 - [ ] **Login com Microsoft Entra.** Trocar o `AuthProviderFake` por um provider com MSAL. Ver [AuthProviderFake.tsx](src/auth/AuthProviderFake.tsx).
 - [ ] **Filtro "Comparar com" de verdade.** Período e Empresa já vêm de `/api/sessao` e vão na consulta; "Comparar com" ainda só troca o rótulo (a API não tem esse parâmetro). Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
@@ -40,6 +42,8 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 23/10/2026 · CI no GitHub Actions ([ci.yml](.github/workflows/ci.yml): formatação, lint, tipos, testes e build), automação de PR com Git Flow ([pr-automacao.yml](.github/workflows/pr-automacao.yml), a mesma do back), [CODEOWNERS](.github/CODEOWNERS) para `.github/` e [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - [x] 22/10/2026 · Filtros Período e Empresa ligados à API: opções de `/api/sessao` e valor escolhido em `?mes=` e `?empresa=` na Visão geral, com nova consulta a cada troca (os números anteriores ficam esmaecidos até os novos chegarem). Empresa só aparece com mais de uma no vínculo. Ver [filtros.ts](src/screens/visao-geral/filtros.ts), [useVisaoGeral.ts](src/api/useVisaoGeral.ts) e [httpClient.ts](src/api/httpClient.ts).
 
