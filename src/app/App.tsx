@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import { DefinirSenhaTela } from '../screens/login/DefinirSenhaTela';
 import { EsqueciSenhaTela } from '../screens/login/EsqueciSenhaTela';
 import { LoginTela } from '../screens/login/LoginTela';
+import { PainelTela } from '../screens/paineis/PainelTela';
 import { VisaoGeralTela } from '../screens/visao-geral/VisaoGeralTela';
 import { Inicio, RotaProtegida, SoAnonimo } from './Guardas';
 import { Moldura } from './Moldura';
@@ -20,6 +21,13 @@ export function App() {
         <Route path="/:clienteSlug" element={<Moldura />}>
           <Route index element={<Navigate to="visao-geral" replace />} />
           <Route path="visao-geral" element={<VisaoGeralTela />} />
+          {/* key: cada painel com os próprios filtros */}
+          <Route path="vendas" element={<PainelTela key="vendas" tela="vendas" />} />
+          <Route
+            path="equipe-comercial"
+            element={<PainelTela key="equipe-comercial" tela="equipe-comercial" />}
+          />
+          <Route path="clientes" element={<PainelTela key="clientes" tela="clientes" />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

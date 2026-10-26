@@ -100,6 +100,23 @@ h1 {
   outline-offset: 2px;
 }
 
+/* fundos de farol (células, estatísticas): só status usa --ok, --warn e --crit */
+.cf-ok {
+  background: color-mix(in srgb, var(--ok) 18%, var(--surface));
+  color: var(--ink);
+}
+.cf-warn {
+  background: color-mix(in srgb, var(--warn-mark) 30%, var(--surface));
+  color: var(--ink);
+}
+.cf-crit {
+  background: color-mix(in srgb, var(--crit) 26%, var(--surface));
+  color: var(--ink);
+}
+.muted {
+  color: var(--ink-3);
+}
+
 /* cartão genérico */
 .card {
   position: relative;

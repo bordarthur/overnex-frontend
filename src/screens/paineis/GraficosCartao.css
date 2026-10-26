@@ -1,0 +1,22 @@
+.sm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 28px;
+}
+.sm {
+  min-width: 0;
+}
+.sm h3 {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.sm-nota {
+  margin-top: 2px;
+}
+
+@media (max-width: 1240px) {
+  .sm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

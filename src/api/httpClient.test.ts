@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fixtureSessao, fixtureVisaoGeral } from './mockClient';
+import { fixtureSessao, fixturesPainel, fixtureVisaoGeral } from './mockClient';
 import { ApiErro, semPermissao } from './client';
 import { criarHttpClient } from './httpClient';
 
@@ -32,6 +32,19 @@ describe('cliente HTTP', () => {
     expect(fetch.mock.calls[0]![0]).toBe(
       '/api/telas/visao-geral?mes=2026-09&empresa=0e000000-0000-4000-8000-000000000001',
     );
+  });
+
+  it('pede um painel comercial com os filtros na query', async () => {
+    // uma resposta nova a cada chamada: o corpo só pode ser lido uma vez
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockImplementation(async () => json(fixturesPainel.vendas));
+    const api = criarHttpClient({ getToken: async () => 'fake:abc', fetch });
+    await expect(api.obterPainel('vendas')).resolves.toEqual(fixturesPainel.vendas);
+    expect(fetch.mock.calls[0]![0]).toBe('/api/telas/vendas');
+
+    await api.obterPainel('equipe-comercial', { mes: '2026-09', canal: 'varejo' });
+    expect(fetch.mock.calls[1]![0]).toBe('/api/telas/equipe-comercial?mes=2026-09&canal=varejo');
   });
 
   it('pede a sessão', async () => {

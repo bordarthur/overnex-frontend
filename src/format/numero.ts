@@ -82,6 +82,11 @@ export function formatarValor(valor: Valor, { comSinal = false }: { comSinal?: b
   return sufixo ? `${s} ${sufixo}` : s;
 }
 
+/** Número a formatar pela unidade, ou texto que a API já mandou pronto ("2 de 6"). */
+export function formatarExibicao(v: Valor | string, opcoes: { comSinal?: boolean } = {}): string {
+  return typeof v === 'string' ? v : formatarValor(v, opcoes);
+}
+
 /** Delta de um indicador: com sinal; zero vira "na média". */
 export function formatarDelta(delta: Valor): string {
   return delta.valor === 0 ? 'na média' : formatarValor(delta, { comSinal: true });

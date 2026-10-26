@@ -2,9 +2,11 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 23/10/2026
+Última atualização: 26/10/2026
 
 ## Em andamento
+
+- [ ] **Painéis comerciais (Vendas, Equipe comercial, Clientes): ligar à API.** O front está pronto com as fixtures do mockup Total M2.0.1 ([painel.ts](src/contracts/painel.ts), [PainelTela.tsx](src/screens/paineis/PainelTela.tsx), fixtures em [src/api/fixtures/](src/api/fixtures/)). Falta o back criar `GET /api/telas/vendas`, `/api/telas/equipe-comercial` e `/api/telas/clientes` nesse contrato (prompt entregue em 26/10/2026) e testar com `VITE_API_MODO=api`: filtros Canal, Linha e Supervisor indo na consulta, troca de mês e empresa, estados vazio e sem permissão. O back também precisa mandar `explicacao` nos cartões (prompt entregue em 26/10/2026); sem ela, o botão "i" não aparece.
 
 - [ ] **Login com e-mail e senha: ligar à API.** O front está pronto e funciona com o login fake ([AuthProvider.tsx](src/auth/AuthProvider.tsx), [authClient.ts](src/auth/authClient.ts), telas em [screens/login/](src/screens/login/)). Falta o back criar `/api/auth/*` no contrato de [auth.ts](src/contracts/auth.ts) (Supabase Auth com refresh em cookie httpOnly; prompt entregue em 23/10/2026) e testar com `VITE_AUTH_MODO=api`: entrar, recarregar e continuar logado, renovação depois de vencer o token, sair, convite e recuperação de senha pelo e-mail. Com o mockup Login M2.0.0, o back também precisa:
   - mandar 429 com `Retry-After` quando houver tentativas demais;
@@ -16,6 +18,10 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 - [ ] **Medir o ganho dos pedidos adiantados no navegador.** Aba Network com a API local: tempo do login até a primeira tela e da troca de mês, antes e depois. Não foi medido em 23/10/2026 porque a API local respondia 500 em `/api/sessao` e na Visão geral. Para o "antes", rodar o commit anterior a esta mudança. Ver [adiantar.ts](src/api/adiantar.ts).
 
 ## A fazer
+
+- [ ] **Painéis comerciais, partes do mockup que ficaram de fora:** "Mix por cliente" (cartão V2 de Vendas), "Mostrar fontes de dados" e a carteira cliente a cliente ("Carteira de clientes", módulo Distribuidora). Ver [CartaoPainel.tsx](src/screens/paineis/CartaoPainel.tsx).
+- [ ] **Menu pelas telas liberadas.** O rail mostra Vendas, Equipe comercial e Clientes para todos; esconder quando o código (`COM-01`, `COM-02`, `COM-03`, a confirmar com o back) não vier em `telas` de `/api/sessao`. Ver [Rail.tsx](src/components/Rail.tsx).
+- [ ] **Pedidos adiantados dos painéis comerciais.** Hoje só a Visão geral é adiantada; avaliar adiantar Vendas depois da primeira tela. Ver [adiantar.ts](src/api/adiantar.ts) e [usePainel.ts](src/api/usePainel.ts).
 
 - [ ] **Configurar o GitHub para colaboradores** (front e back), como em [CONTRIBUTING.md](CONTRIBUTING.md): branch `dev`, GitHub App com `APP_ID` e `APP_PRIVATE_KEY`, rulesets em `main` e `dev` (PR com 1 aprovação, CODEOWNERS, checks obrigatórios `verificar` no front e `api` e `carga` no back, App e Admin no bypass) e colaboradores com papel Write. Sem isso, o CI roda mas a automação de PR falha no primeiro passo.
 
@@ -38,6 +44,11 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Ambiente local da API.** Esta máquina não tem Docker nem Supabase CLI, e o `api/.env` do back não existe.
 
 ## A decidir
+
+- [ ] **Explicação ("i") dos cartões que o mockup não explica:** Linhas de produto, Vendas nos últimos 12 meses, Participação das linhas, Movimento por dia da semana, Itens que mais vendem e Itens por atendimento. Escrever os textos ou deixar sem "i"? E na Visão geral, que usa outro contrato, entra também? Ver [Explicacao.tsx](src/components/Explicacao.tsx).
+
+- [ ] **Cores que o mockup dos painéis comerciais usa fora de status** (decidir com o usuário). O azul de `--ok` e o laranja de `--warn-mark` aparecem como cor de série: 5ª e 7ª linha no empilhado de participação, a linha de cima dos combos e a barra de projeção de outubro em Atendimentos. Foi mantido como no mockup; trocar por cinzas evita confundir com status. Ver [charts.css](src/charts/charts.css).
+- [ ] **Títulos e notas dos cartões vêm da API** nos painéis comerciais (no contrato, `titulo`, `subtitulo`, `nota`, `chamada`). Na Visão geral, o título do cartão de Inadimplência ainda é fixo no front: alinhar os dois?
 
 - [ ] **Partes do mockup Login M2.0.0 que ficaram de fora** (decidir com o usuário). Ver [LoginTela.tsx](src/screens/login/LoginTela.tsx) e [LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx):
   - entrar com Microsoft e Google;
@@ -67,6 +78,17 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 26/10/2026 · Trocar de tela pelo menu abre a tela nova no topo, e clicar na tela já aberta também volta ao topo; trocar só de filtro não mexe na rolagem. Ver [topo.ts](src/app/topo.ts), [Moldura.tsx](src/app/Moldura.tsx) e [Rail.tsx](src/components/Rail.tsx). Conferido no navegador (Edge, 1440 px).
+
+- [x] 26/10/2026 · Botão "i" com a explicação do gráfico nos painéis comerciais: campo `explicacao` no cartão ([painel.ts](src/contracts/painel.ts)), caixa que fecha com Esc, clique fora, rolagem ou redimensionamento ([Explicacao.tsx](src/components/Explicacao.tsx)) e os 14 textos do mockup nas fixtures. O "vídeo curto" (V2) do mockup ficou de fora. Conferido no navegador (Edge, 1440 px).
+
+- [x] 26/10/2026 · Painéis comerciais no visual do mockup Total M2.0.1, com dado fictício:
+  - Vendas: régua do mês, estatísticas e acumulado dia a dia em degraus (Valor e Volume), fatores da meta, ritmo por dia útil, linhas de produto, canais, 12 meses e participação das linhas;
+  - Equipe comercial: destaques, ranking contra a meta, rampa dos novos, mapa de produtividade, atingimento de 6 meses e report da equipe;
+  - Clientes e atendimentos: atendimentos e ticket, dia da semana, faixas de valor, curva ABC, cruzamento receita × margem, itens que mais vendem e itens por atendimento.
+
+  Contrato único de painel por cartões ([painel.ts](src/contracts/painel.ts)), filtros próprios da tela vindos do payload (Canal, Linha, Supervisor), grupo Comercial no rail e gráficos novos em [src/charts/](src/charts/) (barras, combo, linhas, empilhado, dispersão, degraus). Conferido no navegador (Edge, 1440 px claro e escuro, 390 px) com o mock.
 
 - [x] 23/10/2026 · Telas de acesso no visual do mockup Login M2.0.0:
   - coluna da marca com a ilustração animada;

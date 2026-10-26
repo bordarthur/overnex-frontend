@@ -73,3 +73,268 @@
 .be-crit {
   background: var(--crit);
 }
+
+/* ---------- painéis por cartões (Vendas, Equipe, Clientes) ---------- */
+.ref.zero {
+  stroke: var(--ink-3);
+  stroke-dasharray: none;
+  opacity: 0.5;
+}
+.ref.min {
+  stroke: var(--warn-mark);
+  stroke-width: 1.5;
+}
+.area {
+  fill: var(--areafill);
+}
+.ln.l2 {
+  stroke: var(--series-2);
+  stroke-width: 1.5;
+}
+.ln.l3 {
+  stroke: var(--series-2);
+  stroke-width: 1.5;
+  stroke-dasharray: 2 4;
+}
+.endlabel {
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  fill: var(--ink-2);
+}
+.endlabel.main {
+  fill: var(--ink);
+  font-weight: 600;
+}
+
+/* barras */
+.bar {
+  fill: var(--series);
+}
+.bar.okb {
+  fill: var(--ok);
+}
+.bar.warnb,
+.bar.projb {
+  fill: var(--warn-mark);
+}
+.bar.critb {
+  fill: var(--crit);
+}
+.bar.sb1 {
+  fill: var(--c1);
+}
+.bar.sb3 {
+  fill: var(--c3);
+}
+.bar.ghost {
+  fill: none;
+  stroke: var(--series-2);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
+}
+.bvl {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  fill: var(--ink-2);
+}
+
+/* combo: barra, traço da referência e linha em cima */
+.cb {
+  fill: var(--c1);
+}
+.cb.bad {
+  fill: var(--crit);
+}
+.co {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+.cv {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  fill: var(--ink-2);
+}
+.cv.bad {
+  fill: var(--crit);
+}
+.cpl {
+  fill: none;
+  stroke: var(--warn-mark);
+  stroke-width: 1.8;
+}
+.cpd {
+  fill: var(--warn-mark);
+}
+.cpt {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10px;
+  fill: var(--warn);
+}
+
+/* empilhado: paleta categórica */
+.sc0 {
+  fill: var(--c0);
+}
+.sc1 {
+  fill: var(--c1);
+}
+.sc2 {
+  fill: var(--c2);
+}
+.sc3 {
+  fill: var(--c3);
+}
+.sc4 {
+  fill: var(--c4);
+}
+.sc5 {
+  fill: var(--c5);
+}
+.sc6 {
+  fill: var(--c6);
+}
+
+/* dispersão */
+.pt {
+  fill: var(--c1);
+  stroke: var(--surface);
+  stroke-width: 1.2;
+  opacity: 0.92;
+}
+.pt.ok {
+  fill: var(--ok);
+}
+.pt.warn {
+  fill: var(--warn-mark);
+}
+.pt.crit {
+  fill: var(--crit);
+}
+.qlab {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  fill: var(--ink-3);
+}
+.ptlab {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  fill: var(--ink-2);
+}
+
+/* degraus do mês */
+.nbd {
+  fill: var(--surface-2);
+  opacity: 0.75;
+}
+.st-real {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3.4;
+  stroke-linejoin: round;
+}
+.st-proj {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.8;
+  stroke-dasharray: 7 5;
+  stroke-linejoin: round;
+}
+.st-meta {
+  fill: none;
+  stroke: var(--c2);
+  stroke-width: 2.6;
+  stroke-linejoin: round;
+}
+.st-super {
+  fill: none;
+  stroke: var(--c3);
+  stroke-width: 2.2;
+  stroke-dasharray: 3 4;
+  stroke-linejoin: round;
+}
+.today {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+}
+.todaylabel {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+.annl {
+  stroke: var(--crit);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* legenda */
+.legend {
+  display: flex;
+  gap: 6px 16px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.legend-grafico {
+  margin-bottom: 8px;
+}
+.legend i {
+  display: inline-block;
+  width: 18px;
+  height: 0;
+  border-top: 2px solid var(--series);
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.legend i.linha-clara,
+.legend i.media {
+  border-color: var(--series-2);
+}
+.legend i.pontilhada {
+  border-color: var(--series-2);
+  border-top-style: dotted;
+}
+.legend i.minimo {
+  border-color: var(--warn-mark);
+  border-top-style: dashed;
+}
+.legend i.sq,
+.legend i.quadrado-escuro,
+.legend i.quadrado-claro {
+  width: 10px;
+  height: 10px;
+  border-top: 0;
+  border-radius: 2px;
+}
+.legend i.quadrado-escuro {
+  background: var(--c0);
+}
+.legend i.quadrado-claro {
+  background: var(--c3);
+}
+.legend i.sq.c0 {
+  background: var(--c0);
+}
+.legend i.sq.c1 {
+  background: var(--c1);
+}
+.legend i.sq.c2 {
+  background: var(--c2);
+}
+.legend i.sq.c3 {
+  background: var(--c3);
+}
+.legend i.sq.c4 {
+  background: var(--c4);
+}
+.legend i.sq.c5 {
+  background: var(--c5);
+}
+.legend i.sq.c6 {
+  background: var(--c6);
+}
+.legend i.media {
+  border-top-style: dashed;
+}

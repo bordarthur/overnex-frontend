@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import type { PainelPayload, TelaPainel } from '../contracts/painel';
 import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
 
@@ -29,12 +30,25 @@ export interface FiltrosVisaoGeral {
   empresa?: string;
 }
 
+/**
+ * Filtros da consulta de um painel por cartões: `mes` e `empresa` (como na Visão geral) e os
+ * filtros próprios da tela, pelo `id` que veio em `filtros` do payload (ex.: `canal`).
+ * Só vai o que foi trocado; sem nada, a API usa o padrão.
+ */
+export type FiltrosPainel = Record<string, string>;
+
 export interface ApiClient {
   /** true enquanto o cliente for o mock com dado fictício. */
   readonly dadosFicticios: boolean;
   obterSessao(opcoes?: { signal?: AbortSignal }): Promise<SessaoPayload>;
   /** Sem slug: o cliente e as empresas saem do vínculo do usuário, então dá para pedir antes da sessão chegar. */
   obterVisaoGeral(filtros?: FiltrosVisaoGeral, opcoes?: { signal?: AbortSignal }): Promise<VisaoGeralPayload>;
+  /** Vendas, Equipe comercial e Clientes: GET /api/telas/{tela}. Também sem slug. */
+  obterPainel(
+    tela: TelaPainel,
+    filtros?: FiltrosPainel,
+    opcoes?: { signal?: AbortSignal },
+  ): Promise<PainelPayload>;
 }
 
 export const ApiClientContext = createContext<ApiClient | null>(null);
