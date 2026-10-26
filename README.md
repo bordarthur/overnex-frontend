@@ -1,8 +1,8 @@
 # Overnex · frontend
 
-Painéis da Overnex em React + TypeScript + Vite. Esta primeira entrega traz a moldura (rail, cabeçalho, filtros, tema) e a tela **Visão geral**, alimentada por dado fictício.
+Painéis da Overnex em React + TypeScript + Vite: a moldura (rail, cabeçalho, filtros, tema), a **Visão geral** e os painéis comerciais (**Vendas**, **Equipe comercial** e **Clientes e atendimentos**), alimentados por dado fictício enquanto a API não os entrega.
 
-A referência visual e de comportamento é o mockup `overnex-mockup-parcial-G1-m1.6.html`. Ele não fica no repositório, porque ainda está incompleto.
+A referência visual e de comportamento é o mockup `overnex-mockup-parcial-G1-m1.6.html` (Visão geral) e o `overnex-mockup-total-m2_0_1.html` (painéis comerciais). Eles não ficam no repositório.
 
 ## Como rodar
 
@@ -26,9 +26,9 @@ npm run dev            # http://localhost:5173 → /demo/visao-geral
 
 ### Rotas e dados de desenvolvimento
 
-A rota é `/:clienteSlug/visao-geral`. `/` abre a Visão geral do cliente da sessão (`cliente.slug` de `/api/sessao`; no mock, `demo`). O slug serve só para navegar: não vai para a API nem entra na chave do cache. Enquanto não há API, o cliente mock (`src/api/mockClient.ts`) responde conforme `VITE_MOCK_CENARIO`:
+As rotas são `/:clienteSlug/visao-geral`, `/:clienteSlug/vendas`, `/:clienteSlug/equipe-comercial` e `/:clienteSlug/clientes`. `/` abre a Visão geral do cliente da sessão (`cliente.slug` de `/api/sessao`; no mock, `demo`). O slug serve só para navegar: não vai para a API nem entra na chave do cache. Enquanto não há API, o cliente mock (`src/api/mockClient.ts`) responde conforme `VITE_MOCK_CENARIO`:
 
-- `completo` (padrão): a fixture completa (`src/api/fixtures/visao-geral.json`)
+- `completo` (padrão): as fixtures completas (`src/api/fixtures/visao-geral.json` e, nos painéis comerciais, `vendas.json`, `equipe-comercial.json` e `clientes.json`)
 - `vazio`: sem seções, para ver o estado vazio
 - `erro`: falha de servidor, para ver o estado de erro
 - `sem-permissao`: 403, como a API responderia
@@ -67,6 +67,10 @@ Sem sessão, qualquer outra rota leva a `/entrar?voltar=<tela>`; depois de entra
 
 Todo número, status, posição de ponteiro, delta, média e texto vem pronto da API (contrato em `src/contracts/visaoGeral.ts`). O front só **formata** (`src/format/`) e **desenha**. Se uma tela precisar de uma conta de negócio, ela vai para a API, não para cá. A única contagem feita aqui é quantos indicadores de uma seção estão em cada status, para as pílulas da faixa, a partir do status que a API já mandou.
 
+### Painéis por cartões
+
+Vendas, Equipe comercial e Clientes usam um contrato só (`src/contracts/painel.ts`, `GET /api/telas/{tela}`): destaques, KPIs, apoios, aviso, os filtros próprios da tela (ex.: Canal) e uma lista de cartões tipados (`andamento-mes`, `fatores`, `contra-meta`, `tabela`, `destaques`, `graficos`, `faixas`, `curva-abc`, `matriz`), cada um com a largura na grade de 12. Com `explicacao`, o título do cartão ganha o botão "i", que abre o texto que a API mandou. A tela (`src/screens/paineis/PainelTela.tsx`) desenha os cartões na ordem em que vierem. Títulos, notas, nomes de canal, vendedor e linha, status e todo número vêm da API; o front calcula só geometria (largura de barra, escala dos eixos). Os filtros próprios vão na consulta pelo `id` (`?canal=varejo`), junto com `mes` e `empresa`.
+
 ### Nenhum nome de seção ou indicador fixo no código
 
 A Visão geral desenha as seções e indicadores que vierem no JSON, na ordem em que vierem. Não escreva `if (secao.id === 'vendas')` nem nomes como "CMV de bovinos" em componente. Seção com `modulo` preenchido ganha a etiqueta "Módulo …" automaticamente. Textos fixos aceitos: rótulos de tela (título, pergunta), de tipo de cartão (o cartão `inadimplencia`) e de interface (estados, tema, filtros).
@@ -84,8 +88,9 @@ A Visão geral desenha as seções e indicadores que vierem no JSON, na ordem em
 ```
 src/
   app/         rotas, providers (QueryClient, Auth, Tema), moldura, CSS base
-  screens/     telas (visao-geral/, login/)
-  charts/      gráficos em SVG próprio: Gauge, MiniTendencia, Linha, BarraEmpilhada
+  screens/     telas (visao-geral/, paineis/, login/)
+  charts/      gráficos em SVG próprio: Gauge, MiniTendencia, Linha, BarraEmpilhada e, nos painéis,
+               Barras, Combo, Linhas, Empilhado, Dispersao, Degraus (escolhidos em Grafico.tsx)
   components/  Rail, Cabecalho, BarraFiltros, Chip, Segmentado, FaixaSecao, Kpi, IndicadorGauge,
                CartaoInadimplencia, Pill, Tooltip, Assinatura, MarcaDagua, Marca, Trechos, EstadoTela,
                CampoTexto

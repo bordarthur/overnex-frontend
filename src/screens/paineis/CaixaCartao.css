@@ -1,0 +1,63 @@
+/* grade de 12 colunas dos cartões */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+}
+.s4 {
+  grid-column: span 4;
+}
+.s5 {
+  grid-column: span 5;
+}
+.s6 {
+  grid-column: span 6;
+}
+.s7 {
+  grid-column: span 7;
+}
+.s8 {
+  grid-column: span 8;
+}
+.s12 {
+  grid-column: span 12;
+}
+
+/* título e o botão "i" da explicação na mesma linha */
+.card-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.callout {
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--warn-bg);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 12px;
+}
+.callout.crit {
+  background: var(--crit-bg);
+}
+.callout.ok {
+  background: var(--ok-bg);
+}
+.callout b {
+  font-weight: 600;
+}
+
+@media (max-width: 1240px) {
+  .s4,
+  .s5,
+  .s7,
+  .s8 {
+    grid-column: span 12;
+  }
+}
+@media (max-width: 760px) {
+  .s6 {
+    grid-column: span 12;
+  }
+}

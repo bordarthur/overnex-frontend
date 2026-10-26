@@ -1,0 +1,125 @@
+.scroll-x {
+  overflow-x: auto;
+}
+.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+.tbl th {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+  text-align: right;
+  padding: 0 10px 10px;
+  white-space: nowrap;
+}
+.tbl td {
+  padding: 9px 10px;
+  border-top: 1px solid var(--line-soft);
+  text-align: right;
+  white-space: nowrap;
+}
+.tbl th:first-child,
+.tbl td:first-child {
+  padding-left: 0;
+}
+.tbl th:last-child,
+.tbl td:last-child {
+  padding-right: 0;
+}
+.tbl .l {
+  text-align: left;
+  white-space: normal;
+}
+.tbl .c {
+  text-align: center;
+}
+.tbl .forte {
+  font-weight: 600;
+}
+.tbl td.t-ok {
+  color: var(--ok);
+}
+.tbl td.t-warn {
+  color: var(--warn);
+}
+.tbl td.t-crit {
+  color: var(--crit);
+}
+.cel-sub {
+  display: block;
+}
+/* célula com farol encosta no conteúdo: sem o recuo da borda da tabela */
+.tbl td.cf-ok,
+.tbl td.cf-warn,
+.tbl td.cf-crit {
+  font-weight: 600;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+.tbl tr.rowcf-crit td {
+  background: color-mix(in srgb, var(--crit) 7%, var(--surface));
+}
+.tbl tr.rowcf-warn td {
+  background: color-mix(in srgb, var(--warn-mark) 9%, var(--surface));
+}
+.tbl tr.rowcf-crit td:first-child,
+.tbl tr.rowcf-warn td:first-child {
+  padding-left: 8px;
+}
+.tagn {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ok);
+  background: var(--ok-bg);
+  border-radius: 5px;
+  padding: 0 5px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+
+/* compacta: relatórios largos; o nome da linha não quebra */
+.tbl-compacta td:first-child {
+  white-space: nowrap;
+}
+.tbl-compacta td,
+.tbl-compacta th {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* calor: células separadas e centralizadas */
+.tbl-calor {
+  border-collapse: separate;
+  border-spacing: 3px;
+  font-size: 13px;
+}
+.tbl-calor th {
+  text-align: center;
+  padding: 2px 6px;
+}
+.tbl-calor td {
+  border-top: 0;
+  border-radius: 6px;
+  padding: 8px 6px;
+  text-align: center;
+}
+.tbl-calor td.l,
+.tbl-calor th.l {
+  text-align: left;
+}
+
+@media (max-width: 1400px) {
+  .tbl-compacta td,
+  .tbl-compacta th {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+@media (max-width: 760px) {
+  .tbl .so-largo {
+    display: none;
+  }
+}
