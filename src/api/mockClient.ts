@@ -25,19 +25,26 @@ export const fixtureSessao: SessaoPayload = {
 };
 
 /**
- * Cliente de desenvolvimento. Slugs especiais para ver os estados da tela:
- * - demo: a fixture completa
+ * Cenários da Visão geral no mock, para ver os estados da tela (VITE_MOCK_CENARIO em dev):
+ * - completo: a fixture completa (padrão)
  * - vazio: sem seções e sem data de carga ("Ainda não há dados para este período.")
  * - erro: falha de servidor
- * - qualquer outro: sem permissão (403), como a API real responderia
- *
- * Os filtros (mês e empresa) não mudam os números: a fixture é uma só.
+ * - sem-permissao: 403, como a API real responderia
  */
+export type CenarioMock = 'completo' | 'vazio' | 'erro' | 'sem-permissao';
+
+/** Cliente de desenvolvimento. Os filtros (mês e empresa) não mudam os números: a fixture é uma só. */
 export function criarMockClient({
   atrasoMs = 300,
   payload = fixtureVisaoGeral,
   sessao = fixtureSessao,
-}: { atrasoMs?: number; payload?: VisaoGeralPayload; sessao?: SessaoPayload } = {}): ApiClient {
+  cenario = 'completo',
+}: {
+  atrasoMs?: number;
+  payload?: VisaoGeralPayload;
+  sessao?: SessaoPayload;
+  cenario?: CenarioMock;
+} = {}): ApiClient {
   const esperar = (signal?: AbortSignal) =>
     new Promise<void>((resolve, reject) => {
       if (atrasoMs <= 0) return resolve();
@@ -54,13 +61,13 @@ export function criarMockClient({
       await esperar(opcoes?.signal);
       return sessao;
     },
-    async obterVisaoGeral(clienteSlug, _filtros, opcoes) {
+    async obterVisaoGeral(_filtros, opcoes) {
       await esperar(opcoes?.signal);
-      if (clienteSlug === 'demo') return payload;
+      if (cenario === 'completo') return payload;
       // Como a API responde antes da primeira carga do cliente.
-      if (clienteSlug === 'vazio') return { ...payload, dadosAte: null, atualizadoEm: null, secoes: [] };
-      if (clienteSlug === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
-      throw new ApiErro(403, 'Sem acesso a este cliente.');
+      if (cenario === 'vazio') return { ...payload, dadosAte: null, atualizadoEm: null, secoes: [] };
+      if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
+      throw new ApiErro(403, 'Acesso negado.');
     },
   };
 }

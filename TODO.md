@@ -6,13 +6,21 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 
 ## Em andamento
 
-_Nada no momento._
+- [ ] **Login com e-mail e senha: ligar à API.** O front está pronto e funciona com o login fake ([AuthProvider.tsx](src/auth/AuthProvider.tsx), [authClient.ts](src/auth/authClient.ts), telas em [screens/login/](src/screens/login/)). Falta o back criar `/api/auth/*` no contrato de [auth.ts](src/contracts/auth.ts) (Supabase Auth com refresh em cookie httpOnly; prompt entregue em 23/10/2026) e testar com `VITE_AUTH_MODO=api`: entrar, recarregar e continuar logado, renovação depois de vencer o token, sair, convite e recuperação de senha pelo e-mail. Com o mockup Login M2.0.0, o back também precisa:
+  - mandar 429 com `Retry-After` quando houver tentativas demais;
+  - mandar 410 para link vencido ou já usado;
+  - usar os textos do mockup ("E-mail ou senha não conferem. Confira os dois e tente de novo.", "Foram 5 tentativas com a senha errada.");
+  - configurar a política de senha igual a [senha.ts](src/auth/senha.ts) (8 caracteres, maiúscula e número).
+- [ ] **Conferir as telas de acesso no navegador** (claro, escuro, celular em 360 px, movimento reduzido) contra o mockup Login M2.0.0. Os testes cobrem o comportamento, mas ninguém viu as telas ainda.
+
+- [ ] **Medir o ganho dos pedidos adiantados no navegador.** Aba Network com a API local: tempo do login até a primeira tela e da troca de mês, antes e depois. Não foi medido em 23/10/2026 porque a API local respondia 500 em `/api/sessao` e na Visão geral. Para o "antes", rodar o commit anterior a esta mudança. Ver [adiantar.ts](src/api/adiantar.ts).
 
 ## A fazer
 
 - [ ] **Configurar o GitHub para colaboradores** (front e back), como em [CONTRIBUTING.md](CONTRIBUTING.md): branch `dev`, GitHub App com `APP_ID` e `APP_PRIVATE_KEY`, rulesets em `main` e `dev` (PR com 1 aprovação, CODEOWNERS, checks obrigatórios `verificar` no front e `api` e `carga` no back, App e Admin no bypass) e colaboradores com papel Write. Sem isso, o CI roda mas a automação de PR falha no primeiro passo.
 
-- [ ] **Login com Microsoft Entra.** Trocar o `AuthProviderFake` por um provider com MSAL. Ver [AuthProviderFake.tsx](src/auth/AuthProviderFake.tsx).
+- [ ] **Slug da URL diferente do cliente da sessão.** Na API, o cliente sai do token: em `/outro-slug/visao-geral` a pessoa vê os dados do próprio cliente com outro nome na URL. Redirecionar para `/${sessao.cliente.slug}/…` quando forem diferentes. Ver [Guardas.tsx](src/app/Guardas.tsx).
+- [ ] **Visão de administrador da LANN.** Um usuário que vê vários clientes e escolhe qual abrir. Precisa de: back resolver o cliente pela URL para usuários `tipo='lann'` (hoje quem tem mais de um cliente é barrado no passo 2), `/api/sessao` listar os clientes e um seletor de cliente no front. Por ora o usuário da diretoria fica só na PJ Cortes.
 - [ ] **Filtro "Comparar com" de verdade.** Período e Empresa já vêm de `/api/sessao` e vão na consulta; "Comparar com" ainda só troca o rótulo (a API não tem esse parâmetro). Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
 - [ ] **Clique no indicador.** O cartão deve virar link para a tela em `telaDestino` assim que ela existir. Ver [IndicadorGauge.tsx](src/components/IndicadorGauge.tsx).
 - [ ] **Logo do cliente no co-branding.** A CSP só aceita `img-src 'self'`, então a API precisa servir o logo. Ver [Cabecalho.tsx](src/components/Cabecalho.tsx).
@@ -31,6 +39,23 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 
 ## A decidir
 
+- [ ] **Partes do mockup Login M2.0.0 que ficaram de fora** (decidir com o usuário). Ver [LoginTela.tsx](src/screens/login/LoginTela.tsx) e [LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx):
+  - entrar com Microsoft e Google;
+  - código de verificação por e-mail (2FA);
+  - "Manter conectado neste aparelho";
+  - escolher empresa depois de entrar;
+  - tela "Preparando os números";
+  - tela "Senha salva" (hoje a pessoa entra direto);
+  - no convite, quem convidou, nome e e-mail;
+  - aceite dos termos;
+  - links Privacidade, Termos de uso e Ajuda;
+  - contagem "Restam N tentativas".
+- [ ] **Textos do mockup de login a confirmar:** "atualizados todo dia às 9h" e "equipe" na coluna da marca; "Um produto BORD", "consultor BORD" e "overnex.app" (o resto do projeto fala em LANN). Ver [LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx).
+
+- [ ] **Quantos meses adiantar.** Hoje são os 2 anteriores ao mais recente e o anterior ao mês escolhido, um pedido por vez. Se o back ficar mais rápido ou o banco aguentar mais conexões, vale adiantar mais (ou também a empresa mais usada)? Ver [adiantar.ts](src/api/adiantar.ts).
+
+- [ ] **Microsoft Entra.** Fora por enquanto (decisão de 23/10/2026: login com e-mail e senha). Se voltar, entra como outro `AuthClient` ao lado de [authClient.ts](src/auth/authClient.ts); a validação do token do Entra continua no back, desligada.
+
 - [ ] **Histórico x espaço no banco.** A Visão geral pede 6 meses de tendência e 12 de inadimplência, mas as tabelas de movimento estão com janela de 1 mês (Supabase gratuito perto de 500 MB). Guardar agregados mensais, aumentar a janela ou mudar de plano?
 - [ ] **Regras de negócio dos indicadores.** Qual tabela e qual conta geram cada indicador (meta, orçado, CMV por linha, cobertura de caixa, ciclo de caixa, faixas do farol). O back ainda não tem nenhuma regra definida.
 - [ ] **Dias úteis da seção Vendas.** "Projeção de fechamento" e "A realizar por dia útil" dependem de quais dias contam: sábado entra? Feriados só nacionais ou também estaduais e municipais por empresa? O back ainda não tem calendário. A regra do status desses dois cards também está em aberto. Ver o `vendas.py` do back.
@@ -42,6 +67,27 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 23/10/2026 · Telas de acesso no visual do mockup Login M2.0.0:
+  - coluna da marca com a ilustração animada;
+  - Entrar, com aviso de Caps Lock e validação do e-mail;
+  - Acesso pausado (429), com contagem;
+  - Sua sessão terminou;
+  - Redefinir a senha e Confira seu e-mail, com reenvio;
+  - Crie seu acesso e Crie uma senha nova, com os requisitos acendendo;
+  - Este link não vale mais.
+
+  Ver [screens/login/](src/screens/login/), [CampoTexto.tsx](src/components/CampoTexto.tsx) e [senha.ts](src/auth/senha.ts).
+
+- [x] 23/10/2026 · Pedidos adiantados da Visão geral:
+  - a Visão geral padrão sai junto com `/api/sessao` assim que há sessão;
+  - os meses vizinhos são pedidos em segundo plano, um por vez e só com a aba visível;
+  - 15 min de validade no cache;
+  - na troca de mês, os números anteriores ficam na tela com o aviso "Carregando o período escolhido…".
+
+  O slug saiu da query key e da chamada `obterVisaoGeral`; os estados do mock passaram a vir de `VITE_MOCK_CENARIO`. Ver [adiantar.ts](src/api/adiantar.ts), [useVisaoGeral.ts](src/api/useVisaoGeral.ts), [useSessao.ts](src/api/useSessao.ts) e [mockClient.ts](src/api/mockClient.ts).
+
+- [x] 23/10/2026 · Login no front com e-mail e senha: telas Entrar, Esqueci minha senha e Definir senha (convite e recuperação), rotas protegidas com volta para a tela pedida, usuário e Sair no rail, "Entrar com outra conta" no estado sem permissão, renovação do token depois de um 401 e login fake (`VITE_AUTH_MODO`). `/` passa a abrir o cliente da sessão, e `VITE_CLIENTE_PADRAO` e o `AuthProviderFake` saíram. Ver [App.tsx](src/app/App.tsx), [Guardas.tsx](src/app/Guardas.tsx), [AuthProvider.tsx](src/auth/AuthProvider.tsx) e [CampoTexto.tsx](src/components/CampoTexto.tsx).
 
 - [x] 23/10/2026 · CI no GitHub Actions ([ci.yml](.github/workflows/ci.yml): formatação, lint, tipos, testes e build), automação de PR com Git Flow ([pr-automacao.yml](.github/workflows/pr-automacao.yml), a mesma do back), [CODEOWNERS](.github/CODEOWNERS) para `.github/` e [CONTRIBUTING.md](CONTRIBUTING.md).
 

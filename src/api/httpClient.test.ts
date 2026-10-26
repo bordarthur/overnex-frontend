@@ -17,9 +17,7 @@ describe('cliente HTTP', () => {
     const { api, fetch } = criar(json(fixtureVisaoGeral));
     const controle = new AbortController();
 
-    await expect(api.obterVisaoGeral('demo', {}, { signal: controle.signal })).resolves.toEqual(
-      fixtureVisaoGeral,
-    );
+    await expect(api.obterVisaoGeral({}, { signal: controle.signal })).resolves.toEqual(fixtureVisaoGeral);
 
     const [url, init] = fetch.mock.calls[0]!;
     expect(url).toBe('/api/telas/visao-geral');
@@ -30,7 +28,7 @@ describe('cliente HTTP', () => {
 
   it('manda o mês e a empresa escolhidos na query', async () => {
     const { api, fetch } = criar(json(fixtureVisaoGeral));
-    await api.obterVisaoGeral('demo', { mes: '2026-09', empresa: '0e000000-0000-4000-8000-000000000001' });
+    await api.obterVisaoGeral({ mes: '2026-09', empresa: '0e000000-0000-4000-8000-000000000001' });
     expect(fetch.mock.calls[0]![0]).toBe(
       '/api/telas/visao-geral?mes=2026-09&empresa=0e000000-0000-4000-8000-000000000001',
     );
@@ -44,21 +42,44 @@ describe('cliente HTTP', () => {
 
   it('não manda Authorization sem token', async () => {
     const { api, fetch } = criar(json(fixtureVisaoGeral), null);
-    await api.obterVisaoGeral('demo');
+    await api.obterVisaoGeral();
     expect(fetch.mock.calls[0]![1]?.headers).not.toHaveProperty('Authorization');
   });
 
   it('transforma 403 em ApiErro sem permissão, com o detail da API', async () => {
     const { api } = criar(json({ detail: 'Acesso negado.' }, 403));
-    const erro = await api.obterVisaoGeral('demo').catch((e: unknown) => e);
+    const erro = await api.obterVisaoGeral().catch((e: unknown) => e);
     expect(erro).toBeInstanceOf(ApiErro);
     expect(erro).toMatchObject({ status: 403, message: 'Acesso negado.' });
     expect(semPermissao(erro)).toBe(true);
   });
 
+  it('no 401, renova o token uma vez e repete a chamada', async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(json({ detail: 'Não autenticado.' }, 401))
+      .mockResolvedValueOnce(json(fixtureSessao));
+    const renovarToken = vi.fn(async () => 'novo');
+    const api = criarHttpClient({ getToken: async () => 'velho', renovarToken, fetch });
+
+    await expect(api.obterSessao()).resolves.toEqual(fixtureSessao);
+    expect(renovarToken).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[1]![1]?.headers).toMatchObject({ Authorization: 'Bearer novo' });
+  });
+
+  it('no 401 sem sessão para renovar, devolve o erro sem repetir', async () => {
+    const fetch = vi
+      .fn<typeof globalThis.fetch>()
+      .mockResolvedValue(json({ detail: 'Não autenticado.' }, 401));
+    const api = criarHttpClient({ getToken: async () => 'velho', renovarToken: async () => null, fetch });
+
+    await expect(api.obterSessao()).rejects.toMatchObject({ status: 401 });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it('usa uma mensagem genérica quando o erro não traz detail em texto', async () => {
     const { api } = criar(new Response('Bad Gateway', { status: 502 }));
-    const erro = await api.obterVisaoGeral('demo').catch((e: unknown) => e);
+    const erro = await api.obterVisaoGeral().catch((e: unknown) => e);
     expect(erro).toMatchObject({ status: 502, message: 'Erro 502 da API.' });
     expect(semPermissao(erro)).toBe(false);
   });

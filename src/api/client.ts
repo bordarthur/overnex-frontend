@@ -7,11 +7,14 @@ import type { VisaoGeralPayload } from '../contracts/visaoGeral';
 
 export class ApiErro extends Error {
   readonly status: number;
+  /** No 429: segundos até poder tentar de novo (cabeçalho Retry-After), quando a API manda. */
+  readonly tentarDeNovoEmS?: number;
 
-  constructor(status: number, mensagem: string) {
+  constructor(status: number, mensagem: string, tentarDeNovoEmS?: number) {
     super(mensagem);
     this.name = 'ApiErro';
     this.status = status;
+    this.tentarDeNovoEmS = tentarDeNovoEmS;
   }
 }
 
@@ -30,11 +33,8 @@ export interface ApiClient {
   /** true enquanto o cliente for o mock com dado fictício. */
   readonly dadosFicticios: boolean;
   obterSessao(opcoes?: { signal?: AbortSignal }): Promise<SessaoPayload>;
-  obterVisaoGeral(
-    clienteSlug: string,
-    filtros?: FiltrosVisaoGeral,
-    opcoes?: { signal?: AbortSignal },
-  ): Promise<VisaoGeralPayload>;
+  /** Sem slug: o cliente e as empresas saem do vínculo do usuário, então dá para pedir antes da sessão chegar. */
+  obterVisaoGeral(filtros?: FiltrosVisaoGeral, opcoes?: { signal?: AbortSignal }): Promise<VisaoGeralPayload>;
 }
 
 export const ApiClientContext = createContext<ApiClient | null>(null);
