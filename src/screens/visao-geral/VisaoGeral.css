@@ -11,6 +11,19 @@
   flex-wrap: wrap;
   margin-bottom: 16px;
 }
+.vg-carregando {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.vg-carregando-sym {
+  width: 26px;
+  height: 12px;
+  /* pulsar: EstadoTela.css */
+  animation: pulsar 1.2s ease-in-out infinite;
+}
 .vg-sec {
   margin-top: 30px;
 }

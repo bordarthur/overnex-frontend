@@ -1,4 +1,4 @@
-import { cleanup, screen, within } from '@testing-library/react';
+import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { criarMockClient } from '../../api/mockClient';
@@ -81,14 +81,14 @@ describe('Visão geral', () => {
   });
 
   it('avisa quando não há acesso ao cliente', async () => {
-    renderizarApp('/outro-cliente/visao-geral');
+    renderizarApp('/demo/visao-geral', undefined, criarMockClient({ atrasoMs: 0, cenario: 'sem-permissao' }));
     expect(
       await screen.findByText('Você não tem acesso a esta tela. Fale com o gestor do seu painel.'),
     ).toBeInTheDocument();
   });
 
   it('avisa quando não há dados', async () => {
-    renderizarApp('/vazio/visao-geral');
+    renderizarApp('/demo/visao-geral', undefined, criarMockClient({ atrasoMs: 0, cenario: 'vazio' }));
     expect(await screen.findByText('Ainda não há dados para este período.')).toBeInTheDocument();
     // Antes da primeira carga, dadosAte e atualizadoEm vêm null: nada de data inventada.
     expect(screen.queryByText(/Dados até/)).toBeNull();
@@ -103,7 +103,7 @@ describe('Visão geral', () => {
     await screen.findByRole('heading', { level: 3, name: 'Vendas' });
 
     // sem filtro, a consulta não leva mês nem empresa: a API usa o mais recente
-    expect(consultar).toHaveBeenLastCalledWith('demo', {}, expect.anything());
+    expect(consultar).toHaveBeenCalledWith({}, expect.anything());
 
     const periodo = await screen.findByRole('button', { name: /Período/ });
     expect(periodo).toHaveTextContent('Outubro de 2026');
@@ -115,18 +115,22 @@ describe('Visão geral', () => {
       'Agosto de 2026',
     ]);
     await user.click(meses[1]!);
-    expect(consultar).toHaveBeenLastCalledWith('demo', { mes: '2026-09' }, expect.anything());
+    // o mês vai como AAAA-MM (setembro já foi adiantado; ver adiantar.test.tsx)
+    await waitFor(() => expect(consultar).toHaveBeenCalledWith({ mes: '2026-09' }, expect.anything()));
 
     await user.click(screen.getByRole('button', { name: /Empresa/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Filial Maracanaú' }));
-    expect(consultar).toHaveBeenLastCalledWith(
-      'demo',
+    // (depois dela sai o mês anterior adiantado, com a mesma empresa)
+    expect(consultar).toHaveBeenCalledWith(
       { mes: '2026-09', empresa: '0e000000-0000-4000-8000-000000000002' },
       expect.anything(),
     );
 
+    // de volta ao padrão: a consulta sem filtro já está no cache
+    const antes = consultar.mock.calls.length;
     await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
-    expect(consultar).toHaveBeenLastCalledWith('demo', {}, expect.anything());
+    expect(await screen.findByRole('button', { name: /Período/ })).toHaveTextContent('Outubro de 2026');
+    expect(consultar.mock.calls.slice(antes)).not.toContainEqual([{}, expect.anything()]);
   });
 
   it('o chip de filtro abre um menu navegável por teclado e só troca o rótulo', async () => {

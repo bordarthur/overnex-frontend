@@ -1,16 +1,26 @@
 import { Navigate, Route, Routes } from 'react-router';
+import { DefinirSenhaTela } from '../screens/login/DefinirSenhaTela';
+import { EsqueciSenhaTela } from '../screens/login/EsqueciSenhaTela';
+import { LoginTela } from '../screens/login/LoginTela';
 import { VisaoGeralTela } from '../screens/visao-geral/VisaoGeralTela';
+import { Inicio, RotaProtegida, SoAnonimo } from './Guardas';
 import { Moldura } from './Moldura';
-
-const CLIENTE_PADRAO = import.meta.env.VITE_CLIENTE_PADRAO || 'demo';
 
 export function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={`/${CLIENTE_PADRAO}/visao-geral`} replace />} />
-      <Route path="/:clienteSlug" element={<Moldura />}>
-        <Route index element={<Navigate to="visao-geral" replace />} />
-        <Route path="visao-geral" element={<VisaoGeralTela />} />
+      <Route element={<SoAnonimo />}>
+        <Route path="/entrar" element={<LoginTela />} />
+        <Route path="/esqueci-senha" element={<EsqueciSenhaTela />} />
+      </Route>
+      {/* Link do e-mail de convite ou de recuperação: vale com ou sem sessão aberta. */}
+      <Route path="/definir-senha" element={<DefinirSenhaTela />} />
+      <Route element={<RotaProtegida />}>
+        <Route path="/" element={<Inicio />} />
+        <Route path="/:clienteSlug" element={<Moldura />}>
+          <Route index element={<Navigate to="visao-geral" replace />} />
+          <Route path="visao-geral" element={<VisaoGeralTela />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
