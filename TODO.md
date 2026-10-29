@@ -2,9 +2,18 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 26/10/2026
+Última atualização: 28/10/2026
 
 ## Em andamento
+
+- [ ] **Visão geral no mockup M2.1.2: testar com a API.** O back publicou em 28/10/2026 o contrato novo, que bate com [visaoGeral.ts](src/contracts/visaoGeral.ts), conferido campo a campo contra o `api/openapi.json` do back (os tipos do front continuam escritos à mão; não há gerador). O front já trata o que o back avisou:
+  - Financeiro com 4 KPIs ("A receber vencido" entrou na fixture);
+  - "Próximos 7, 15 e 30 dias" com um modo só ("lancado"), sem a chave de modos, quando o cliente não tem pagamento nos meses fechados;
+  - PUT da escolha com a `empresa` da tela, o texto da API no 403, 404 e 422, e o seletor travado para o papel "leitor" ([SeletorDaSecao.tsx](src/screens/visao-geral/SeletorDaSecao.tsx)).
+
+  Falta abrir com `VITE_API_MODO=api` e conferir: trocar as linhas de custo, recarregar e ver a escolha mantida, o 403 com um usuário leitor e o Financeiro sem os velocímetros de prazo. Não foi testado em 28/10 pelo mesmo motivo dos painéis financeiros (abaixo): o `api/.env` do back aponta para o banco de produção com `AUTH_FAKE=1`.
+
+- [ ] **Painéis financeiros (Resultado, Receber e pagar): testar com a API.** O back publicou `GET /api/telas/resultado` (FIN-02) e `/api/telas/receber-pagar` (FIN-03) em 28/10/2026, e o contrato bate com [painel.ts](src/contracts/painel.ts) (conferido campo a campo contra o `api/openapi.json` do back). As fixtures foram ajustadas ao que a API manda. Falta abrir as duas telas com `VITE_API_MODO=api` e conferir: filtros Visão, Orçamento, Vendedor e Atraso, "Comparar com" (`?comparar=mes-anterior`), troca de mês e empresa, o `aviso` sem orçado, o estado vazio e o 403 do FIN-03 para perfil sem dado nominal. Não foi testado em 28/10 porque o `api/.env` do back aponta para o banco de produção com `AUTH_FAKE=1`, e o README do back proíbe usar o token fake assim: testar com o login real (`VITE_AUTH_MODO=api`) ou com a API apontada para um banco local.
 
 - [ ] **Painéis comerciais (Vendas, Equipe comercial, Clientes): ligar à API.** O front está pronto com as fixtures do mockup Total M2.0.1 ([painel.ts](src/contracts/painel.ts), [PainelTela.tsx](src/screens/paineis/PainelTela.tsx), fixtures em [src/api/fixtures/](src/api/fixtures/)). Falta o back criar `GET /api/telas/vendas`, `/api/telas/equipe-comercial` e `/api/telas/clientes` nesse contrato (prompt entregue em 26/10/2026) e testar com `VITE_API_MODO=api`: filtros Canal, Linha e Supervisor indo na consulta, troca de mês e empresa, estados vazio e sem permissão. O back também precisa mandar `explicacao` nos cartões (prompt entregue em 26/10/2026); sem ela, o botão "i" não aparece.
 
@@ -20,7 +29,7 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 ## A fazer
 
 - [ ] **Painéis comerciais, partes do mockup que ficaram de fora:** "Mix por cliente" (cartão V2 de Vendas), "Mostrar fontes de dados" e a carteira cliente a cliente ("Carteira de clientes", módulo Distribuidora). Ver [CartaoPainel.tsx](src/screens/paineis/CartaoPainel.tsx).
-- [ ] **Menu pelas telas liberadas.** O rail mostra Vendas, Equipe comercial e Clientes para todos; esconder quando o código (`COM-01`, `COM-02`, `COM-03`, a confirmar com o back) não vier em `telas` de `/api/sessao`. Ver [Rail.tsx](src/components/Rail.tsx).
+- [ ] **Menu pelas telas liberadas.** O rail mostra Vendas, Equipe comercial, Clientes, Resultado e Receber e pagar para todos; esconder quando o código (`COM-01` a `COM-03`, `FIN-02` e `FIN-03`) não vier em `telas` de `/api/sessao`. Pesa mais no FIN-03, que exige perfil com dado nominal: sem ele, a pessoa vê o item no menu e cai em "Você não tem acesso". Ver [Rail.tsx](src/components/Rail.tsx).
 - [ ] **Pedidos adiantados dos painéis comerciais.** Hoje só a Visão geral é adiantada; avaliar adiantar Vendas depois da primeira tela. Ver [adiantar.ts](src/api/adiantar.ts) e [usePainel.ts](src/api/usePainel.ts).
 
 - [ ] **Configurar o GitHub para colaboradores** (front e back), como em [CONTRIBUTING.md](CONTRIBUTING.md): branch `dev`, GitHub App com `APP_ID` e `APP_PRIVATE_KEY`, rulesets em `main` e `dev` (PR com 1 aprovação, CODEOWNERS, checks obrigatórios `verificar` no front e `api` e `carga` no back, App e Admin no bypass) e colaboradores com papel Write. Sem isso, o CI roda mas a automação de PR falha no primeiro passo.
@@ -28,7 +37,8 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 - [ ] **Slug da URL diferente do cliente da sessão.** Na API, o cliente sai do token: em `/outro-slug/visao-geral` a pessoa vê os dados do próprio cliente com outro nome na URL. Redirecionar para `/${sessao.cliente.slug}/…` quando forem diferentes. Ver [Guardas.tsx](src/app/Guardas.tsx).
 - [ ] **Visão de administrador da LANN.** Um usuário que vê vários clientes e escolhe qual abrir. Precisa de: back resolver o cliente pela URL para usuários `tipo='lann'` (hoje quem tem mais de um cliente é barrado no passo 2), `/api/sessao` listar os clientes e um seletor de cliente no front. Por ora o usuário da diretoria fica só na PJ Cortes.
 - [ ] **Filtro "Comparar com" de verdade.** Período e Empresa já vêm de `/api/sessao` e vão na consulta; "Comparar com" ainda só troca o rótulo (a API não tem esse parâmetro). Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
-- [ ] **Clique no indicador.** O cartão deve virar link para a tela em `telaDestino` assim que ela existir. Ver [IndicadorGauge.tsx](src/components/IndicadorGauge.tsx).
+- [ ] **Cartão "Cobertura de caixa" (mockup M2.1.2).** Ficou de fora até o back ter o saldo em conta (decisão de 28/10/2026). Quando entrar, vai ao lado de "Contas a pagar lançadas", em duas colunas; o "Próximos 7, 15 e 30 dias" já aceita `saldo` e `minimo` (caixa mínimo) sem mudar o front. Ver [CartaoProximosDias.tsx](src/components/CartaoProximosDias.tsx).
+- [ ] **"Ver painel" para Caixa e Pessoas.** O link só aparece quando a tela de `telaDestino` existe no front; "Dívida líquida / EBITDA" aponta para `caixa`, que ainda não existe. Ver [SecaoVisaoGeral.tsx](src/screens/visao-geral/SecaoVisaoGeral.tsx).
 - [ ] **Logo do cliente no co-branding.** A CSP só aceita `img-src 'self'`, então a API precisa servir o logo. Ver [Cabecalho.tsx](src/components/Cabecalho.tsx).
 
 ### Integração com o banco (análise do overnex-backend em 16/10/2026)
@@ -40,15 +50,23 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Resto do `GET /api/sessao`:** cliente e logo no cabeçalho e telas liberadas no menu. Os filtros Período e Empresa já usam a sessão ([filtros.ts](src/screens/visao-geral/filtros.ts)).
 - [ ] **`?mes=` no back.** O front já manda `mes` (AAAA-MM) e `empresa` na Visão geral, mas a API ainda ignora `mes` e lista só o mês do snapshot em `/api/sessao`: escolher outro mês devolve os mesmos números. Pedido ao back em 22/10/2026.
 - [ ] **Telas que lerem `GET /api/dados/{tabela}`:** nenhuma lê hoje. Quando alguma ler, pegar nomes de tabela e coluna da PJ Cortes (`f_vendas_pj`, `d_cliente_pj`…), não os da Nilo Maia, que foram apagados do banco.
-- [ ] **Conferir Resultado e Financeiro com a API** depois da primeira carga da PJ Cortes. As duas seções agora vêm do back, com regras provisórias, e mostram menos que a fixture: sem "EBITDA projetado", "Dívida líquida / EBITDA", "Saldo em conta", "Cobertura de caixa" e "Ciclo de caixa" (o back não tem fonte para eles). Ver o `TODO.md` do `overnex-backend`.
+- [ ] **Conferir Resultado e Financeiro com a API** depois da primeira carga da PJ Cortes. As duas seções vêm do back, com regras provisórias, e o Resultado mostra menos que a fixture: sem "EBITDA projetado" e "Dívida líquida / EBITDA" (o back não tem fonte). O Financeiro passa a ter só cartões (ver "Visão geral no mockup M2.1.2" acima). Ver o `TODO.md` do `overnex-backend`.
 - [ ] **Ambiente local da API.** Esta máquina não tem Docker nem Supabase CLI, e o `api/.env` do back não existe.
 
 ## A decidir
 
-- [ ] **Explicação ("i") dos cartões que o mockup não explica:** Linhas de produto, Vendas nos últimos 12 meses, Participação das linhas, Movimento por dia da semana, Itens que mais vendem e Itens por atendimento. Escrever os textos ou deixar sem "i"? E na Visão geral, que usa outro contrato, entra também? Ver [Explicacao.tsx](src/components/Explicacao.tsx).
+- [ ] **Painéis financeiros, partes do mockup que não encaixam nas regras ou no back** (decidir com o usuário). Onde havia recomendação, o front já a seguiu; falta confirmar:
+  - cartões marcados "A decidir" no mockup (Ponte do EBITDA, Maiores desvios, Nível 3 da DRE e Tabela financeira): estão nas fixtures; o back só os manda depois da aprovação;
+  - sem fonte no back: saldo em conta, "Saldo em 30 dias", "Saldo no fim" das janelas e o Ciclo de caixa (falta prazo de estoque a custo). O front mostra se vierem; no lugar do Ciclo, só o gráfico de prazos;
+  - PDD ("regra a definir") e limite de crédito (`en_limitecredito` existe na PJ?);
+  - "Quem cobrar hoje" ficou sem a caixa de marcar (sem gravar no back, a marcação sumiria ao recarregar);
+  - títulos "Contas a receber" e "Contas a pagar" em cinza (no mockup, azul e vermelho: cor de status usada como enfeite). Pelo mesmo motivo, "A receber" e "A pagar" das janelas também ficaram sem cor;
+  - selo "Universal Completo" no menu e no cabeçalho: ficou de fora;
+  - "Comparar com" vai na consulta do Resultado só com "Mês anterior"; "Meta comercial" e "Mesmo mês de 2025" continuam só no rótulo. Ver [filtrosPainel.ts](src/screens/paineis/filtrosPainel.ts);
+  - "parou de comprar" e "título vencido" vêm como `etiqueta` da tabela, que é azul (a cor de `--ok`, como a "rampa" da Equipe). No mockup elas eram vermelhas. Deixar as etiquetas cinza, ou pedir ao back um tom na etiqueta? Ver [TabelaCartao.tsx](src/screens/paineis/TabelaCartao.tsx).
+- [ ] **Explicação ("i") dos cartões que o mockup não explica:** Linhas de produto, Vendas nos últimos 12 meses, Participação das linhas, Movimento por dia da semana, Itens que mais vendem e Itens por atendimento. Escrever os textos ou deixar sem "i"? Na Visão geral, os cartões do Financeiro já aceitam `explicacao`; a inadimplência fica sem, porque o mockup não traz texto para ela. Ver [Explicacao.tsx](src/components/Explicacao.tsx).
 
 - [ ] **Cores que o mockup dos painéis comerciais usa fora de status** (decidir com o usuário). O azul de `--ok` e o laranja de `--warn-mark` aparecem como cor de série: 5ª e 7ª linha no empilhado de participação, a linha de cima dos combos e a barra de projeção de outubro em Atendimentos. Foi mantido como no mockup; trocar por cinzas evita confundir com status. Ver [charts.css](src/charts/charts.css).
-- [ ] **Títulos e notas dos cartões vêm da API** nos painéis comerciais (no contrato, `titulo`, `subtitulo`, `nota`, `chamada`). Na Visão geral, o título do cartão de Inadimplência ainda é fixo no front: alinhar os dois?
 
 - [ ] **Partes do mockup Login M2.0.0 que ficaram de fora** (decidir com o usuário). Ver [LoginTela.tsx](src/screens/login/LoginTela.tsx) e [LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx):
   - entrar com Microsoft e Google;
@@ -73,11 +91,32 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Contra qual banco testar localmente.** Supabase local (precisa de Docker) ou o de produção (precisa da senha do `api_site`, ainda não definida).
 
 - [ ] **Legenda dos velocímetros.** Foi incluída a pedido, mas o mockup não a mostra e ela deixa cada cartão 48px mais alto. Manter ou tirar?
-- [ ] **Título e subtítulo do cartão de Inadimplência.** Hoje estão fixos no componente porque o contrato não os traz. Incluir no contrato?
+- [ ] **Partes do mockup Visão geral M2.1.2 que ficaram de fora ou mudaram** (decidir com o usuário):
+  - "Placar das áreas" (marcado V2), seções Compras e Estoque (Módulo Distribuidora, fora do escopo universal) e o botão "Etiquetas internas" com os selos "Universal Completo", "fonte a definir" e "nome a validar";
+  - o KPI "Saldo em conta hoje" saiu da fixture (sem fonte no back), e o "Próximos 7, 15 e 30 dias" começa em zero: mostra quanto sobra ou falta na janela, não onde o caixa termina;
+  - status das janelas sem saldo: na fixture, sobra = saudável e falta = atenção. Qual regra o back usa?
+  - "Inadimplência corrente": o mockup marca o nome como "nome a validar";
 - [ ] **Aviso "este filtro só muda o rótulo".** O mockup mostra um aviso ao trocar filtro; ficou de fora. Incluir enquanto os filtros não funcionam?
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 28/10/2026 · Visão geral no visual do mockup M2.1.2, com dado fictício:
+  - chave Mês/Acumulado em cada velocímetro (no lugar da chave única da tela), com a contagem da faixa seguindo a de cada cartão, seta no delta, delta em texto ("na meta") e link "Ver painel" para a tela do indicador;
+  - nota no topo, "Pedidos por cliente" no lugar de "Linhas por cliente" e os novos números de Custos e Resultado;
+  - seletor "Linhas de custo" (Automático 80% e 1 a 7, o resto em Outros), gravado para o cliente na API ([SeletorDaSecao.tsx](src/screens/visao-geral/SeletorDaSecao.tsx));
+  - Financeiro só com cartões: "Próximos 7, 15 e 30 dias" com "Só o lançado" e "Com o que falta lançar", sem saldo ([CartaoProximosDias.tsx](src/components/CartaoProximosDias.tsx)), "Contas a pagar lançadas" ([CartaoPagarLancado.tsx](src/components/CartaoPagarLancado.tsx)) e "Inadimplência corrente" com as fitas da barra aos quadros ([CartaoInadimplencia.tsx](src/components/CartaoInadimplencia.tsx)), com título e subtítulo vindos do contrato;
+  - barras em tons de grafite: azul, laranja e vermelho ficam só para status (decisão de 28/10/2026).
+
+  Conferido no navegador (Edge headless, 1440 px claro e escuro, 1100 px e 390 px) com o mock.
+
+- [x] 28/10/2026 · Painéis financeiros alinhados à API publicada: fixtures sem saldo bancário (sem os KPIs de saldo, o "Saldo no fim" e o status das janelas), sem PDD, "leitura rápida" em `chamada`, "parou de comprar" e "título vencido" em `etiqueta`, chance "sem histórico" como texto; linha de 3 KPIs sem buraco no fim ([Kpi.tsx](src/components/Kpi.tsx)). Testes cobrem a DRE só com os níveis 1 e 2, o padrão da API.
+
+- [x] 26/10/2026 · Painéis financeiros no visual do mockup Total M2.0.1, com dado fictício, no grupo **Financeiro** do menu (no mockup, "Finanças"; o Caixa ficou de fora):
+  - Resultado: destaques, apoios, resultado mês a mês contra o orçado (5 combos), DRE em cascata, ponto de equilíbrio, ponte do EBITDA, maiores desvios, DRE gerencial em árvore (níveis 1 a 3, abrir e fechar, "Só desvios", tendência de 6 meses) e tabela financeira;
+  - Receber e pagar: KPIs, próximos 7, 15 e 30 dias, contas a receber × a pagar, quem cobrar hoje, a pagar por semana, inadimplência por mês de vencimento e em 12 meses, idade dos vencidos, prazos de recebimento e pagamento e clientes acima do limite.
+
+  Cartões novos em [src/screens/paineis/](src/screens/paineis/) (`dre`, `barra-partes`, `desvios`, `janelas`, `dois-lados`, `barras-horizontais`), gráfico de cascata ([Cascata.tsx](src/charts/Cascata.tsx)), paleta de atraso no empilhado, pílula com texto na tabela e "Comparar com" na consulta do Resultado. Seguiram as recomendações: sem a caixa de marcar em "Quem cobrar hoje", títulos dos dois lados em cinza, sem o selo "Universal Completo" e sem o Ciclo de caixa (no lugar, só os prazos). Conferido no navegador (Edge headless, 1440 px claro e escuro, 390 px) com o mock.
 
 - [x] 26/10/2026 · Trocar de tela pelo menu abre a tela nova no topo, e clicar na tela já aberta também volta ao topo; trocar só de filtro não mexe na rolagem. Ver [topo.ts](src/app/topo.ts), [Moldura.tsx](src/app/Moldura.tsx) e [Rail.tsx](src/components/Rail.tsx). Conferido no navegador (Edge, 1440 px).
 

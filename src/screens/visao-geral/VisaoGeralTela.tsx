@@ -9,8 +9,6 @@ import { BarraFiltros } from '../../components/BarraFiltros';
 import { Cabecalho } from '../../components/Cabecalho';
 import { EstadoTela } from '../../components/EstadoTela';
 import { Simbolo } from '../../components/Marca';
-import { Segmentado } from '../../components/Segmentado';
-import type { PeriodoId } from '../../contracts/visaoGeral';
 import { formatarAtualizacao } from '../../format';
 import { montarFiltros } from './filtros';
 import { SecaoVisaoGeral } from './SecaoVisaoGeral';
@@ -28,7 +26,6 @@ export function VisaoGeralTela() {
   // Na visão padrão não vai `mes`: é a mesma consulta adiantada ao entrar (adiantar.ts).
   const consultaFiltros = filtros.consulta(valores);
   const consulta = useVisaoGeral(consultaFiltros);
-  const [periodoEscolhido, setPeriodo] = useState<PeriodoId | null>(null);
   useAdiantarMeses(
     consultaFiltros,
     sessao.data?.periodos ?? [],
@@ -40,7 +37,6 @@ export function VisaoGeralTela() {
   }, []);
 
   const dados = consulta.data;
-  const periodo = periodoEscolhido ?? dados?.periodos[0]?.id ?? 'mes';
 
   let conteudo;
   if (consulta.isPending) conteudo = <EstadoTela tipo="carregando" />;
@@ -55,12 +51,7 @@ export function VisaoGeralTela() {
     conteudo = (
       <>
         <div className="vg-top">
-          <Segmentado
-            rotulo="Período da visão geral"
-            opcoes={consulta.data.periodos}
-            valor={periodo}
-            onMudar={setPeriodo}
-          />
+          {consulta.data.nota && <span className="vg-note">{consulta.data.nota}</span>}
           {consulta.isPlaceholderData && (
             <span className="vg-carregando" role="status">
               <Simbolo className="vg-carregando-sym" />
@@ -69,7 +60,14 @@ export function VisaoGeralTela() {
           )}
         </div>
         {consulta.data.secoes.map((s) => (
-          <SecaoVisaoGeral key={s.id} secao={s} periodo={periodo} />
+          <SecaoVisaoGeral
+            key={s.id}
+            secao={s}
+            periodos={consulta.data.periodos}
+            empresa={consultaFiltros.empresa}
+            // o "leitor" vê a escolha mas não muda (a API responderia 403)
+            soLeitura={sessao.data?.papel === 'leitor'}
+          />
         ))}
       </>
     );

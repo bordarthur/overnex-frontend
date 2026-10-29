@@ -1,0 +1,310 @@
+/* Cartões do Financeiro (próximos dias, contas lançadas). As barras são grafite: azul, laranja e
+   vermelho ficam só para status (o mockup pinta a receber de azul e a pagar de vermelho). */
+.fin {
+  --fx-saldo: color-mix(in srgb, var(--ink) 16%, var(--surface));
+  --fx-rec: color-mix(in srgb, var(--ink) 38%, var(--surface));
+  --fx-pag: color-mix(in srgb, var(--ink) 72%, var(--surface));
+  --fx-hatch: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--ink) 55%, transparent) 0 1.5px,
+    transparent 1.5px 5.5px
+  );
+}
+.card.fin {
+  padding: 28px 32px 40px;
+  margin: 0 0 12px;
+}
+.fin .card-h {
+  margin-bottom: 26px;
+  align-items: center;
+}
+.b-saldo {
+  background: var(--fx-saldo);
+}
+.b-rec {
+  background: var(--fx-rec);
+}
+.b-pag {
+  background: var(--fx-pag);
+}
+.b-falta {
+  background: var(--fx-hatch);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 50%, transparent);
+}
+
+/* legenda */
+.pj-leg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  font-size: 12px;
+  color: var(--ink-2);
+  margin: -6px 0 34px;
+}
+.pj-leg span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.pj-leg i {
+  width: 18px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.pj-leg .lg-falta {
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.pj.m-falta .pj-leg .lg-falta {
+  opacity: 1;
+}
+
+/* grade: rótulo | barras | fim */
+.pj {
+  --pj-lab: 84px;
+  --pj-fim: 150px;
+  --pj-gap: 28px;
+}
+.pj-grid {
+  padding-top: 8px;
+}
+.pj-linhas {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.pj-row {
+  display: grid;
+  grid-template-columns: var(--pj-lab) minmax(0, 1fr) var(--pj-fim);
+  column-gap: var(--pj-gap);
+}
+.pj-lab {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pj-lab b {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+  line-height: 1.1;
+}
+.pj-lab span {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.pj-tr {
+  grid-column: 2;
+  position: relative;
+  height: 42px;
+}
+.pj-end {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.2;
+}
+.pj-end b {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: color 0.3s;
+}
+.pj-end span {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.pj-end.s-warn b {
+  color: var(--warn);
+}
+.pj-end.s-crit b {
+  color: var(--crit);
+}
+
+/* barras */
+.pj-b {
+  position: absolute;
+  height: 18px;
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  transition:
+    left 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+    width 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.pj-b.top {
+  top: 0;
+}
+.pj-b.bot {
+  top: 24px;
+}
+/* com saldo, o a receber emenda no fim dele */
+.pj-b.b-rec.emenda {
+  border-radius: 0 3px 3px 0;
+  box-shadow: inset 2px 0 0 var(--surface);
+}
+.pj-b em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0 8px;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.pj-b.b-pag em {
+  color: var(--surface);
+}
+.pj-mk {
+  position: absolute;
+  top: -7px;
+  bottom: -7px;
+  width: 2.5px;
+  margin-left: -1.25px;
+  border-radius: 2px;
+  background: var(--ink);
+  z-index: 3;
+  transition:
+    left 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+    background-color 0.3s;
+}
+.pj-mk.s-warn {
+  background: var(--warn-mark);
+}
+.pj-mk.s-crit {
+  background: var(--crit);
+}
+
+/* linhas de referência sobre a coluna das barras */
+.pj-ov {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--pj-lab) + var(--pj-gap));
+  right: calc(var(--pj-fim) + var(--pj-gap));
+  pointer-events: none;
+  z-index: 2;
+}
+.pj-min {
+  position: absolute;
+  top: -34px;
+  bottom: -14px;
+  border-left: 1.5px dashed var(--ink-3);
+}
+.pj-min span {
+  position: absolute;
+  top: -2px;
+  left: 7px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.pj-zero {
+  position: absolute;
+  top: -8px;
+  bottom: -8px;
+  border-left: 1px solid var(--line);
+}
+
+/* eixo */
+.pj-eixo {
+  margin-top: 16px;
+}
+.pj-axis {
+  grid-column: 2;
+  position: relative;
+  height: 16px;
+}
+.pj-axis span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.pj-axis span:first-child {
+  transform: none;
+}
+.pj-note {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 30px;
+  max-width: 92ch;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pj-b,
+  .pj-mk,
+  .pj-leg .lg-falta {
+    transition: none;
+  }
+}
+@media (max-width: 760px) {
+  .card.fin {
+    padding: 22px 18px 34px;
+  }
+  .fin .card-h {
+    align-items: flex-start;
+  }
+  .pj {
+    --pj-lab: 60px;
+    --pj-gap: 12px;
+  }
+  .pj-grid {
+    padding-top: 14px;
+  }
+  .pj-linhas {
+    gap: 6px;
+  }
+  /* rótulo à esquerda das duas linhas: barras em cima, fim embaixo */
+  .pj-row {
+    grid-template-columns: var(--pj-lab) minmax(0, 1fr);
+    row-gap: 6px;
+  }
+  .pj-lab {
+    grid-row: 1 / 3;
+    justify-content: flex-start;
+    padding-top: 10px;
+  }
+  .pj-lab b {
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .pj-lab span {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .pj-tr {
+    grid-row: 1;
+  }
+  .pj-end {
+    grid-column: 2;
+    grid-row: 2;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .pj-end b {
+    font-size: 18px;
+  }
+  .pj-ov {
+    right: 0;
+  }
+  .pj-eixo {
+    margin-top: 0;
+  }
+  .pj-axis span.odd {
+    display: none;
+  }
+  .pj-note {
+    margin-top: 22px;
+  }
+}

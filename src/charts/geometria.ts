@@ -32,3 +32,11 @@ export function anguloRad(valor: number, min: number, max: number): number {
 export function pontoPolar(cx: number, cy: number, raio: number, angulo: number): [number, number] {
   return [+(cx + raio * Math.cos(angulo)).toFixed(1), +(cy - raio * Math.sin(angulo)).toFixed(1)];
 }
+
+/** Rótulo em até duas linhas, quebrado no meio das palavras ("Custo da" / "mercadoria"). */
+export function quebrarRotulo(rotulo: string): [string, string] {
+  const palavras = rotulo.split(' ');
+  if (palavras.length < 2) return [rotulo, ''];
+  const meio = Math.ceil(palavras.length / 2);
+  return [palavras.slice(0, meio).join(' '), palavras.slice(meio).join(' ')];
+}

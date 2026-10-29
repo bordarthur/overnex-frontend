@@ -8,7 +8,7 @@ export function GraficosCartao({ cartao }: { cartao: CartaoGraficos }) {
   const varios = cartao.graficos.length > 1;
   return (
     <CaixaCartao cartao={cartao}>
-      <div className={varios ? 'sm-grid' : undefined}>
+      <div className={varios ? `sm-grid${cartao.colunas === 3 ? ' tres' : ''}` : undefined}>
         {cartao.graficos.map((g, i) => (
           <div key={i} className="sm">
             {g.titulo && <h3>{g.titulo}</h3>}

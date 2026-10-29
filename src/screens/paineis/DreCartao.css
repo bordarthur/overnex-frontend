@@ -1,0 +1,173 @@
+.dre-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+}
+/* chave liga/desliga do mockup (.tgl e .sw) */
+.tgl {
+  all: unset;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-2);
+}
+.tgl .sw {
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--series-3);
+  position: relative;
+  transition: background 0.2s;
+}
+.tgl .sw::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.tgl[aria-pressed='true'] .sw {
+  background: var(--verde);
+}
+.tgl[aria-pressed='true'] .sw::after {
+  transform: translateX(12px);
+}
+.tgl:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.dre td:first-child {
+  white-space: nowrap;
+}
+.dre .acc {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dre .acc:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.dre .caret {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  transition: transform 0.15s;
+}
+.dre .caret svg {
+  width: 10px;
+  height: 10px;
+  display: block;
+}
+.dre tr.open .caret {
+  transform: rotate(90deg);
+}
+.dre-recuo {
+  display: inline-block;
+  width: 16px;
+}
+.dre .code {
+  color: var(--ink-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  min-width: 62px;
+  display: inline-block;
+  margin-right: 6px;
+}
+.dre tr.n1 td {
+  font-weight: 600;
+}
+.dre tr.n3 td {
+  color: var(--ink-2);
+}
+.dre tr.n3 td:first-child {
+  font-size: 13px;
+}
+.dre tr.sub td {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 14.5px;
+  background: var(--surface-2);
+  border-top: 0;
+}
+.dre tr.sub td:first-child {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  border-radius: 8px 0 0 8px;
+}
+.dre tr.sub td:last-child {
+  border-radius: 0 8px 8px 0;
+}
+.dre tr.sub.final td {
+  background: var(--grafite);
+  color: #f5f5f5;
+}
+.dre tr.sub.final .muted {
+  color: #bdbdbd;
+}
+.dre tr.sub.final .pill {
+  background: #f5f5f5;
+}
+.dre tr.sub.final .faisca path {
+  stroke: #9a9a9a;
+}
+.dre tr.sub.final .faisca circle {
+  fill: #f5f5f5;
+}
+.dre .cfl-ok {
+  background: color-mix(in srgb, var(--ok) 10%, var(--surface));
+}
+.dre .cfl-crit {
+  background: color-mix(in srgb, var(--crit) 10%, var(--surface));
+}
+.dre .cfl-warn {
+  background: color-mix(in srgb, var(--warn-mark) 14%, var(--surface));
+}
+.dre-th-nota {
+  font-weight: 400;
+}
+.faisca {
+  vertical-align: middle;
+}
+.faisca path {
+  fill: none;
+  stroke: var(--series-2);
+  stroke-width: 1.5;
+}
+.faisca .faisca-ref {
+  stroke: var(--ink-3);
+  stroke-width: 1.1;
+  stroke-dasharray: 3 2;
+}
+.faisca circle {
+  fill: var(--series);
+}
+.dre-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dre .caret,
+  .tgl .sw,
+  .tgl .sw::after {
+    transition: none;
+  }
+}

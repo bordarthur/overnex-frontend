@@ -74,7 +74,7 @@ function ConteudoCelula({ celula: c }: { celula: Celula }) {
         </>
       )}
       {c.etiqueta && <span className="tagn">{c.etiqueta}</span>}
-      {c.pill && <Pill status={c.pill} />}
+      {c.pill && (typeof c.pill === 'string' ? <Pill status={c.pill} /> : <Pill {...c.pill} />)}
       {c.sub && <span className="r-sub cel-sub">{c.sub}</span>}
     </>
   );

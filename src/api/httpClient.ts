@@ -21,11 +21,16 @@ export function criarHttpClient({
   baseUrl = '/api',
   fetch = globalThis.fetch,
 }: OpcoesHttpClient): ApiClient {
-  async function obter<T>(caminho: string, signal?: AbortSignal): Promise<T> {
+  async function pedir(
+    caminho: string,
+    { signal, metodo = 'GET', corpo }: { signal?: AbortSignal; metodo?: 'GET' | 'PUT'; corpo?: unknown } = {},
+  ): Promise<Response> {
     const chamar = (token: string | null) => {
       const headers: Record<string, string> = { Accept: 'application/json' };
       if (token) headers.Authorization = `Bearer ${token}`;
-      return fetch(`${baseUrl}${caminho}`, { headers, signal });
+      if (corpo !== undefined) headers['Content-Type'] = 'application/json';
+      const body = corpo === undefined ? undefined : JSON.stringify(corpo);
+      return fetch(`${baseUrl}${caminho}`, { method: metodo, headers, body, signal });
     };
 
     let resposta = await chamar(await getToken());
@@ -35,7 +40,11 @@ export function criarHttpClient({
       if (novo) resposta = await chamar(novo);
     }
     if (!resposta.ok) throw new ApiErro(resposta.status, await lerDetalhe(resposta));
-    return (await resposta.json()) as T;
+    return resposta;
+  }
+
+  async function obter<T>(caminho: string, signal?: AbortSignal): Promise<T> {
+    return (await (await pedir(caminho, { signal })).json()) as T;
   }
 
   return {
@@ -49,6 +58,15 @@ export function criarHttpClient({
       if (filtros.empresa) params.set('empresa', filtros.empresa);
       const consulta = params.toString();
       return obter<VisaoGeralPayload>(`/telas/visao-geral${consulta ? `?${consulta}` : ''}`, opcoes?.signal);
+    },
+    async salvarPreferenciaVisaoGeral(id, valor, filtros = {}) {
+      const consulta = filtros.empresa
+        ? `?${new URLSearchParams({ empresa: filtros.empresa }).toString()}`
+        : '';
+      await pedir(`/telas/visao-geral/preferencias/${encodeURIComponent(id)}${consulta}`, {
+        metodo: 'PUT',
+        corpo: { valor },
+      });
     },
     obterPainel(tela, filtros = {}, opcoes) {
       const consulta = new URLSearchParams(filtros).toString();

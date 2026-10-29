@@ -23,13 +23,6 @@
   grid-column: span 12;
 }
 
-/* título e o botão "i" da explicação na mesma linha */
-.card-titulo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .callout {
   border-radius: 12px;
   padding: 12px 14px;

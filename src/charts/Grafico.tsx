@@ -1,5 +1,6 @@
 import type { Grafico as GraficoDados } from '../contracts/painel';
 import { Barras } from './Barras';
+import { Cascata } from './Cascata';
 import { Combo } from './Combo';
 import { Degraus } from './Degraus';
 import { Dispersao } from './Dispersao';
@@ -21,5 +22,7 @@ export function Grafico({ grafico, aria }: { grafico: GraficoDados; aria: string
       return <Dispersao grafico={grafico} aria={aria} />;
     case 'degraus':
       return <Degraus grafico={grafico} aria={aria} />;
+    case 'cascata':
+      return <Cascata grafico={grafico} aria={aria} />;
   }
 }

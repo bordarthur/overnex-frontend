@@ -1,0 +1,146 @@
+{
+  "linhas": [
+    {
+      "id": "cmv-laticinios",
+      "nome": "CMV de laticínios",
+      "telaDestino": "resultado",
+      "origem": "dw",
+      "gauge": {
+        "min": 60,
+        "max": 68,
+        "meta": 64,
+        "unidade": "pct",
+        "faixas": [
+          {
+            "de": 60,
+            "ate": 64.3,
+            "status": "saudavel"
+          },
+          {
+            "de": 64.3,
+            "ate": 65.5,
+            "status": "atencao"
+          },
+          {
+            "de": 65.5,
+            "ate": 68,
+            "status": "critico"
+          }
+        ]
+      },
+      "periodos": {
+        "mes": {
+          "status": "saudavel",
+          "valor": {
+            "valor": 63.8,
+            "unidade": "pct",
+            "casas": 1
+          },
+          "ponteiro": 63.8,
+          "delta": {
+            "valor": -0.2,
+            "unidade": "pp",
+            "casas": 1
+          },
+          "deltaRuim": false,
+          "referencia": "da receita da linha, contra 64,0% orçado · R$ 260 mil de custo no mês"
+        },
+        "ano": {
+          "status": "saudavel",
+          "valor": {
+            "valor": 64,
+            "unidade": "pct",
+            "casas": 1
+          },
+          "ponteiro": 64,
+          "delta": {
+            "valor": 0,
+            "unidade": "pp",
+            "casas": 1
+          },
+          "deltaRuim": false,
+          "referencia": "acumulado, contra 64,0% orçado · R$ 260 mil de custo no mês"
+        }
+      },
+      "tendencia": {
+        "rotulos": ["mai-26", "jun-26", "jul-26", "ago-26", "set-26", "out-26"],
+        "real": [64.3, 64.1, 64, 63.9, 63.9, 63.8],
+        "referencia": [64, 64, 64, 64, 64, 64],
+        "faixa": [60, 64.3],
+        "unidade": "pct",
+        "casas": 1
+      }
+    },
+    {
+      "id": "cmv-congelados",
+      "nome": "CMV de congelados",
+      "telaDestino": "resultado",
+      "origem": "dw",
+      "gauge": {
+        "min": 63,
+        "max": 71,
+        "meta": 67,
+        "unidade": "pct",
+        "faixas": [
+          {
+            "de": 63,
+            "ate": 67.3,
+            "status": "saudavel"
+          },
+          {
+            "de": 67.3,
+            "ate": 68.5,
+            "status": "atencao"
+          },
+          {
+            "de": 68.5,
+            "ate": 71,
+            "status": "critico"
+          }
+        ]
+      },
+      "periodos": {
+        "mes": {
+          "status": "atencao",
+          "valor": {
+            "valor": 68.5,
+            "unidade": "pct",
+            "casas": 1
+          },
+          "ponteiro": 68.5,
+          "delta": {
+            "valor": 1.5,
+            "unidade": "pp",
+            "casas": 1
+          },
+          "deltaRuim": true,
+          "referencia": "da receita da linha, contra 67,0% orçado · R$ 120 mil de custo no mês"
+        },
+        "ano": {
+          "status": "atencao",
+          "valor": {
+            "valor": 67.8,
+            "unidade": "pct",
+            "casas": 1
+          },
+          "ponteiro": 67.8,
+          "delta": {
+            "valor": 0.8,
+            "unidade": "pp",
+            "casas": 1
+          },
+          "deltaRuim": true,
+          "referencia": "acumulado, contra 67,0% orçado · R$ 120 mil de custo no mês"
+        }
+      },
+      "tendencia": {
+        "rotulos": ["mai-26", "jun-26", "jul-26", "ago-26", "set-26", "out-26"],
+        "real": [66.8, 67.1, 67.5, 67.9, 68.2, 68.5],
+        "referencia": [67, 67, 67, 67, 67, 67],
+        "faixa": [63, 67.3],
+        "unidade": "pct",
+        "casas": 1
+      }
+    }
+  ]
+}
