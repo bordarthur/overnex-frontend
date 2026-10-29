@@ -1,4 +1,5 @@
-// Contrato dos painéis por cartões: Vendas, Equipe comercial e Clientes e atendimentos.
+// Contrato dos painéis por cartões: Vendas, Equipe comercial, Clientes e atendimentos, Resultado
+// e Receber e pagar.
 // Hoje escrito à mão; no futuro estes tipos serão gerados do OpenAPI da API.
 // Como na Visão geral, o front só desenha: todo número, status, texto, rótulo, média, projeção
 // e diferença vem pronto. O front formata os números pela unidade e calcula só geometria
@@ -9,7 +10,7 @@ import type { Kpi, Status, Trecho, Unidade, Valor } from './visaoGeral';
 export type { Kpi, Status, Trecho, Unidade, Valor };
 
 /** Telas deste contrato. É também o caminho da rota: GET /api/telas/{tela}. */
-export type TelaPainel = 'vendas' | 'equipe-comercial' | 'clientes';
+export type TelaPainel = 'vendas' | 'equipe-comercial' | 'clientes' | 'resultado' | 'receber-pagar';
 
 /** Número a formatar pela unidade, ou texto já pronto quando não é um número só ("2 de 6"). */
 export type Exibicao = Valor | string;
@@ -109,11 +110,32 @@ export interface GraficoLinhas extends Escala {
   piso?: number;
 }
 
-/** Barras empilhadas; as cores seguem a ordem das séries (até 7). */
+/**
+ * Barras empilhadas; as cores seguem a ordem das séries (até 7). A paleta `atraso` vai do amarelo
+ * ao vermelho (faixas de atraso, da mais nova para a mais velha; até 5 séries).
+ */
 export interface GraficoEmpilhado extends Escala {
   tipo: 'empilhado';
+  paleta?: 'series' | 'atraso';
   rotulos: string[];
   series: { nome: string; valores: number[] }[];
+}
+
+/**
+ * Cascata (da receita ao lucro, do orçado ao realizado). Cada barra vai de `de` a `ate`, já
+ * calculados: o front não soma nada. `total` é a barra cheia; `positivo` ajudou, `negativo` atrapalhou.
+ */
+export interface GraficoCascata extends Escala {
+  tipo: 'cascata';
+  passos: {
+    rotulo: string;
+    de: number;
+    ate: number;
+    valor: number;
+    estilo: 'total' | 'positivo' | 'negativo';
+  }[];
+  // início da escala, para mostrar diferenças pequenas (a ponte do EBITDA começa em 480 mil)
+  piso?: number;
 }
 
 export interface GraficoDispersao {
@@ -165,7 +187,13 @@ export interface GraficoDegraus extends Escala {
 }
 
 export type Grafico =
-  GraficoBarras | GraficoCombo | GraficoLinhas | GraficoEmpilhado | GraficoDispersao | GraficoDegraus;
+  | GraficoBarras
+  | GraficoCombo
+  | GraficoLinhas
+  | GraficoEmpilhado
+  | GraficoDispersao
+  | GraficoDegraus
+  | GraficoCascata;
 
 export type MarcaLegenda =
   'linha' | 'linha-clara' | 'pontilhada' | 'media' | 'minimo' | 'quadrado-escuro' | 'quadrado-claro';
@@ -251,7 +279,8 @@ export interface Celula {
   tom?: Status | 'apagado';
   // fundo de farol
   fundo?: Status;
-  pill?: Status;
+  // pílula de status; com rótulo, o texto é o da API ("Alta", "Média", "Baixa")
+  pill?: Status | { status: Status; rotulo: string };
   negrito?: boolean;
   // etiqueta pequena depois do texto ("rampa")
   etiqueta?: string;
@@ -276,6 +305,8 @@ export interface CartaoDestaques extends CartaoBase {
 /** Um ou mais gráficos lado a lado, cada um com título e nota opcionais. */
 export interface CartaoGraficos extends CartaoBase {
   tipo: 'graficos';
+  // gráficos por linha quando há mais de um (padrão 2)
+  colunas?: 2 | 3;
   graficos: { titulo?: string; nota?: string; grafico: Grafico }[];
 }
 
@@ -311,6 +342,106 @@ export interface CartaoMatriz extends CartaoBase {
   valores: { valor: number; status?: Status }[][];
 }
 
+export interface LinhaDre {
+  id: string;
+  // código da conta no plano ("100.01"); subtotais não têm
+  codigo?: string;
+  nome: string;
+  // 0 = subtotal (Receita líquida, Lucro bruto...); 1 a 3 = níveis do plano de contas
+  nivel: 0 | 1 | 2 | 3;
+  // id da linha de cima na árvore
+  pai?: string;
+  // a última linha (Lucro líquido final), em destaque escuro
+  final?: boolean;
+  realizado: number;
+  percentualReceitaBruta: number;
+  comparacao: number;
+  diferenca: number;
+  diferencaPercentual: number | null;
+  // cor do texto da diferença (melhor ou pior que a comparação)
+  tomDiferenca?: Status;
+  // fundo de farol na diferença (desvio grande)
+  destacarDiferenca?: boolean;
+  status: Status;
+  // esta linha ou alguma abaixo dela fora de "saudavel": é o que fica com "Só desvios"
+  comDesvio: boolean;
+  // últimos 6 meses
+  tendencia: { realizado: number[]; comparacao: number[] };
+}
+
+/** DRE em árvore: abre por nível, filtra os desvios e mostra a tendência de cada conta. */
+export interface CartaoDre extends CartaoBase {
+  tipo: 'dre';
+  // cabeçalho da primeira coluna ("Conta (R$ mil)") e da comparação ("Orçado", "Agosto")
+  rotuloConta: string;
+  rotuloComparacao: string;
+  escala: Escala;
+  nivelInicial: 1 | 2 | 3;
+  // níveis que a chave oferece
+  niveis: (1 | 2 | 3)[];
+  // na ordem de exibição, com os subtotais
+  linhas: LinhaDre[];
+  rodape?: string[];
+}
+
+/** Uma barra dividida em partes (ponto de equilíbrio e folga), com a escala e um texto. */
+export interface CartaoBarraPartes extends CartaoBase {
+  tipo: 'barra-partes';
+  // proporções somam 1
+  partes: { rotulo: string; proporcao: number; estilo: 'serie-clara' | Status }[];
+  escala: { inicio: string; fim: string };
+  texto?: Trecho[];
+}
+
+/** Grupos de contas com o desvio de cada uma (pioram e melhoram o resultado). */
+export interface CartaoDesvios extends CartaoBase {
+  tipo: 'desvios';
+  escala: Escala;
+  grupos: { titulo: string; status: Status; itens: { nome: string; detalhe?: string; valor: number }[] }[];
+}
+
+/** Janelas de dias lado a lado (próximos 7, 15 e 30 dias), com um alerta opcional ao fim. */
+export interface CartaoJanelas extends CartaoBase {
+  tipo: 'janelas';
+  janelas: {
+    titulo: string;
+    status?: Status;
+    linhas: {
+      rotulo: string;
+      valor: Valor;
+      tom?: Status;
+      comSinal?: boolean;
+      // total: com linha em cima; saldo: com o fundo do status da janela
+      tipo?: 'total' | 'saldo';
+    }[];
+  }[];
+  alerta?: { etiqueta: string; texto: Trecho[]; rodape?: string };
+}
+
+/** Os dois lados de uma visão (contas a receber × contas a pagar). */
+export interface CartaoDoisLados extends CartaoBase {
+  tipo: 'dois-lados';
+  lados: {
+    titulo: string;
+    // "em aberto: R$ 7,13 mi"
+    total: string;
+    // etiqueta de qualidade do dado ao lado do total
+    alerta?: string;
+    kpis: Kpi[];
+    // faixas de idade dos títulos; participacao em % do total do lado
+    idade: { rotulo: string; valor: Valor; participacao: number; status?: Status }[];
+    observacao?: Trecho[];
+    maiores: { nome: string; valor: Valor; participacao: number; etiqueta?: string }[];
+  }[];
+}
+
+/** Lista de barras horizontais (a pagar por semana); a maior ocupa a largura toda. */
+export interface CartaoBarrasHorizontais extends CartaoBase {
+  tipo: 'barras-horizontais';
+  escala: Escala;
+  itens: { rotulo: string; sub?: string; valor: number; status?: Status }[];
+}
+
 export type Cartao =
   | CartaoAndamentoMes
   | CartaoFatores
@@ -320,7 +451,13 @@ export type Cartao =
   | CartaoGraficos
   | CartaoFaixas
   | CartaoCurvaAbc
-  | CartaoMatriz;
+  | CartaoMatriz
+  | CartaoDre
+  | CartaoBarraPartes
+  | CartaoDesvios
+  | CartaoJanelas
+  | CartaoDoisLados
+  | CartaoBarrasHorizontais;
 
 export interface PainelPayload {
   tela: TelaPainel;

@@ -4,6 +4,9 @@ import { semPermissao, useApiClient, type ApiClient, type FiltrosVisaoGeral } fr
 // O mesmo prazo do cache da API: o que foi adiantado conta como fresco por esse tempo.
 const VALIDADE_MS = 15 * 60_000;
 
+/** Começo da query key de toda Visão geral (qualquer mês e empresa). */
+export const CHAVE_VISAO_GERAL = 'visao-geral';
+
 /**
  * Consulta da Visão geral. A tela e os pedidos adiantados (adiantar.ts) usam estas mesmas opções,
  * para a tela aproveitar o que já chegou. Cada mês e empresa é uma consulta. O slug da URL não
@@ -11,7 +14,7 @@ const VALIDADE_MS = 15 * 60_000;
  */
 export function opcoesVisaoGeral(api: ApiClient, { mes, empresa }: FiltrosVisaoGeral = {}) {
   return queryOptions({
-    queryKey: ['visao-geral', mes ?? null, empresa ?? null],
+    queryKey: [CHAVE_VISAO_GERAL, mes ?? null, empresa ?? null],
     queryFn: ({ signal }) => api.obterVisaoGeral({ mes, empresa }, { signal }),
     staleTime: VALIDADE_MS,
     // Sem permissão não muda com nova tentativa.

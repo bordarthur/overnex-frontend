@@ -142,6 +142,13 @@ h1 {
   font-weight: 600;
   line-height: 1.35;
 }
+/* título e o botão "i" da explicação na mesma linha */
+.card-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .sub {
   font-size: 13px;
   color: var(--ink-2);

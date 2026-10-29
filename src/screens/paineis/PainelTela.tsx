@@ -16,17 +16,17 @@ import { formatarAtualizacao } from '../../format';
 import { montarFiltros } from '../visao-geral/filtros';
 import { CartaoPainel } from './CartaoPainel';
 import { juntarFiltros } from './filtrosPainel';
-import { TELAS_COMERCIAIS } from './telas';
+import { TELAS_PAINEL } from './telas';
 import './PainelTela.css';
 
 const SEM_FILTROS: FiltroPainel[] = [];
 
 /**
- * Tela de painel por cartões (Vendas, Equipe comercial, Clientes). Desenha só o que veio no
+ * Tela de painel por cartões (Vendas, Equipe comercial, Clientes, Resultado, Receber e pagar). Desenha só o que veio no
  * payload, na ordem em que veio. Use com `key={tela}` para os filtros não passarem de uma tela a outra.
  */
 export function PainelTela({ tela }: { tela: TelaPainel }) {
-  const { titulo, pergunta } = TELAS_COMERCIAIS[tela];
+  const { titulo, pergunta, comparar } = TELAS_PAINEL[tela];
   const { sair } = useAuth();
   const sessao = useSessao();
   // Só os chips que o usuário trocou; os outros ficam no padrão.
@@ -35,8 +35,8 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
   // de filtro o payload anterior continua (placeholder), então os chips não somem.
   const [filtrosDaTela, setFiltrosDaTela] = useState<FiltroPainel[]>(SEM_FILTROS);
   const filtros = useMemo(
-    () => juntarFiltros(montarFiltros(sessao.data), filtrosDaTela),
-    [sessao.data, filtrosDaTela],
+    () => juntarFiltros(montarFiltros(sessao.data), filtrosDaTela, { comparar }),
+    [sessao.data, filtrosDaTela, comparar],
   );
   const consulta = usePainel(tela, filtros.consulta(valores));
   const dados = consulta.data;

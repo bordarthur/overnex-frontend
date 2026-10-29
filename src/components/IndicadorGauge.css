@@ -111,3 +111,33 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* chave Mês/Acumulado do cartão (versão pequena do Segmentado) */
+.tseg {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 2px 0 4px;
+}
+.tseg button {
+  all: unset;
+  cursor: pointer;
+  font-size: 11.5px;
+  padding: 2px 9px;
+  color: var(--ink-2);
+}
+.tseg button[aria-pressed='true'] {
+  background: var(--grafite);
+  color: #fff;
+}
+.tseg button:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: -2px;
+}
+.ft-go {
+  align-self: flex-start;
+  font-size: 12px;
+  margin-top: 2px;
+}

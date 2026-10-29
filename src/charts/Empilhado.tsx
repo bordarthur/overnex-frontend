@@ -5,8 +5,14 @@ import { ticksRedondos } from './geometria';
 import { useLargura } from './useLargura';
 import './charts.css';
 
-// Paleta categórica do mockup (--c0 a --c6), na ordem das séries.
-const CORES = 7;
+// Paleta categórica do mockup (--c0 a --c6), na ordem das séries; a de atraso tem 5 tons.
+const CORES = { series: 7, atraso: 5 } as const;
+
+/** Classe de cor da série j: sc0…sc6 ou sa0…sa4. */
+const corDaSerie = (grafico: GraficoEmpilhado, j: number) => {
+  const paleta = grafico.paleta ?? 'series';
+  return `${paleta === 'atraso' ? 'a' : 'c'}${j % CORES[paleta]}`;
+};
 
 interface Props {
   grafico: GraficoEmpilhado;
@@ -22,7 +28,7 @@ export function Empilhado(props: Props) {
       <div className="legend legend-grafico">
         {props.grafico.series.map((s, j) => (
           <span key={s.nome}>
-            <i className={`sq c${j % CORES}`} aria-hidden="true" />
+            <i className={`sq ${corDaSerie(props.grafico, j)}`} aria-hidden="true" />
             {s.nome}
           </span>
         ))}
@@ -79,7 +85,7 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
                 return (
                   <rect
                     key={s.nome}
-                    className={`sc${j % CORES}`}
+                    className={`s${corDaSerie(grafico, j)}`}
                     x={x0}
                     y={topo}
                     width={bw}

@@ -22,3 +22,7 @@
   outline: 2px solid var(--ok);
   outline-offset: 2px;
 }
+.seg button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

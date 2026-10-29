@@ -1,0 +1,123 @@
+.lados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.lado {
+  min-width: 0;
+  padding: 0 22px;
+}
+.lado:first-child {
+  padding-left: 0;
+  border-right: 1px solid var(--line);
+}
+.lado:last-child {
+  padding-right: 0;
+}
+.lado-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+}
+.lado-h h3 {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+}
+.lado-total {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.lado-k {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.lado-k .kpi {
+  border-left-width: 3px;
+  padding: 8px 10px;
+}
+.lado-k .k-v {
+  font-size: 18px;
+}
+.lado-l {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin: 14px 0 6px;
+}
+.lado .at.zero {
+  background: var(--surface-2);
+  opacity: 0.6;
+}
+.lado-obs {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 10px;
+}
+.lado-obs b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.lado-maiores {
+  list-style: none;
+}
+.lado-maiores li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 48px;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13.5px;
+}
+.lado-maiores li:first-child {
+  border-top: 0;
+}
+.lado-maiores .num {
+  text-align: right;
+}
+.lado-nome {
+  font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--crit);
+  background: var(--crit-bg);
+  border-radius: 6px;
+  padding: 0 6px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+
+@media (max-width: 1240px) {
+  .lados {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .lado,
+  .lado:first-child,
+  .lado:last-child {
+    padding: 0;
+  }
+  .lado:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 18px;
+  }
+}
+@media (max-width: 760px) {
+  .lado-k {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

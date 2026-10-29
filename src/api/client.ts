@@ -43,7 +43,16 @@ export interface ApiClient {
   obterSessao(opcoes?: { signal?: AbortSignal }): Promise<SessaoPayload>;
   /** Sem slug: o cliente e as empresas saem do vínculo do usuário, então dá para pedir antes da sessão chegar. */
   obterVisaoGeral(filtros?: FiltrosVisaoGeral, opcoes?: { signal?: AbortSignal }): Promise<VisaoGeralPayload>;
-  /** Vendas, Equipe comercial e Clientes: GET /api/telas/{tela}. Também sem slug. */
+  /**
+   * Grava a escolha de um seletor da Visão geral para o cliente (PUT, responde 204). Vai com a
+   * mesma `empresa` da tela, se houver.
+   */
+  salvarPreferenciaVisaoGeral(
+    id: string,
+    valor: string,
+    filtros?: Pick<FiltrosVisaoGeral, 'empresa'>,
+  ): Promise<void>;
+  /** Painéis por cartões (comerciais e financeiros): GET /api/telas/{tela}. Também sem slug. */
   obterPainel(
     tela: TelaPainel,
     filtros?: FiltrosPainel,

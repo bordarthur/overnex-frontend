@@ -1,7 +1,10 @@
 import type { TelaPainel } from '../../contracts/painel';
 
-/** Rótulos de tela (título e pergunta do cabeçalho), como no mockup Total M2.0.1. */
-export const TELAS_COMERCIAIS: Record<TelaPainel, { titulo: string; pergunta: string }> = {
+/**
+ * Rótulos de tela (título e pergunta do cabeçalho), como no mockup Total M2.0.1. `comparar`: a tela
+ * aceita o chip global "Comparar com" na consulta.
+ */
+export const TELAS_PAINEL: Record<TelaPainel, { titulo: string; pergunta: string; comparar?: boolean }> = {
   vendas: {
     titulo: 'Vendas',
     pergunta: 'Vou bater a meta do mês? O que puxa para cima e o que puxa para baixo?',
@@ -13,5 +16,14 @@ export const TELAS_COMERCIAIS: Record<TelaPainel, { titulo: string; pergunta: st
   clientes: {
     titulo: 'Clientes e atendimentos',
     pergunta: 'Quantos atendimentos, de quanto, em que dias e o que eles compram?',
+  },
+  resultado: {
+    titulo: 'Resultado',
+    pergunta: 'Quanto sobra de cada real vendido e por que o resultado desviou?',
+    comparar: true,
+  },
+  'receber-pagar': {
+    titulo: 'Receber e pagar',
+    pergunta: 'O que entra e o que sai nos próximos dias, quem cobrar e o que vence?',
   },
 };

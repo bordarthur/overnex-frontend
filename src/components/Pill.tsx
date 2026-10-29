@@ -13,11 +13,12 @@ export function IconeStatus({ status }: { status: Status }) {
   );
 }
 
-export function Pill({ status }: { status: Status }) {
+/** Pílula de status. Com `rotulo`, mostra o texto que veio da API ("Alta") no lugar do nome do status. */
+export function Pill({ status, rotulo }: { status: Status; rotulo?: string }) {
   return (
     <span className={`pill ${STATUS[status].classe}`}>
       <IconeStatus status={status} />
-      {STATUS[status].rotulo}
+      {rotulo ?? STATUS[status].rotulo}
     </span>
   );
 }

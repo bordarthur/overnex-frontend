@@ -1,16 +1,21 @@
 .inad {
   margin: 0 0 12px;
 }
-.inad-g {
+/* número | barra, fitas e quadros das faixas | 12 meses */
+.ic2 {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 2fr) minmax(0, 1fr);
-  gap: 22px;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 2.5fr) minmax(0, 1.45fr);
+  gap: 24px;
   align-items: start;
+}
+.ic2-mid {
+  position: relative;
 }
 .inad-big .inad-num {
   font-family: 'Saira', sans-serif;
   font-weight: 900;
-  font-size: 44px;
+  font-size: 40px;
+  display: block;
   line-height: 1;
 }
 .inad-big p {
@@ -23,6 +28,112 @@
   font-weight: 600;
   color: var(--ink);
 }
+.inad-bar {
+  display: flex;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 6px 0 0;
+  gap: 2px;
+}
+.ib-ok {
+  background: color-mix(in srgb, var(--ok) 55%, var(--surface));
+}
+.ib-warn {
+  background: var(--warn-mark);
+}
+.ib-c1 {
+  background: color-mix(in srgb, var(--crit) 60%, var(--surface));
+}
+.ib-c2 {
+  background: color-mix(in srgb, var(--crit) 80%, var(--surface));
+}
+.ib-c3 {
+  background: var(--crit);
+}
+.ic2-rib {
+  position: absolute;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.rb {
+  opacity: 0.22;
+}
+.rb-ok {
+  fill: var(--ok);
+}
+.rb-warn {
+  fill: var(--warn-mark);
+}
+.rb-c1,
+.rb-c2,
+.rb-c3 {
+  fill: var(--crit);
+}
+.ic2-tiles {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 96px;
+}
+.at2 {
+  border-radius: 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  border: 1.8px solid;
+  background: var(--surface);
+  min-height: 112px;
+  min-width: 0;
+}
+.at2 span {
+  color: var(--ink-2);
+}
+.at2 b {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 16.5px;
+  white-space: nowrap;
+}
+.at2 em {
+  font-style: normal;
+  color: var(--ink-3);
+}
+.at2.ok {
+  border-color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 8%, var(--surface));
+}
+.at2.ok b {
+  color: var(--ok);
+}
+.at2.warn {
+  border-color: var(--warn-mark);
+  background: color-mix(in srgb, var(--warn-mark) 9%, var(--surface));
+}
+.at2.warn b {
+  color: var(--warn);
+}
+.at2.c1 {
+  border-color: color-mix(in srgb, var(--crit) 55%, var(--surface));
+}
+.at2.c2 {
+  border-color: color-mix(in srgb, var(--crit) 78%, var(--surface));
+}
+.at2.c3 {
+  border-color: var(--crit);
+  background: color-mix(in srgb, var(--crit) 7%, var(--surface));
+}
+.at2.c1 b,
+.at2.c2 b,
+.at2.c3 b {
+  color: var(--crit);
+}
+
+/* faixas de idade também usadas no Receber e pagar (DoisLados) */
 .aging-tiles {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -64,12 +175,19 @@
 }
 
 @media (max-width: 1240px) {
-  .inad-g {
+  .ic2 {
     grid-template-columns: 1fr;
   }
 }
 @media (max-width: 760px) {
   .aging-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ic2-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 16px;
+  }
+  .ic2-rib {
+    display: none;
   }
 }

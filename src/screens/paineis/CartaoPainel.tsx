@@ -1,11 +1,17 @@
 import type { Cartao } from '../../contracts/painel';
 import { AndamentoMes } from './AndamentoMes';
+import { BarraPartes } from './BarraPartes';
+import { BarrasHorizontais } from './BarrasHorizontais';
 import { ContraMeta } from './ContraMeta';
 import { CurvaAbc } from './CurvaAbc';
 import { DestaquesCartao } from './DestaquesCartao';
+import { Desvios } from './Desvios';
+import { DoisLados } from './DoisLados';
+import { DreCartao } from './DreCartao';
 import { Faixas } from './Faixas';
 import { Fatores } from './Fatores';
 import { GraficosCartao } from './GraficosCartao';
+import { Janelas } from './Janelas';
 import { Matriz } from './Matriz';
 import { TabelaCartao } from './TabelaCartao';
 
@@ -30,5 +36,17 @@ export function CartaoPainel({ cartao }: { cartao: Cartao }) {
       return <CurvaAbc cartao={cartao} />;
     case 'matriz':
       return <Matriz cartao={cartao} />;
+    case 'dre':
+      return <DreCartao cartao={cartao} />;
+    case 'barra-partes':
+      return <BarraPartes cartao={cartao} />;
+    case 'desvios':
+      return <Desvios cartao={cartao} />;
+    case 'janelas':
+      return <Janelas cartao={cartao} />;
+    case 'dois-lados':
+      return <DoisLados cartao={cartao} />;
+    case 'barras-horizontais':
+      return <BarrasHorizontais cartao={cartao} />;
   }
 }

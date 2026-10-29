@@ -55,25 +55,6 @@
   cursor: crosshair;
 }
 
-/* barra empilhada */
-.barra-empilhada {
-  display: flex;
-  height: 16px;
-  border-radius: 5px;
-  overflow: hidden;
-  margin: 4px 0 10px;
-  gap: 2px;
-}
-.be-ok {
-  background: color-mix(in srgb, var(--ok) 55%, var(--surface));
-}
-.be-warn {
-  background: var(--warn-mark);
-}
-.be-crit {
-  background: var(--crit);
-}
-
 /* ---------- painéis por cartões (Vendas, Equipe, Clientes) ---------- */
 .ref.zero {
   stroke: var(--ink-3);
@@ -193,6 +174,69 @@
 }
 .sc6 {
   fill: var(--c6);
+}
+
+/* empilhado: paleta de atraso, do amarelo ao vermelho */
+.sa0,
+.legend i.sq.a0 {
+  fill: color-mix(in srgb, var(--warn-mark) 40%, var(--surface));
+  background: color-mix(in srgb, var(--warn-mark) 40%, var(--surface));
+}
+.sa1,
+.legend i.sq.a1 {
+  fill: color-mix(in srgb, var(--warn-mark) 85%, var(--surface));
+  background: color-mix(in srgb, var(--warn-mark) 85%, var(--surface));
+}
+.sa2,
+.legend i.sq.a2 {
+  fill: color-mix(in srgb, var(--crit) 50%, var(--surface));
+  background: color-mix(in srgb, var(--crit) 50%, var(--surface));
+}
+.sa3,
+.legend i.sq.a3 {
+  fill: color-mix(in srgb, var(--crit) 78%, var(--surface));
+  background: color-mix(in srgb, var(--crit) 78%, var(--surface));
+}
+.sa4,
+.legend i.sq.a4 {
+  fill: var(--crit);
+  background: var(--crit);
+}
+
+/* cascata */
+.chart-rolavel {
+  overflow-x: auto;
+}
+.wf-bar.total {
+  fill: var(--series);
+}
+.wf-bar.positivo {
+  fill: var(--ok);
+}
+.wf-bar.negativo {
+  fill: var(--crit);
+}
+.wf-link {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+.wf-val {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  fill: var(--ink);
+}
+.wf-val.positivo {
+  fill: var(--ok);
+}
+.wf-val.negativo {
+  fill: var(--crit);
+}
+.wf-lab {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11.5px;
+  fill: var(--ink-2);
 }
 
 /* dispersão */

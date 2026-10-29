@@ -1,8 +1,8 @@
-import type { Indicador, PeriodoId, Status } from '../../contracts/visaoGeral';
+import type { Status } from '../../contracts/visaoGeral';
 
-/** Quantos indicadores estão em cada status no período. Só conta o que a API já classificou. */
-export function contarPorStatus(indicadores: Indicador[], periodo: PeriodoId): Record<Status, number> {
+/** Quantos itens (velocímetros e cartões) estão em cada status. Só conta o que a API já classificou. */
+export function contarPorStatus(status: (Status | null | undefined)[]): Record<Status, number> {
   const contagem: Record<Status, number> = { critico: 0, atencao: 0, saudavel: 0 };
-  for (const ind of indicadores) contagem[ind.periodos[periodo].status] += 1;
+  for (const s of status) if (s) contagem[s] += 1;
   return contagem;
 }

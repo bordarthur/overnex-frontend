@@ -29,11 +29,18 @@ function Desenho({ grafico, aria, altura = 230, largura }: Props & { largura: nu
   const { foco, mover, sair } = useFoco(n, 'ponto');
   const eixo = formatarEixo(grafico);
   const naDica = formatarNaDica(grafico);
-  const comFim = series.some((s) => s.rotuloFim);
+  // espaço à direita para o rótulo no fim da linha mais longo (12px ≈ 6,6px por letra)
+  const maiorFim = Math.max(0, ...series.map((s) => s.rotuloFim?.length ?? 0));
+  const comFim = maiorFim > 0;
 
   const W = Math.max(280, largura);
   const H = altura;
-  const P = { l: margemEixo(grafico), r: comFim ? 64 : 20, t: 18, b: 30 };
+  const P = {
+    l: margemEixo(grafico),
+    r: comFim ? Math.max(64, Math.ceil(maiorFim * 6.6) + 14) : 20,
+    t: 18,
+    b: 30,
+  };
   const iw = W - P.l - P.r;
   const ih = H - P.t - P.b;
 

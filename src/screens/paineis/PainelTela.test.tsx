@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { criarMockClient, fixturesPainel } from '../../api/mockClient';
 import type { PainelPayload } from '../../contracts/painel';
+import { MENOS } from '../../format';
 import { renderizarApp } from '../../test/renderizar';
 
 const titulosDosCartoes = () =>
@@ -237,5 +238,144 @@ describe('Painéis comerciais', () => {
     expect(
       await screen.findByRole('button', { name: 'Tentar de novo' }, { timeout: 5000 }),
     ).toBeInTheDocument();
+  });
+});
+
+describe('Painéis financeiros', () => {
+  it('Resultado desenha os destaques e os cartões da API, com o grupo Financeiro no menu', async () => {
+    renderizarApp('/demo/resultado');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Resultado' })).toBeInTheDocument();
+    const receita = (await screen.findByText('Receita líquida', { selector: '.h-label' })).closest(
+      '.hero',
+    ) as HTMLElement;
+    expect(within(receita).getByText('R$ 6,84 mi')).toBeInTheDocument();
+    expect(within(receita).getByText('Saudável')).toBeInTheDocument();
+    expect(titulosDosCartoes()).toEqual([
+      'Resultado mês a mês contra o orçado',
+      'DRE em cascata: da receita ao lucro',
+      'Ponto de equilíbrio',
+      'Ponte do EBITDA: do orçado ao realizado',
+      'Maiores desvios contra o orçado',
+      'DRE gerencial de setembro, pelo plano de contas',
+      'Tabela financeira mês a mês',
+    ]);
+    expect(screen.getByText('Financeiro', { selector: '.ngroup' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Resultado' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: /Visão/ })).toBeInTheDocument();
+
+    // a "leitura rápida" vem como chamada, com o status da API
+    const doze = cartao('Resultado mês a mês contra o orçado');
+    expect(within(doze).getByText('Leitura rápida:', { exact: false }).closest('.callout')).toHaveClass(
+      'crit',
+    );
+
+    const desvios = cartao('Maiores desvios contra o orçado');
+    expect(within(desvios).getByText('Custo bovinos').closest('li')).toHaveClass('dv-crit');
+    expect(within(desvios).getByText(`${MENOS}R$ 182 mil`)).toBeInTheDocument();
+  });
+
+  it('DRE: abre por nível, abre e fecha cada conta e filtra os desvios', async () => {
+    const user = userEvent.setup();
+    renderizarApp('/demo/resultado');
+    const dre = await screen.findByRole('article', { name: /^DRE gerencial/ });
+    const linha = (nome: string) => within(dre).queryByRole('row', { name: new RegExp(nome) });
+
+    // começa no nível 2: grupos abertos, contas de nível 3 fechadas
+    expect(linha('Venda de produtos')).not.toBeNull();
+    expect(linha('Custo bovinos')).toBeNull();
+    expect(linha('Receita líquida')).not.toBeNull();
+
+    await user.click(within(dre).getByRole('button', { name: 'Nível 3' }));
+    expect(linha('Custo bovinos')).not.toBeNull();
+
+    await user.click(within(dre).getByRole('button', { name: 'Nível 1' }));
+    expect(linha('Venda de produtos')).toBeNull();
+    expect(linha('Lucro bruto')).not.toBeNull();
+
+    const receita = within(dre).getByRole('button', { name: /Receita bruta/ });
+    expect(receita).toHaveAttribute('aria-expanded', 'false');
+    await user.click(receita);
+    expect(receita).toHaveAttribute('aria-expanded', 'true');
+    expect(linha('Venda de produtos')).not.toBeNull();
+    expect(linha('Descontos')).toBeNull();
+
+    // "Só desvios" abre tudo e esconde o que está no orçado
+    await user.click(within(dre).getByRole('button', { name: 'Só desvios' }));
+    expect(within(dre).getByRole('button', { name: 'Só desvios' })).toHaveAttribute('aria-pressed', 'true');
+    expect(linha('Custo bovinos')).not.toBeNull();
+    expect(linha('Energia elétrica, custo indireto')).toBeNull();
+    expect(linha('Lucro líquido final')).toHaveClass('final');
+  });
+
+  it('DRE só com os níveis 1 e 2 (padrão da API): sem o botão do nível 3, e "Só desvios" para no 2', async () => {
+    const user = userEvent.setup();
+    const resultado = fixturesPainel.resultado;
+    const payload: PainelPayload = {
+      ...resultado,
+      cartoes: resultado.cartoes.map((c) => (c.tipo === 'dre' ? { ...c, niveis: [1, 2] } : c)),
+    };
+    renderizarApp(
+      '/demo/resultado',
+      undefined,
+      criarMockClient({ atrasoMs: 0, paineis: { ...fixturesPainel, resultado: payload } }),
+    );
+    const dre = await screen.findByRole('article', { name: /^DRE gerencial/ });
+    expect(within(dre).queryByRole('button', { name: 'Nível 3' })).toBeNull();
+    await user.click(within(dre).getByRole('button', { name: 'Só desvios' }));
+    expect(within(dre).queryByRole('row', { name: /Custo bovinos/ })).toBeNull();
+    expect(within(dre).queryByRole('row', { name: /CMV/ })).not.toBeNull();
+  });
+
+  it('no Resultado, "Comparar com" vai na consulta', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const consultar = vi.spyOn(api, 'obterPainel');
+    renderizarApp('/demo/resultado', undefined, api);
+    await screen.findByRole('heading', { level: 2, name: 'Ponto de equilíbrio' });
+
+    await user.click(screen.getByRole('button', { name: /Comparar com/ }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Mês anterior' }));
+    await waitFor(() =>
+      expect(consultar).toHaveBeenCalledWith('resultado', { comparar: 'mes-anterior' }, expect.anything()),
+    );
+  });
+
+  it('Receber e pagar: KPIs, janelas, os dois lados e quem cobrar', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const consultar = vi.spyOn(api, 'obterPainel');
+    renderizarApp('/demo/receber-pagar', undefined, api);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Receber e pagar' })).toBeInTheDocument();
+    expect(await screen.findByText('A receber em 30 dias')).toBeInTheDocument();
+
+    // sem saldo bancário: três KPIs, sem "Saldo no fim" nem status nas janelas
+    expect(document.querySelector('.kpis')).toHaveClass('three');
+    const janelas = cartao('Próximos dias');
+    expect(within(janelas).getAllByRole('region')).toHaveLength(3);
+    expect(within(janelas).queryByText('Saldo no fim')).toBeNull();
+    expect(within(janelas).queryByText('Saudável')).toBeNull();
+    expect(within(janelas).getByText('Dado incompleto')).toBeInTheDocument();
+
+    const lados = cartao('Contas a receber e a pagar');
+    const pagar = within(lados).getByRole('region', { name: 'Contas a pagar' });
+    expect(within(pagar).getByText('lançado: 58% da média paga')).toBeInTheDocument();
+    expect(within(pagar).getByText('Mais de 90').closest('.at')).toHaveClass('zero');
+    expect(within(lados).getAllByText('vencido')).toHaveLength(4);
+
+    const cobrar = cartao('Quem cobrar hoje');
+    const aurora = within(cobrar).getByText('Mercantil Aurora').closest('tr') as HTMLElement;
+    expect(within(aurora).getByText('Média')).toBeInTheDocument();
+    expect(within(aurora).getByText('12 dias').closest('td')).toHaveClass('cf-ok');
+    expect(within(aurora).getByText('parou de comprar')).toHaveClass('tagn');
+    // sem histórico de pagamento: texto apagado, sem pílula
+    const saoJorge = within(cobrar).getByText('Mercado São Jorge').closest('tr') as HTMLElement;
+    expect(within(saoJorge).getByText('sem histórico').closest('td')).toHaveClass('muted');
+    expect(saoJorge.querySelector('.pill')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: /Atraso/ }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Mais de 90 dias' }));
+    await waitFor(() =>
+      expect(consultar).toHaveBeenCalledWith('receber-pagar', { atraso: 'mais-90' }, expect.anything()),
+    );
   });
 });

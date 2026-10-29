@@ -1,8 +1,9 @@
 import { cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { criarMockClient } from '../../api/mockClient';
-import type { VisaoGeralPayload } from '../../contracts/visaoGeral';
+import { ApiErro } from '../../api/client';
+import { criarMockClient, fixtureSessao, fixtureVisaoGeral } from '../../api/mockClient';
+import type { CartaoProximosDias, VisaoGeralPayload } from '../../contracts/visaoGeral';
 import fixtureModulo from '../../test/fixtures/visao-geral-modulo.json';
 import { renderizarApp } from '../../test/renderizar';
 
@@ -22,44 +23,186 @@ describe('Visão geral', () => {
     // Fora do escopo universal.
     expect(screen.queryByText('Prazo de pagamento a fornecedores')).toBeNull();
     expect(screen.queryByText('Vencido a receber')).toBeNull();
+    // 4 de Vendas, 6 de Custos (Automático) e 4 de Resultado; o Financeiro só tem cartões
     expect(
       screen.getAllByRole('article', { name: /./ }).filter((a) => a.classList.contains('ftile')),
-    ).toHaveLength(16);
-    expect(screen.getByRole('heading', { level: 2, name: /Inadimplência/ })).toBeInTheDocument();
+    ).toHaveLength(14);
+    const financeiro = screen.getByRole('region', { name: 'Financeiro' });
+    expect(
+      within(financeiro)
+        .queryAllByRole('article')
+        .filter((a) => a.classList.contains('ftile')),
+    ).toHaveLength(0);
+    expect(
+      within(financeiro)
+        .getAllByRole('heading', { level: 2 })
+        .map((h) => h.textContent),
+    ).toEqual([
+      'Próximos 7, 15 e 30 dias Saudável',
+      'Contas a pagar lançadas Atenção',
+      'Inadimplência corrente Atenção',
+    ]);
+    expect(
+      screen.getByText('Cada cartão tem a própria chave Mês/Acumulado.', { exact: false }),
+    ).toBeInTheDocument();
   });
 
-  it('trocar o período muda valor, status e ponteiro do indicador e a contagem da faixa', async () => {
+  it('cada velocímetro tem a própria chave Mês/Acumulado, e a faixa conta pela chave de cada um', async () => {
     const user = userEvent.setup();
     renderizarApp('/demo/visao-geral');
-    const indicador = await screen.findByRole('article', { name: 'Linhas por cliente' });
+    const bovinos = await screen.findByRole('article', { name: 'CMV de bovinos' });
+    const aves = screen.getByRole('article', { name: 'CMV de aves' });
 
-    expect(within(indicador).getByText('2,3 linhas')).toBeInTheDocument();
-    expect(within(indicador).getByText('Crítico')).toBeInTheDocument();
-    expect(within(contagemDa('Vendas')).getByText('1 crítico')).toBeInTheDocument();
-    expect(within(contagemDa('Vendas')).getByText('2 atenção')).toBeInTheDocument();
+    expect(within(bovinos).getByText('72,9%', { selector: '.ft-val' })).toBeInTheDocument();
+    expect(within(bovinos).getByText('Crítico')).toBeInTheDocument();
+    expect(within(contagemDa('Custos')).getByText('1 crítico')).toBeInTheDocument();
+    expect(within(contagemDa('Custos')).getByText('3 atenção')).toBeInTheDocument();
+    expect(within(contagemDa('Custos')).getByText('2 saudável')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Acumulado 2026' }));
+    const chave = within(bovinos).getByRole('group', { name: 'Período do cartão CMV de bovinos' });
+    await user.click(within(chave).getByRole('button', { name: 'Acumulado' }));
 
-    expect(screen.getByRole('button', { name: 'Acumulado 2026' })).toHaveAttribute('aria-pressed', 'true');
-    expect(within(indicador).getByText('2,4 linhas')).toBeInTheDocument();
-    expect(within(indicador).getByText('Atenção')).toBeInTheDocument();
-    expect(within(indicador).queryByText('Crítico')).toBeNull();
+    expect(within(chave).getByRole('button', { name: 'Acumulado' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(bovinos).getByText('71,4%', { selector: '.ft-val' })).toBeInTheDocument();
+    expect(within(bovinos).getByText('Atenção')).toBeInTheDocument();
     expect(
-      within(indicador).getByRole('img', {
-        name: 'Linhas por cliente: 2,4 linhas, média do ano contra meta de 2,6',
+      within(bovinos).getByRole('img', {
+        name: 'CMV de bovinos: 71,4%, acumulado, contra 70,0% orçado · R$ 1,60 mi de custo no mês',
       }),
     ).toBeInTheDocument();
-    expect(within(contagemDa('Vendas')).queryByText(/crítico/)).toBeNull();
-    expect(within(contagemDa('Vendas')).getByText('3 atenção')).toBeInTheDocument();
-    expect(within(contagemDa('Vendas')).getByText('1 saudável')).toBeInTheDocument();
+    // os outros cartões continuam no Mês
+    expect(within(aves).getByText('66,0%', { selector: '.ft-val' })).toBeInTheDocument();
+    expect(within(contagemDa('Custos')).queryByText(/crítico/)).toBeNull();
+    expect(within(contagemDa('Custos')).getByText('4 atenção')).toBeInTheDocument();
   });
 
-  it('mostra "na média" quando o delta é zero', async () => {
+  it('mostra o delta com a seta do sinal, ou o texto pronto que veio da API', async () => {
+    renderizarApp('/demo/visao-geral');
+    const meta = await screen.findByRole('article', { name: 'Vendas contra a meta' });
+    // a seta vai num span à parte, escondido do leitor de tela
+    const delta = meta.querySelector('.ft-delta');
+    expect(delta).toHaveTextContent('▼ −R$ 360 mil');
+    expect(delta).toHaveClass('t-crit');
+    const pedidos = screen.getByRole('article', { name: 'Pedidos por cliente' });
+    expect(within(pedidos).getByText('na meta')).toHaveClass('t-ok');
+  });
+
+  it('"Ver painel" leva à tela do indicador; sem a tela no front, não há link', async () => {
     const user = userEvent.setup();
     renderizarApp('/demo/visao-geral');
-    const indicador = await screen.findByRole('article', { name: 'Ciclo de caixa' });
-    await user.click(screen.getByRole('button', { name: 'Acumulado 2026' }));
-    expect(within(indicador).getByText('na média')).toBeInTheDocument();
+    const ticket = await screen.findByRole('article', { name: 'Ticket por pedido' });
+    // Dívida líquida / EBITDA aponta para "caixa", que ainda não existe
+    expect(
+      within(screen.getByRole('article', { name: 'Dívida líquida / EBITDA' })).queryByRole('link'),
+    ).toBeNull();
+
+    await user.click(within(ticket).getByRole('link', { name: 'Ver painel' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Vendas' })).toBeInTheDocument();
+  });
+
+  it('próximos dias: o modo muda o fim de cada janela, a pílula e a contagem do Financeiro', async () => {
+    const user = userEvent.setup();
+    renderizarApp('/demo/visao-geral');
+    const cartao = await screen.findByRole('article', { name: /^Próximos 7, 15 e 30 dias/ });
+
+    expect(within(cartao).getAllByText('entra mais do que sai')).toHaveLength(3);
+    expect(within(cartao).getByText('R$ 1,60 mi')).toBeInTheDocument();
+    expect(within(contagemDa('Financeiro')).getByText('2 atenção')).toBeInTheDocument();
+    expect(within(contagemDa('Financeiro')).getByText('1 saudável')).toBeInTheDocument();
+
+    await user.click(within(cartao).getByRole('button', { name: 'Com o que falta lançar' }));
+
+    expect(within(cartao).getAllByText('sai mais do que entra')).toHaveLength(3);
+    expect(within(cartao).getByText('−R$ 1,05 mi')).toBeInTheDocument();
+    expect(within(cartao).getByRole('heading', { level: 2 })).toHaveTextContent('Atenção');
+    expect(
+      within(cartao).getByRole('img', {
+        name: /^30 dias: A receber R\$ 5,26 mi, A pagar R\$ 3,66 mi, Falta/,
+      }),
+    ).toBeInTheDocument();
+    expect(within(contagemDa('Financeiro')).getByText('3 atenção')).toBeInTheDocument();
+    expect(within(contagemDa('Financeiro')).queryByText(/saudável/)).toBeNull();
+  });
+
+  it('linhas de custo: a escolha grava na API e a Custos volta com as linhas escolhidas', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const salvar = vi.spyOn(api, 'salvarPreferenciaVisaoGeral');
+    renderizarApp('/demo/visao-geral', undefined, api);
+    const custos = await screen.findByRole('region', { name: 'Custos' });
+    const linhas = within(custos).getByRole('group', { name: 'Linhas de custo' });
+    expect(within(linhas).getByRole('button', { name: 'Automático (80%)' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(within(custos).getByRole('article', { name: 'Outros (11 linhas)' })).toBeInTheDocument();
+
+    await user.click(within(linhas).getByRole('button', { name: '3' }));
+
+    // sem empresa escolhida na tela, a gravação vai sem ela
+    expect(salvar).toHaveBeenCalledWith('linhas-custo', '3', { empresa: undefined });
+    expect(await within(custos).findByRole('article', { name: 'Outros (13 linhas)' })).toBeInTheDocument();
+    expect(within(custos).getAllByRole('article')).toHaveLength(4);
+    expect(within(linhas).getByRole('button', { name: '3' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('linhas de custo: se a gravação falha, avisa e a escolha volta para a salva', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    vi.spyOn(api, 'salvarPreferenciaVisaoGeral').mockRejectedValue(new Error('falhou'));
+    renderizarApp('/demo/visao-geral', undefined, api);
+    const linhas = await screen.findByRole('group', { name: 'Linhas de custo' });
+
+    await user.click(within(linhas).getByRole('button', { name: '2' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar a escolha.');
+    expect(within(linhas).getByRole('button', { name: 'Automático (80%)' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+  });
+
+  it('linhas de custo: a recusa da API (403) mostra o texto dela e volta a escolha', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    vi.spyOn(api, 'salvarPreferenciaVisaoGeral').mockRejectedValue(
+      new ApiErro(403, 'Você não pode mudar esta escolha.'),
+    );
+    renderizarApp('/demo/visao-geral', undefined, api);
+    const linhas = await screen.findByRole('group', { name: 'Linhas de custo' });
+
+    await user.click(within(linhas).getByRole('button', { name: '4' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Você não pode mudar esta escolha.');
+    expect(within(linhas).getByRole('button', { name: '4' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('linhas de custo: o papel "leitor" vê a escolha, mas não muda', async () => {
+    const api = criarMockClient({ atrasoMs: 0, sessao: { ...fixtureSessao, papel: 'leitor' } });
+    renderizarApp('/demo/visao-geral', undefined, api);
+    const linhas = await screen.findByRole('group', { name: 'Linhas de custo' });
+    // a sessão chega junto com a Visão geral; espera o seletor travar
+    await waitFor(() => expect(within(linhas).getByRole('button', { name: '3' })).toBeDisabled());
+    expect(screen.getByText('Seu perfil não pode mudar esta escolha.')).toBeInTheDocument();
+  });
+
+  it('próximos dias com um modo só não mostra a chave de modos', async () => {
+    const secoes = fixtureVisaoGeral.secoes.map((s) => ({
+      ...s,
+      cartoes: s.cartoes.map((c) => {
+        if (c.tipo !== 'proximos-dias') return c;
+        const so: CartaoProximosDias = {
+          ...c,
+          modos: c.modos.filter((m) => m.id === 'lancado'),
+          janelas: c.janelas.map((j) => ({ ...j, fim: { lancado: j.fim.lancado! } })),
+        };
+        return so;
+      }),
+    }));
+    renderizarApp('/demo/visao-geral', { ...fixtureVisaoGeral, secoes });
+    const cartao = await screen.findByRole('article', { name: /^Próximos 7, 15 e 30 dias/ });
+    expect(within(cartao).queryByRole('group', { name: 'Contas a pagar consideradas' })).toBeNull();
+    expect(within(cartao).getAllByText('entra mais do que sai')).toHaveLength(3);
   });
 
   it('mostra a etiqueta quando a seção vem com módulo', async () => {
@@ -76,7 +219,7 @@ describe('Visão geral', () => {
 
     cleanup();
     renderizarApp('/demo/visao-geral');
-    const vendas = await screen.findByRole('article', { name: 'Linhas por cliente' });
+    const vendas = await screen.findByRole('article', { name: 'Pedidos por cliente' });
     expect(vendas.closest('.fgrid')).toHaveClass('n-4');
   });
 

@@ -47,6 +47,38 @@ describe('cliente HTTP', () => {
     expect(fetch.mock.calls[1]![0]).toBe('/api/telas/equipe-comercial?mes=2026-09&canal=varejo');
   });
 
+  it('grava a escolha de um seletor da Visão geral com PUT', async () => {
+    const { api, fetch } = criar(new Response(null, { status: 204 }));
+    await expect(api.salvarPreferenciaVisaoGeral('linhas-custo', '3')).resolves.toBeUndefined();
+
+    const [url, init] = fetch.mock.calls[0]!;
+    expect(url).toBe('/api/telas/visao-geral/preferencias/linhas-custo');
+    expect(init?.method).toBe('PUT');
+    expect(init?.headers).toMatchObject({
+      Authorization: 'Bearer fake:abc',
+      'Content-Type': 'application/json',
+    });
+    expect(init?.body).toBe('{"valor":"3"}');
+  });
+
+  it('a escolha vai com a empresa da tela, quando há', async () => {
+    const { api, fetch } = criar(new Response(null, { status: 204 }));
+    await api.salvarPreferenciaVisaoGeral('linhas-custo', 'auto', {
+      empresa: '0e000000-0000-4000-8000-000000000001',
+    });
+    expect(fetch.mock.calls[0]![0]).toBe(
+      '/api/telas/visao-geral/preferencias/linhas-custo?empresa=0e000000-0000-4000-8000-000000000001',
+    );
+  });
+
+  it('a escolha recusada pela API vira ApiErro com o detail', async () => {
+    const { api } = criar(json({ detail: 'Opção inválida.' }, 422));
+    await expect(api.salvarPreferenciaVisaoGeral('linhas-custo', '9')).rejects.toMatchObject({
+      status: 422,
+      message: 'Opção inválida.',
+    });
+  });
+
   it('pede a sessão', async () => {
     const { api, fetch } = criar(json(fixtureSessao));
     await expect(api.obterSessao()).resolves.toEqual(fixtureSessao);
