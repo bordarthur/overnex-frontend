@@ -382,3 +382,47 @@
 .legend i.media {
   border-top-style: dashed;
 }
+
+/* faísca: minigráfico de uma linha, com a comparação tracejada */
+.faisca {
+  vertical-align: middle;
+}
+.faisca path {
+  fill: none;
+  stroke: var(--series-2);
+  stroke-width: 1.5;
+}
+.faisca .faisca-ref {
+  stroke: var(--ink-3);
+  stroke-width: 1.1;
+  stroke-dasharray: 3 2;
+}
+.faisca circle {
+  fill: var(--series);
+}
+
+/* empilhado: número dentro da parte, no tom que contrasta com a cor dela, e o total em cima */
+.stl {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  pointer-events: none;
+}
+/* tons escuros no claro e claros no escuro: o texto acompanha a superfície */
+.stl.c0,
+.stl.c1,
+.stl.c2,
+.stl.c4 {
+  fill: var(--surface);
+}
+.stl.c3,
+.stl.c5 {
+  fill: var(--ink);
+}
+/* laranja nos dois temas */
+.stl.c6 {
+  fill: var(--grafite);
+}
+.ax.tot {
+  font-weight: 600;
+}

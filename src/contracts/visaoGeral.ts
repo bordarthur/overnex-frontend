@@ -12,6 +12,8 @@ export interface Valor {
   casas?: number;
   // brl compacto (padrão true): R$ 6,54 mi / R$ 360 mil; brl cheio: R$ 2.995
   compacto?: boolean;
+  // brl compacto em milhares com casas (R$ 54,7 mil); sem ele, milhares saem inteiros
+  casasMil?: number;
   // sufixo, por exemplo para qtd: "clientes", "linhas"
   sufixo?: string;
 }

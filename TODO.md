@@ -2,9 +2,11 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 28/10/2026
+Última atualização: 30/10/2026
 
 ## Em andamento
+
+- [ ] **Painel Pessoas: testar com a API.** O back publicou `GET /api/telas/pessoas` (PES-01, confirmado) em 30/10/2026, no contrato de [painel.ts](src/contracts/painel.ts). A fixture ([pessoas.json](src/api/fixtures/pessoas.json)) segue os textos da API, e os testes cobrem a resposta enxuta (1 a 4 fatos em "O que mudou", 3 KPIs sem faturado, cartões a menos, um setor só na produtividade, "vs 6m" sem valor, segundo trecho do aviso quando o mês não tem folha). Falta abrir com `VITE_API_MODO=api` e conferir troca de mês e empresa, a chave de setor encolhida, o estado vazio e o 403 de quem não tem PES-01. Não foi testado em 30/10 pelo mesmo motivo dos painéis financeiros (abaixo): a API local lê o banco de produção, e o token fake não pode ser usado assim.
 
 - [ ] **Visão geral no mockup M2.1.2: testar com a API.** O back publicou em 28/10/2026 o contrato novo, que bate com [visaoGeral.ts](src/contracts/visaoGeral.ts), conferido campo a campo contra o `api/openapi.json` do back (os tipos do front continuam escritos à mão; não há gerador). O front já trata o que o back avisou:
   - Financeiro com 4 KPIs ("A receber vencido" entrou na fixture);
@@ -29,7 +31,7 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 ## A fazer
 
 - [ ] **Painéis comerciais, partes do mockup que ficaram de fora:** "Mix por cliente" (cartão V2 de Vendas), "Mostrar fontes de dados" e a carteira cliente a cliente ("Carteira de clientes", módulo Distribuidora). Ver [CartaoPainel.tsx](src/screens/paineis/CartaoPainel.tsx).
-- [ ] **Menu pelas telas liberadas.** O rail mostra Vendas, Equipe comercial, Clientes, Resultado e Receber e pagar para todos; esconder quando o código (`COM-01` a `COM-03`, `FIN-02` e `FIN-03`) não vier em `telas` de `/api/sessao`. Pesa mais no FIN-03, que exige perfil com dado nominal: sem ele, a pessoa vê o item no menu e cai em "Você não tem acesso". Ver [Rail.tsx](src/components/Rail.tsx).
+- [ ] **Menu pelas telas liberadas.** O rail mostra Vendas, Equipe comercial, Clientes, Resultado, Receber e pagar e Pessoas para todos; esconder quando o código (`COM-01` a `COM-03`, `FIN-02`, `FIN-03` e `PES-01`) não vier em `telas` de `/api/sessao`. Pesa mais no FIN-03, que exige perfil com dado nominal, e no Pessoas, só para diretoria e RH (decisão de 30/10/2026: por ora, mostrar para todos): sem ele, a pessoa vê o item no menu e cai em "Você não tem acesso". Ver [Rail.tsx](src/components/Rail.tsx).
 - [ ] **Pedidos adiantados dos painéis comerciais.** Hoje só a Visão geral é adiantada; avaliar adiantar Vendas depois da primeira tela. Ver [adiantar.ts](src/api/adiantar.ts) e [usePainel.ts](src/api/usePainel.ts).
 
 - [ ] **Configurar o GitHub para colaboradores** (front e back), como em [CONTRIBUTING.md](CONTRIBUTING.md): branch `dev`, GitHub App com `APP_ID` e `APP_PRIVATE_KEY`, rulesets em `main` e `dev` (PR com 1 aprovação, CODEOWNERS, checks obrigatórios `verificar` no front e `api` e `carga` no back, App e Admin no bypass) e colaboradores com papel Write. Sem isso, o CI roda mas a automação de PR falha no primeiro passo.
@@ -38,7 +40,7 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 - [ ] **Visão de administrador da LANN.** Um usuário que vê vários clientes e escolhe qual abrir. Precisa de: back resolver o cliente pela URL para usuários `tipo='lann'` (hoje quem tem mais de um cliente é barrado no passo 2), `/api/sessao` listar os clientes e um seletor de cliente no front. Por ora o usuário da diretoria fica só na PJ Cortes.
 - [ ] **Filtro "Comparar com" de verdade.** Período e Empresa já vêm de `/api/sessao` e vão na consulta; "Comparar com" ainda só troca o rótulo (a API não tem esse parâmetro). Ver [filtrosDemo.ts](src/screens/visao-geral/filtrosDemo.ts).
 - [ ] **Cartão "Cobertura de caixa" (mockup M2.1.2).** Ficou de fora até o back ter o saldo em conta (decisão de 28/10/2026). Quando entrar, vai ao lado de "Contas a pagar lançadas", em duas colunas; o "Próximos 7, 15 e 30 dias" já aceita `saldo` e `minimo` (caixa mínimo) sem mudar o front. Ver [CartaoProximosDias.tsx](src/components/CartaoProximosDias.tsx).
-- [ ] **"Ver painel" para Caixa e Pessoas.** O link só aparece quando a tela de `telaDestino` existe no front; "Dívida líquida / EBITDA" aponta para `caixa`, que ainda não existe. Ver [SecaoVisaoGeral.tsx](src/screens/visao-geral/SecaoVisaoGeral.tsx).
+- [ ] **"Ver painel" para o Caixa.** O link só aparece quando a tela de `telaDestino` existe no front; "Dívida líquida / EBITDA" aponta para `caixa`, que ainda não existe ("Folha sobre a receita" já leva a Pessoas). Ver [SecaoVisaoGeral.tsx](src/screens/visao-geral/SecaoVisaoGeral.tsx).
 - [ ] **Logo do cliente no co-branding.** A CSP só aceita `img-src 'self'`, então a API precisa servir o logo. Ver [Cabecalho.tsx](src/components/Cabecalho.tsx).
 
 ### Integração com o banco (análise do overnex-backend em 16/10/2026)
@@ -55,6 +57,13 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 
 ## A decidir
 
+- [ ] **Painel Pessoas, partes do mockup M2.1.1 que ficaram de fora ou mudaram** (decidir com o usuário). Ver [pessoas.json](src/api/fixtures/pessoas.json):
+  - cartão V2 "Módulo de analista de RH" e a chave "Mostrar nomes" de "Cargos e salários" (perfil RH, desabilitada no mockup);
+  - chip "Setor" no topo: ficou só a chave dentro de "Admissões, desligamentos e turnover" (decisão de 30/10/2026);
+  - admissões e desligamentos em grafite escuro e claro, não em azul e laranja (azul, laranja e vermelho ficam para status); os minigráficos de "Cada setor, mês a mês" também saíram em grafite, sem o quadradinho da cor do setor no título;
+  - o empilhado "Colaboradores por setor" usa a paleta do mockup, que tem azul no Estoque e no Financeiro (mesma questão do item "Cores… fora de status", abaixo);
+  - no celular, "Indicador" some da produtividade (o título do gráfico ao lado diz qual é);
+
 - [ ] **Painéis financeiros, partes do mockup que não encaixam nas regras ou no back** (decidir com o usuário). Onde havia recomendação, o front já a seguiu; falta confirmar:
   - cartões marcados "A decidir" no mockup (Ponte do EBITDA, Maiores desvios, Nível 3 da DRE e Tabela financeira): estão nas fixtures; o back só os manda depois da aprovação;
   - sem fonte no back: saldo em conta, "Saldo em 30 dias", "Saldo no fim" das janelas e o Ciclo de caixa (falta prazo de estoque a custo). O front mostra se vierem; no lugar do Ciclo, só o gráfico de prazos;
@@ -64,7 +73,7 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
   - selo "Universal Completo" no menu e no cabeçalho: ficou de fora;
   - "Comparar com" vai na consulta do Resultado só com "Mês anterior"; "Meta comercial" e "Mesmo mês de 2025" continuam só no rótulo. Ver [filtrosPainel.ts](src/screens/paineis/filtrosPainel.ts);
   - "parou de comprar" e "título vencido" vêm como `etiqueta` da tabela, que é azul (a cor de `--ok`, como a "rampa" da Equipe). No mockup elas eram vermelhas. Deixar as etiquetas cinza, ou pedir ao back um tom na etiqueta? Ver [TabelaCartao.tsx](src/screens/paineis/TabelaCartao.tsx).
-- [ ] **Explicação ("i") dos cartões que o mockup não explica:** Linhas de produto, Vendas nos últimos 12 meses, Participação das linhas, Movimento por dia da semana, Itens que mais vendem e Itens por atendimento. Escrever os textos ou deixar sem "i"? Na Visão geral, os cartões do Financeiro já aceitam `explicacao`; a inadimplência fica sem, porque o mockup não traz texto para ela. Ver [Explicacao.tsx](src/components/Explicacao.tsx).
+- [ ] **Explicação ("i") dos cartões que o mockup não explica:** Linhas de produto, Vendas nos últimos 12 meses, Participação das linhas, Movimento por dia da semana, Itens que mais vendem, Itens por atendimento e todos os cartões de Pessoas. Escrever os textos ou deixar sem "i"? Na Visão geral, os cartões do Financeiro já aceitam `explicacao`; a inadimplência fica sem, porque o mockup não traz texto para ela. Ver [Explicacao.tsx](src/components/Explicacao.tsx).
 
 - [ ] **Cores que o mockup dos painéis comerciais usa fora de status** (decidir com o usuário). O azul de `--ok` e o laranja de `--warn-mark` aparecem como cor de série: 5ª e 7ª linha no empilhado de participação, a linha de cima dos combos e a barra de projeção de outubro em Atendimentos. Foi mantido como no mockup; trocar por cinzas evita confundir com status. Ver [charts.css](src/charts/charts.css).
 
@@ -100,6 +109,8 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 30/10/2026 · Painel Pessoas no visual do mockup Total M2.1.1, com dado fictício, no grupo **Pessoas** do menu: aviso de painel restrito, KPIs, o que mudou na equipe, faturamento por colaborador, colaboradores por setor (empilhado com os números e o total em cima), cada setor mês a mês, cargos e salários, folha por setor, admissões, desligamentos e turnover (chave por setor), turnover por setor, tempo de casa e produtividade por setor (escolher a linha troca o gráfico ao lado). Cartões novos `numero-grafico` ([NumeroGrafico.tsx](src/screens/paineis/NumeroGrafico.tsx)) e `lista-detalhe` ([ListaDetalhe.tsx](src/screens/paineis/ListaDetalhe.tsx)), `visoes` no cartão de gráficos, faísca compartilhada com a DRE ([Faisca.tsx](src/charts/Faisca.tsx)) e `casasMil` para reais em milhares com vírgula ("R$ 54,7 mil"). "Ver painel" de "Folha sobre a receita" leva a Pessoas. Conferido no navegador (Edge headless, 1440 px claro e escuro, 1100 px e 390 px) com o mock.
 
 - [x] 28/10/2026 · Visão geral no visual do mockup M2.1.2, com dado fictício:
   - chave Mês/Acumulado em cada velocímetro (no lugar da chave única da tela), com a contagem da faixa seguindo a de cada cartão, seta no delta, delta em texto ("na meta") e link "Ver painel" para a tela do indicador;

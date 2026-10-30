@@ -28,6 +28,9 @@ describe('formatadores de número', () => {
   it('formata cada unidade', () => {
     expect(formatarValor({ valor: 6_540_000, unidade: 'brl' })).toBe('R$ 6,54 mi');
     expect(formatarValor({ valor: 2995, unidade: 'brl', compacto: false })).toBe('R$ 2.995');
+    expect(formatarValor({ valor: 54_720, unidade: 'brl', casasMil: 1 })).toBe('R$ 54,7 mil');
+    // `casas` vale para milhões; nos milhares, só `casasMil` põe vírgula
+    expect(formatarValor({ valor: -360_000, unidade: 'brl', casas: 1 })).toBe('−R$ 360 mil');
     expect(formatarValor({ valor: 94.8, unidade: 'pct', casas: 1 })).toBe('94,8%');
     expect(formatarValor({ valor: 0.61, unidade: 'vezes', casas: 2 })).toBe('0,61x');
     expect(formatarValor({ valor: 7, unidade: 'dias' })).toBe('7 dias');

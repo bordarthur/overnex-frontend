@@ -83,6 +83,15 @@ export function Rail({ clienteSlug, dadosFicticios }: { clienteSlug: string; dad
           </svg>
           <span>Receber e pagar</span>
         </NavLink>
+        <span className="ngroup">Pessoas</span>
+        <NavLink to={`/${clienteSlug}/pessoas`} title="Pessoas">
+          <svg {...ICONE} aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2.5" />
+            <circle cx="9" cy="10.5" r="2.3" />
+            <path d="M5.5 16.5c.6-1.8 1.9-2.8 3.5-2.8s2.9 1 3.5 2.8M15 9h3M15 12.5h3" />
+          </svg>
+          <span>Pessoas</span>
+        </NavLink>
       </nav>
       <div className="rail-foot">
         {dadosFicticios && <span>Dados fictícios</span>}

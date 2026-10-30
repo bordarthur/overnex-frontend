@@ -1,0 +1,39 @@
+.fpc {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 2fr);
+  gap: 26px;
+  align-items: center;
+}
+.fpc-big > b {
+  font-family: 'Saira', sans-serif;
+  font-weight: 900;
+  font-size: 46px;
+  line-height: 1;
+  display: block;
+  font-variant-numeric: tabular-nums;
+}
+.fpc-big p {
+  font-size: 15px;
+  margin: 8px 0;
+}
+.fpc-big p b {
+  font-weight: 600;
+}
+.fpc-arrow {
+  display: block;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+@media (max-width: 1240px) {
+  .fpc {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+}
+@media (max-width: 760px) {
+  .fpc-big > b {
+    font-size: 38px;
+  }
+}

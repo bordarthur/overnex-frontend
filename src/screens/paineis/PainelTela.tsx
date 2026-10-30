@@ -22,7 +22,7 @@ import './PainelTela.css';
 const SEM_FILTROS: FiltroPainel[] = [];
 
 /**
- * Tela de painel por cartões (Vendas, Equipe comercial, Clientes, Resultado, Receber e pagar). Desenha só o que veio no
+ * Tela de painel por cartões (Vendas, Equipe comercial, Clientes, Resultado, Receber e pagar, Pessoas). Desenha só o que veio no
  * payload, na ordem em que veio. Use com `key={tela}` para os filtros não passarem de uma tela a outra.
  */
 export function PainelTela({ tela }: { tela: TelaPainel }) {

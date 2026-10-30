@@ -100,6 +100,14 @@ describe('Visão geral', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Vendas' })).toBeInTheDocument();
   });
 
+  it('"Ver painel" de "Folha sobre a receita" leva a Pessoas', async () => {
+    const user = userEvent.setup();
+    renderizarApp('/demo/visao-geral');
+    const folha = await screen.findByRole('article', { name: 'Folha sobre a receita' });
+    await user.click(within(folha).getByRole('link', { name: 'Ver painel' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Pessoas' })).toBeInTheDocument();
+  });
+
   it('próximos dias: o modo muda o fim de cada janela, a pílula e a contagem do Financeiro', async () => {
     const user = userEvent.setup();
     renderizarApp('/demo/visao-geral');

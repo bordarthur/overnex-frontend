@@ -379,3 +379,131 @@ describe('Painéis financeiros', () => {
     );
   });
 });
+
+describe('Painel Pessoas', () => {
+  it('desenha o aviso, os KPIs e os cartões da API, com o grupo Pessoas no menu', async () => {
+    renderizarApp('/demo/pessoas');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Pessoas' })).toBeInTheDocument();
+    expect(await screen.findByText(/Painel restrito: só perfis de diretoria e RH/)).toBeInTheDocument();
+    // reais em milhares com casas (casasMil)
+    const faturamento = screen.getByText('Faturamento por colaborador', { selector: '.k-l' }).closest('.kpi');
+    expect(faturamento).toHaveTextContent('R$ 54,7 mil');
+
+    expect(titulosDosCartoes()).toEqual([
+      'O que mudou na equipe',
+      'Faturamento por colaborador',
+      'Colaboradores por setor',
+      'Cada setor, mês a mês',
+      'Cargos e salários',
+      'Folha por setor',
+      'Admissões, desligamentos e turnover',
+      'Turnover por setor',
+      'Tempo de casa',
+      'Produtividade por setor',
+    ]);
+    expect(screen.getByRole('link', { name: 'Pessoas' })).toHaveAttribute('aria-current', 'page');
+
+    expect(cartao('Faturamento por colaborador')).toHaveTextContent('▲ 3% em 12 meses');
+    // o total de cada pilha vem da API e vai em cima da barra
+    const totais = cartao('Colaboradores por setor').querySelectorAll('.ax.tot');
+    expect(totais).toHaveLength(12);
+    expect(totais[11]).toHaveTextContent('127');
+    // três minigráficos por linha, um por setor
+    expect(within(cartao('Cada setor, mês a mês')).getAllByRole('heading', { level: 3 })).toHaveLength(6);
+  });
+
+  it('a chave de setor troca os gráficos e a nota de admissões e turnover', async () => {
+    const user = userEvent.setup();
+    renderizarApp('/demo/pessoas');
+    const admissoes = await screen.findByRole('article', { name: /^Admissões, desligamentos e turnover/ });
+    expect(
+      within(admissoes).getByRole('img', {
+        name: 'Admissões, desligamentos e turnover: Todos: Turnover mensal',
+      }),
+    ).toBeInTheDocument();
+    expect(admissoes).toHaveTextContent('Empresa toda: turnover médio de 2,5% ao mês, 29% em 12 meses.');
+
+    await user.click(within(admissoes).getByRole('button', { name: 'Logística' }));
+    expect(within(admissoes).getByRole('button', { name: 'Logística' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(
+      within(admissoes).getByRole('img', {
+        name: 'Admissões, desligamentos e turnover: Logística: Turnover mensal',
+      }),
+    ).toBeInTheDocument();
+    expect(admissoes).toHaveTextContent('Logística: turnover médio de 3,1% ao mês, 36% em 12 meses.');
+  });
+
+  it('produtividade: escolher outro setor troca o gráfico ao lado', async () => {
+    const user = userEvent.setup();
+    renderizarApp('/demo/pessoas');
+    const produtividade = await screen.findByRole('article', { name: /^Produtividade por setor/ });
+    expect(within(produtividade).getByRole('button', { name: 'Comercial' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(
+      within(produtividade).getByRole('heading', { level: 3, name: 'Comercial: faturamento por pessoa' }),
+    ).toBeInTheDocument();
+    // a comparação com 6 meses vem com o tom pronto
+    const comercial = within(produtividade).getByRole('button', { name: 'Comercial' }).closest('tr')!;
+    expect(within(comercial).getByText(`${MENOS}1,3%`)).toHaveClass('t-crit');
+
+    await user.click(within(produtividade).getByRole('button', { name: 'Logística' }));
+    expect(within(produtividade).getByRole('button', { name: 'Logística' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(within(produtividade).getByRole('button', { name: 'Comercial' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(
+      within(produtividade).getByRole('img', { name: 'Logística: entregas por pessoa' }),
+    ).toBeInTheDocument();
+  });
+
+  it('desenha a resposta enxuta da API: menos fatos, menos KPIs, cartões a menos e célula sem valor', async () => {
+    const base = fixturesPainel.pessoas;
+    const [mudou] = base.cartoes;
+    const produtividade = base.cartoes.find((c) => c.id === 'produtividade-por-setor');
+    if (mudou?.tipo !== 'destaques' || produtividade?.tipo !== 'lista-detalhe')
+      throw new Error('fixture mudou');
+    const [comercial] = produtividade.itens;
+    const payload: PainelPayload = {
+      ...base,
+      aviso: {
+        tom: 'info',
+        texto: [
+          { texto: 'Painel restrito.' },
+          { texto: ' Sem folha em outubro de 2026: os números são de setembro de 2026.' },
+        ],
+      },
+      // sem faturado, sai o "Faturamento por colaborador"
+      kpis: base.kpis.filter((k) => k.rotulo !== 'Faturamento por colaborador'),
+      cartoes: [
+        { ...mudou, itens: mudou.itens.slice(0, 1) },
+        {
+          ...produtividade,
+          // por enquanto um setor só, e o "vs 6m" pode vir sem valor
+          itens: [{ ...comercial!, celulas: comercial!.celulas.map((c, i) => (i === 4 ? {} : c)) }],
+        },
+      ],
+    };
+    renderizarApp(
+      '/demo/pessoas',
+      undefined,
+      criarMockClient({ atrasoMs: 0, paineis: { ...fixturesPainel, pessoas: payload } }),
+    );
+    expect(await screen.findByText(/Sem folha em outubro de 2026/)).toBeInTheDocument();
+    expect(titulosDosCartoes()).toEqual(['O que mudou na equipe', 'Produtividade por setor']);
+    expect(document.querySelectorAll('.kpi')).toHaveLength(3);
+    // um fato só ocupa a linha inteira
+    expect(cartao('O que mudou na equipe').querySelector('.hl')).toHaveStyle({ '--hl-colunas': '1' });
+    const lista = cartao('Produtividade por setor');
+    expect(within(lista).getByRole('button', { name: 'Comercial' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(lista).getByRole('img', { name: 'Comercial: faturamento por pessoa' })).toBeInTheDocument();
+  });
+});

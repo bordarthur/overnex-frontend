@@ -1,5 +1,5 @@
-// Contrato dos painéis por cartões: Vendas, Equipe comercial, Clientes e atendimentos, Resultado
-// e Receber e pagar.
+// Contrato dos painéis por cartões: Vendas, Equipe comercial, Clientes e atendimentos, Resultado,
+// Receber e pagar e Pessoas.
 // Hoje escrito à mão; no futuro estes tipos serão gerados do OpenAPI da API.
 // Como na Visão geral, o front só desenha: todo número, status, texto, rótulo, média, projeção
 // e diferença vem pronto. O front formata os números pela unidade e calcula só geometria
@@ -10,7 +10,8 @@ import type { Kpi, Status, Trecho, Unidade, Valor } from './visaoGeral';
 export type { Kpi, Status, Trecho, Unidade, Valor };
 
 /** Telas deste contrato. É também o caminho da rota: GET /api/telas/{tela}. */
-export type TelaPainel = 'vendas' | 'equipe-comercial' | 'clientes' | 'resultado' | 'receber-pagar';
+export type TelaPainel =
+  'vendas' | 'equipe-comercial' | 'clientes' | 'resultado' | 'receber-pagar' | 'pessoas';
 
 /** Número a formatar pela unidade, ou texto já pronto quando não é um número só ("2 de 6"). */
 export type Exibicao = Valor | string;
@@ -45,6 +46,8 @@ export interface Aviso {
 export interface Escala {
   unidade: Unidade;
   casas?: number;
+  // reais em milhares com casas, na dica (R$ 54,7 mil)
+  casasMil?: number;
   // depois do número: "t", "clientes"
   sufixo?: string;
 }
@@ -119,6 +122,10 @@ export interface GraficoEmpilhado extends Escala {
   paleta?: 'series' | 'atraso';
   rotulos: string[];
   series: { nome: string; valores: number[] }[];
+  // valor escrito dentro de cada parte (quando cabe)
+  rotulosNasBarras?: boolean;
+  // total escrito em cima de cada pilha, um por rótulo
+  totais?: number[];
 }
 
 /**
@@ -302,12 +309,25 @@ export interface CartaoDestaques extends CartaoBase {
   itens: { categoria: string; titulo: string; texto: string; status: Status }[];
 }
 
-/** Um ou mais gráficos lado a lado, cada um com título e nota opcionais. */
+export interface GraficoNoCartao {
+  titulo?: string;
+  nota?: string;
+  grafico: Grafico;
+}
+
+/**
+ * Um ou mais gráficos lado a lado, cada um com título e nota opcionais. Com `visoes`, o cartão ganha
+ * uma chave (Todos, Logística...) e desenha só os gráficos da visão escolhida; aí `graficos` vem vazio.
+ */
 export interface CartaoGraficos extends CartaoBase {
   tipo: 'graficos';
   // gráficos por linha quando há mais de um (padrão 2)
   colunas?: 2 | 3;
-  graficos: { titulo?: string; nota?: string; grafico: Grafico }[];
+  graficos: GraficoNoCartao[];
+  // nome da chave, para leitor de tela ("Setor")
+  rotuloVisoes?: string;
+  // a primeira é a padrão; a nota fica embaixo dos gráficos
+  visoes?: { id: string; rotulo: string; graficos: GraficoNoCartao[]; nota?: Trecho[] }[];
 }
 
 /** Pares de barras por faixa (participação nos atendimentos e na receita). */
@@ -442,6 +462,35 @@ export interface CartaoBarrasHorizontais extends CartaoBase {
   itens: { rotulo: string; sub?: string; valor: number; status?: Status }[];
 }
 
+/** Um número grande com o texto que o explica, ao lado de um gráfico (faturamento por colaborador). */
+export interface CartaoNumeroGrafico extends CartaoBase {
+  tipo: 'numero-grafico';
+  numero: {
+    valor: Valor;
+    texto: Trecho[];
+    // "▲ 3% em 12 meses": a seta segue o sinal do valor; o tom diz se é bom ou ruim
+    variacao?: { valor: Valor; texto: string; tom: Status };
+    nota?: string;
+  };
+  grafico: Grafico;
+}
+
+/**
+ * Lista em que cada linha abre o próprio gráfico ao lado (produtividade por setor). A primeira linha
+ * começa escolhida. A última coluna é a tendência da linha (realizado cheio, comparação tracejada).
+ */
+export interface CartaoListaDetalhe extends CartaoBase {
+  tipo: 'lista-detalhe';
+  colunas: { rotulo: string; alinhar?: 'esquerda' | 'direita' | 'centro'; ocultarNoCelular?: boolean }[];
+  itens: {
+    id: string;
+    // uma a menos que as colunas: a última é a tendência
+    celulas: Celula[];
+    tendencia: { realizado: number[]; comparacao: number[] };
+    detalhe: { titulo: string; grafico: GraficoLinhas };
+  }[];
+}
+
 export type Cartao =
   | CartaoAndamentoMes
   | CartaoFatores
@@ -457,7 +506,9 @@ export type Cartao =
   | CartaoDesvios
   | CartaoJanelas
   | CartaoDoisLados
-  | CartaoBarrasHorizontais;
+  | CartaoBarrasHorizontais
+  | CartaoNumeroGrafico
+  | CartaoListaDetalhe;
 
 export interface PainelPayload {
   tela: TelaPainel;

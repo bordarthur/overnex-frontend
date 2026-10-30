@@ -8,21 +8,21 @@ import { Empilhado } from './Empilhado';
 import { Linhas } from './Linhas';
 
 /** Desenha o gráfico pelo `tipo` que veio da API. */
-export function Grafico({ grafico, aria }: { grafico: GraficoDados; aria: string }) {
+export function Grafico({ grafico, aria, altura }: { grafico: GraficoDados; aria: string; altura?: number }) {
   switch (grafico.tipo) {
     case 'barras':
-      return <Barras grafico={grafico} aria={aria} />;
+      return <Barras grafico={grafico} aria={aria} altura={altura} />;
     case 'combo':
-      return <Combo grafico={grafico} aria={aria} />;
+      return <Combo grafico={grafico} aria={aria} altura={altura} />;
     case 'linhas':
-      return <Linhas grafico={grafico} aria={aria} />;
+      return <Linhas grafico={grafico} aria={aria} altura={altura} />;
     case 'empilhado':
-      return <Empilhado grafico={grafico} aria={aria} />;
+      return <Empilhado grafico={grafico} aria={aria} altura={altura} />;
     case 'dispersao':
-      return <Dispersao grafico={grafico} aria={aria} />;
+      return <Dispersao grafico={grafico} aria={aria} altura={altura} />;
     case 'degraus':
-      return <Degraus grafico={grafico} aria={aria} />;
+      return <Degraus grafico={grafico} aria={aria} altura={altura} />;
     case 'cascata':
-      return <Cascata grafico={grafico} aria={aria} />;
+      return <Cascata grafico={grafico} aria={aria} altura={altura} />;
   }
 }

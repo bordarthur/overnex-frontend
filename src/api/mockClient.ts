@@ -4,6 +4,7 @@ import type { Indicador, Secao, VisaoGeralPayload } from '../contracts/visaoGera
 import { ApiErro, type ApiClient } from './client';
 import fixtureClientes from './fixtures/clientes.json';
 import fixtureEquipe from './fixtures/equipe-comercial.json';
+import fixturePessoas from './fixtures/pessoas.json';
 import fixtureReceberPagar from './fixtures/receber-pagar.json';
 import fixtureResultado from './fixtures/resultado.json';
 import fixtureVendas from './fixtures/vendas.json';
@@ -14,13 +15,14 @@ import fixture from './fixtures/visao-geral.json';
 // os literais do JSON como string/number[] em vez das uniões e tuplas do contrato.
 export const fixtureVisaoGeral = fixture as unknown as VisaoGeralPayload;
 
-/** Painéis comerciais e financeiros com os números do mockup Total M2.0.1. */
+/** Painéis com os números dos mockups Total M2.0.1 (comerciais e financeiros) e M2.1.1 (Pessoas). */
 export const fixturesPainel: Record<TelaPainel, PainelPayload> = {
   vendas: fixtureVendas as unknown as PainelPayload,
   'equipe-comercial': fixtureEquipe as unknown as PainelPayload,
   clientes: fixtureClientes as unknown as PainelPayload,
   resultado: fixtureResultado as unknown as PainelPayload,
   'receber-pagar': fixtureReceberPagar as unknown as PainelPayload,
+  pessoas: fixturePessoas as unknown as PainelPayload,
 };
 
 // Linhas de custo além das que o Automático mostra, para o seletor "Linhas de custo" no mock.
@@ -56,7 +58,7 @@ export const fixtureSessao: SessaoPayload = {
     { id: '0e000000-0000-4000-8000-000000000001', nome: 'Matriz Fortaleza' },
     { id: '0e000000-0000-4000-8000-000000000002', nome: 'Filial Maracanaú' },
   ],
-  telas: ['VG-01', 'COM-01', 'COM-02', 'COM-03', 'FIN-02', 'FIN-03'],
+  telas: ['VG-01', 'COM-01', 'COM-02', 'COM-03', 'FIN-02', 'FIN-03', 'PES-01'],
   periodos: [
     { id: '2026-10', rotulo: 'Outubro de 2026', dadosAte: '2026-10-12' },
     { id: '2026-09', rotulo: 'Setembro de 2026', dadosAte: '2026-09-30' },
