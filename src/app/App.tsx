@@ -30,6 +30,7 @@ export function App() {
           <Route path="clientes" element={<PainelTela key="clientes" tela="clientes" />} />
           <Route path="resultado" element={<PainelTela key="resultado" tela="resultado" />} />
           <Route path="receber-pagar" element={<PainelTela key="receber-pagar" tela="receber-pagar" />} />
+          <Route path="pessoas" element={<PainelTela key="pessoas" tela="pessoas" />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

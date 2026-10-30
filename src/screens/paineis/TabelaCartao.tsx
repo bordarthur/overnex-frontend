@@ -1,8 +1,8 @@
-import { Pill } from '../../components/Pill';
-import type { CartaoTabela, Celula } from '../../contracts/painel';
-import { formatarExibicao } from '../../format';
+import type { CartaoTabela } from '../../contracts/painel';
 import { STATUS } from '../../theme/status';
 import { CaixaCartao } from './CaixaCartao';
+import { ConteudoCelula } from './Celula';
+import { classeCelula } from './classeCelula';
 import './TabelaCartao.css';
 
 const ALINHAR = { esquerda: 'l', direita: '', centro: 'c' } as const;
@@ -51,31 +51,5 @@ export function TabelaCartao({ cartao }: { cartao: CartaoTabela }) {
         </table>
       </div>
     </CaixaCartao>
-  );
-}
-
-function classeCelula(c: Celula): string {
-  const classes: string[] = [];
-  if (c.fundo) classes.push(`cf-${STATUS[c.fundo].classe}`);
-  if (c.tom) classes.push(c.tom === 'apagado' ? 'muted' : `t-${STATUS[c.tom].classe}`);
-  if (c.negrito) classes.push('forte');
-  return classes.join(' ');
-}
-
-function ConteudoCelula({ celula: c }: { celula: Celula }) {
-  const numero = c.valor != null && typeof c.valor !== 'string' ? c.valor.valor : null;
-  const seta = c.seta && numero ? (numero > 0 ? '▲ ' : '▼ ') : '';
-  return (
-    <>
-      {c.valor != null && (
-        <>
-          {seta}
-          {formatarExibicao(c.valor, { comSinal: c.comSinal })}
-        </>
-      )}
-      {c.etiqueta && <span className="tagn">{c.etiqueta}</span>}
-      {c.pill && (typeof c.pill === 'string' ? <Pill status={c.pill} /> : <Pill {...c.pill} />)}
-      {c.sub && <span className="r-sub cel-sub">{c.sub}</span>}
-    </>
   );
 }

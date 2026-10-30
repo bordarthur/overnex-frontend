@@ -139,22 +139,6 @@
 .dre-th-nota {
   font-weight: 400;
 }
-.faisca {
-  vertical-align: middle;
-}
-.faisca path {
-  fill: none;
-  stroke: var(--series-2);
-  stroke-width: 1.5;
-}
-.faisca .faisca-ref {
-  stroke: var(--ink-3);
-  stroke-width: 1.1;
-  stroke-dasharray: 3 2;
-}
-.faisca circle {
-  fill: var(--series);
-}
 .dre-foot {
   display: flex;
   flex-wrap: wrap;

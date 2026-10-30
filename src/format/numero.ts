@@ -22,6 +22,7 @@ const numero = (v: number) => (Number.isInteger(v) ? nf(0) : nf(1)).format(Math.
 
 interface OpcoesMoeda {
   casas?: number;
+  casasMil?: number;
   compacto?: boolean;
   comSinal?: boolean;
 }
@@ -29,13 +30,15 @@ interface OpcoesMoeda {
 /** Porta `money` do mockup: R$ 6,54 mi, R$ 360 mil, R$ 950. Com `compacto: false`: R$ 2.995. */
 export function formatarMoeda(
   v: number,
-  { casas, compacto = true, comSinal = false }: OpcoesMoeda = {},
+  { casas, casasMil, compacto = true, comSinal = false }: OpcoesMoeda = {},
 ): string {
   const a = Math.abs(v);
   let s: string;
   if (!compacto) s = 'R$ ' + nf(casas ?? 0).format(a);
   else if (a >= 1e6) s = 'R$ ' + nf(casas ?? 2).format(a / 1e6) + ' mi';
-  else if (a >= 1e3) s = 'R$ ' + nf(0).format(Math.round(a / 1e3)) + ' mil';
+  else if (a >= 1e3)
+    s =
+      'R$ ' + (casasMil != null ? nf(casasMil).format(a / 1e3) : nf(0).format(Math.round(a / 1e3))) + ' mil';
   else s = 'R$ ' + nf(0).format(a);
   return sinal(v, comSinal) + s;
 }
@@ -54,12 +57,12 @@ export function formatarPct(v: number, casas = 1): string {
 
 /** Um formatador por unidade, para valores e deltas. */
 export function formatarValor(valor: Valor, { comSinal = false }: { comSinal?: boolean } = {}): string {
-  const { valor: v, unidade, casas, compacto, sufixo } = valor;
+  const { valor: v, unidade, casas, casasMil, compacto, sufixo } = valor;
   const a = Math.abs(v);
   let s: string;
   switch (unidade) {
     case 'brl':
-      s = formatarMoeda(v, { casas, compacto, comSinal });
+      s = formatarMoeda(v, { casas, casasMil, compacto, comSinal });
       break;
     case 'pct':
       s = sinal(v, comSinal) + nf(casas ?? 1).format(a) + '%';

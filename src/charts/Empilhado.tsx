@@ -41,7 +41,7 @@ export function Empilhado(props: Props) {
 }
 
 function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: number }) {
-  const { rotulos, series } = grafico;
+  const { rotulos, series, totais } = grafico;
   const n = rotulos.length;
   const { foco, mover, sair } = useFoco(n, 'faixa');
   const eixo = formatarEixo(grafico);
@@ -49,7 +49,7 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
 
   const W = Math.max(280, largura);
   const H = altura;
-  const P = { l: 40, r: 12, t: 14, b: 28 };
+  const P = { l: 40, r: 12, t: totais ? 22 : 14, b: 28 };
   const iw = W - P.l - P.r;
   const ih = H - P.t - P.b;
   // altura de cada pilha: só geometria (a soma das partes que vieram da API)
@@ -60,6 +60,7 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
   const y = (v: number) => P.t + ih - (v / hi) * ih;
   const slot = iw / n;
   const bw = Math.min(34, slot * 0.62);
+  const totalFoco = foco ? totais?.[foco.i] : undefined;
 
   return (
     <>
@@ -83,16 +84,33 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
                 const base = y(acc);
                 acc += v;
                 return (
-                  <rect
-                    key={s.nome}
-                    className={`s${corDaSerie(grafico, j)}`}
-                    x={x0}
-                    y={topo}
-                    width={bw}
-                    height={Math.max(0, base - topo - 1)}
-                  />
+                  <g key={s.nome}>
+                    <rect
+                      className={`s${corDaSerie(grafico, j)}`}
+                      x={x0}
+                      y={topo}
+                      width={bw}
+                      height={Math.max(0, base - topo - 1)}
+                    />
+                    {/* o número só entra quando a parte tem altura para ele */}
+                    {grafico.rotulosNasBarras && base - topo > 14 && (
+                      <text
+                        className={`stl ${corDaSerie(grafico, j)}`}
+                        x={x0 + bw / 2}
+                        y={(topo + base) / 2 + 4}
+                        textAnchor="middle"
+                      >
+                        {eixo(v)}
+                      </text>
+                    )}
+                  </g>
                 );
               })}
+              {totais?.[i] != null && (
+                <text className="ax tot" x={x0 + bw / 2} y={y(acc) - 5} textAnchor="middle">
+                  {eixo(totais[i])}
+                </text>
+              )}
               <text className="ax" x={x0 + bw / 2} y={H - 8} textAnchor="middle">
                 {r}
               </text>
@@ -117,6 +135,7 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
             {series.map((s) => (
               <LinhaDica key={s.nome} rotulo={s.nome} valor={naDica(s.valores[foco.i] ?? 0)} />
             ))}
+            {totalFoco != null && <LinhaDica rotulo="Total" valor={naDica(totalFoco)} />}
           </>
         )}
       </Tooltip>

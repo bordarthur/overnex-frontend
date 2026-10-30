@@ -12,7 +12,9 @@ import { Faixas } from './Faixas';
 import { Fatores } from './Fatores';
 import { GraficosCartao } from './GraficosCartao';
 import { Janelas } from './Janelas';
+import { ListaDetalhe } from './ListaDetalhe';
 import { Matriz } from './Matriz';
+import { NumeroGrafico } from './NumeroGrafico';
 import { TabelaCartao } from './TabelaCartao';
 
 /** Desenha o cartão pelo `tipo` que veio da API. */
@@ -48,5 +50,9 @@ export function CartaoPainel({ cartao }: { cartao: Cartao }) {
       return <DoisLados cartao={cartao} />;
     case 'barras-horizontais':
       return <BarrasHorizontais cartao={cartao} />;
+    case 'numero-grafico':
+      return <NumeroGrafico cartao={cartao} />;
+    case 'lista-detalhe':
+      return <ListaDetalhe cartao={cartao} />;
   }
 }

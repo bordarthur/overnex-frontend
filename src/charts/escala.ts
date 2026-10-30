@@ -9,7 +9,8 @@ export function formatarEixo(e: Escala): (v: number) => string {
 
 /** Valor por extenso, para a dica ("R$ 6,54 mi", "1.040 clientes"). */
 export function formatarNaDica(e: Escala): (v: number) => string {
-  return (v) => formatarValor({ valor: v, unidade: e.unidade, casas: e.casas, sufixo: e.sufixo });
+  return (v) =>
+    formatarValor({ valor: v, unidade: e.unidade, casas: e.casas, casasMil: e.casasMil, sufixo: e.sufixo });
 }
 
 /** Margem esquerda do gráfico: reais precisam de mais espaço para o rótulo do eixo. */
