@@ -220,7 +220,7 @@ describe('Visão geral', () => {
     expect(screen.getByRole('heading', { level: 3, name: 'Seção de teste' })).toBeInTheDocument();
   });
 
-  it('a grade de velocímetros tem tantas colunas quantos indicadores, até 4', async () => {
+  it('a grade de velocímetros acompanha a quantidade de indicadores', async () => {
     renderizarApp('/demo/visao-geral', fixtureModulo as unknown as VisaoGeralPayload);
     const unico = await screen.findByRole('article', { name: /./ });
     expect(unico.closest('.fgrid')).toHaveClass('n-1');
@@ -229,6 +229,9 @@ describe('Visão geral', () => {
     renderizarApp('/demo/visao-geral');
     const vendas = await screen.findByRole('article', { name: 'Pedidos por cliente' });
     expect(vendas.closest('.fgrid')).toHaveClass('n-4');
+    // Custos tem 6 velocímetros: 3 em cima e 3 embaixo
+    const custos = screen.getByRole('article', { name: 'CMV de bovinos' });
+    expect(custos.closest('.fgrid')).toHaveClass('n-3');
   });
 
   it('avisa quando não há acesso ao cliente', async () => {

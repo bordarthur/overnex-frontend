@@ -1,7 +1,7 @@
 import type { EstiloBarra, GraficoBarras } from '../contracts/painel';
 import { LinhaDica, Tooltip } from '../components/Tooltip';
 import { formatarEixo, formatarNaDica, margemEixo, useFoco } from './escala';
-import { ticksRedondos } from './geometria';
+import { passoDosRotulos, ticksRedondos } from './geometria';
 import { useLargura } from './useLargura';
 import './charts.css';
 
@@ -60,7 +60,11 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
   hi = Math.max(hi, ticks[ticks.length - 1] ?? hi);
   const y = (v: number) => P.t + ih - ((v - lo) / (hi - lo)) * ih;
   const slot = iw / n;
-  const passo = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 44))));
+  const passo = passoDosRotulos(
+    grupos.map((g) => g.rotulo),
+    iw,
+    { minimo: 44, peloMenos: 2 },
+  );
   const grupoFoco = foco ? grupos[foco.i] : undefined;
 
   return (

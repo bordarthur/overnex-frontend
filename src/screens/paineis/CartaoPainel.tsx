@@ -2,6 +2,7 @@ import type { Cartao } from '../../contracts/painel';
 import { AndamentoMes } from './AndamentoMes';
 import { BarraPartes } from './BarraPartes';
 import { BarrasHorizontais } from './BarrasHorizontais';
+import { CicloCaixa } from './CicloCaixa';
 import { ContraMeta } from './ContraMeta';
 import { CurvaAbc } from './CurvaAbc';
 import { DestaquesCartao } from './DestaquesCartao';
@@ -54,5 +55,7 @@ export function CartaoPainel({ cartao }: { cartao: Cartao }) {
       return <NumeroGrafico cartao={cartao} />;
     case 'lista-detalhe':
       return <ListaDetalhe cartao={cartao} />;
+    case 'ciclo-caixa':
+      return <CicloCaixa cartao={cartao} />;
   }
 }

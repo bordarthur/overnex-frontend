@@ -40,3 +40,22 @@ export function quebrarRotulo(rotulo: string): [string, string] {
   const meio = Math.ceil(palavras.length / 2);
   return [palavras.slice(0, meio).join(' '), palavras.slice(meio).join(' ')];
 }
+
+/** Largura aproximada do maior rótulo do eixo x (Poppins 11px: cerca de 6,2px por letra), com folga. */
+export function larguraDoRotulo(rotulos: string[]): number {
+  return Math.max(0, ...rotulos.map((r) => r.length)) * 6.2 + 8;
+}
+
+/**
+ * De quantos em quantos rótulos do eixo x mostrar para não encavalar. Cada rótulo precisa do maior
+ * entre `minimo` (o espaçamento de sempre do gráfico) e o tamanho dele ("out-25" pede mais que "out").
+ * `peloMenos`: quantos rótulos cabem no mínimo, mesmo apertados.
+ */
+export function passoDosRotulos(
+  rotulos: string[],
+  larguraUtil: number,
+  { minimo = 0, peloMenos = 1 }: { minimo?: number; peloMenos?: number } = {},
+): number {
+  const espaco = Math.max(minimo, larguraDoRotulo(rotulos));
+  return Math.max(1, Math.ceil(rotulos.length / Math.max(peloMenos, Math.floor(larguraUtil / espaco))));
+}

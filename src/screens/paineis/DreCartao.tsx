@@ -105,13 +105,11 @@ export function DreCartao({ cartao }: { cartao: CartaoDre }) {
                         onClick={() => alternar(l.id)}
                       >
                         <Seta />
-                        {l.codigo && <span className="code">{l.codigo}</span>}
                         {l.nome}
                       </button>
                     ) : (
                       <>
                         <span className="dre-recuo" />
-                        {l.codigo && <span className="code">{l.codigo}</span>}
                         {l.nome}
                       </>
                     )}
@@ -129,7 +127,17 @@ export function DreCartao({ cartao }: { cartao: CartaoDre }) {
                     <Pill status={l.status} />
                   </td>
                   <td>
-                    <Faisca realizado={l.tendencia.realizado} comparacao={l.tendencia.comparacao} />
+                    <span className="dre-tend">
+                      {l.tendencia.unidade && (
+                        <span
+                          className="dre-tend-un"
+                          title={l.tendencia.unidade === 'pct' ? 'Em % da receita bruta' : 'Em reais'}
+                        >
+                          {l.tendencia.unidade === 'pct' ? '%' : '$'}
+                        </span>
+                      )}
+                      <Faisca realizado={l.tendencia.realizado} comparacao={l.tendencia.comparacao} />
+                    </span>
                   </td>
                 </tr>
               );

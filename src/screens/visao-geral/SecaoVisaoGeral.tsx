@@ -9,6 +9,7 @@ import { LinhaKpis } from '../../components/Kpi';
 import type { CartaoSecao, PeriodoId, Secao, Status } from '../../contracts/visaoGeral';
 import { TELAS_PAINEL } from '../paineis/telas';
 import { contarPorStatus } from './contagem';
+import { colunasDaGrade } from './grade';
 import { SeletorDaSecao } from './SeletorDaSecao';
 
 interface Props {
@@ -43,8 +44,7 @@ export function SecaoVisaoGeral({ secao, periodos, empresa, soLeitura }: Props) 
     ...secao.cartoes.map(statusDoCartao),
   ]);
 
-  // Até 4 velocímetros por linha; com menos, eles dividem a largura toda.
-  const colunas = Math.min(secao.indicadores.length, 4);
+  const colunas = colunasDaGrade(secao.indicadores.length);
   return (
     <section className="vg-sec" aria-labelledby={idTitulo}>
       <FaixaSecao

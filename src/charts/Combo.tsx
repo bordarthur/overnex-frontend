@@ -1,6 +1,7 @@
 import type { GraficoCombo } from '../contracts/painel';
 import { LinhaDica, Tooltip } from '../components/Tooltip';
 import { formatarEixo, formatarNaDica, useFoco } from './escala';
+import { passoDosRotulos } from './geometria';
 import { useLargura } from './useLargura';
 import './charts.css';
 
@@ -42,6 +43,11 @@ function Desenho({ grafico, aria, altura = 220, largura }: Props & { largura: nu
   if (lo < 0) lo -= sp * 0.12;
   const y = (v: number) => P.t + ih - ((v - lo) / (hi - lo)) * ih;
   const slot = iw / n;
+  const passoEixo = passoDosRotulos(
+    pontos.map((p) => p.rotulo),
+    iw,
+    { minimo: 26 },
+  );
   const bw = Math.min(26, slot * 0.62);
   const cx = (i: number) => P.l + slot * i + slot / 2;
 
@@ -108,7 +114,7 @@ function Desenho({ grafico, aria, altura = 220, largura }: Props & { largura: nu
                   {rotulo(p.valor)}
                 </text>
               )}
-              {(slot > 26 || i % 2 === 0) && (
+              {i % passoEixo === 0 && (
                 <text className="ax" x={cx(i)} y={H - 7} textAnchor="middle">
                   {p.rotulo}
                 </text>

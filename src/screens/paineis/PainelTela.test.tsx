@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { criarMockClient, fixturesPainel } from '../../api/mockClient';
-import type { PainelPayload } from '../../contracts/painel';
+import type { Cartao, PainelPayload } from '../../contracts/painel';
 import { MENOS } from '../../format';
 import { renderizarApp } from '../../test/renderizar';
 
@@ -265,6 +265,19 @@ describe('Painéis financeiros', () => {
 
     // a "leitura rápida" vem como chamada, com o status da API
     const doze = cartao('Resultado mês a mês contra o orçado');
+    // o custo vem logo depois da receita, antes da margem de contribuição
+    expect(
+      within(doze)
+        .getAllByRole('heading', { level: 3 })
+        .map((h) => h.textContent),
+    ).toEqual([
+      'Receita bruta',
+      'Custos',
+      'Margem de contribuição',
+      'Despesas fixas',
+      'EBITDA',
+      'Lucro líquido',
+    ]);
     expect(within(doze).getByText('Leitura rápida:', { exact: false }).closest('.callout')).toHaveClass(
       'crit',
     );
@@ -272,6 +285,12 @@ describe('Painéis financeiros', () => {
     const desvios = cartao('Maiores desvios contra o orçado');
     expect(within(desvios).getByText('Custo bovinos').closest('li')).toHaveClass('dv-crit');
     expect(within(desvios).getByText(`${MENOS}R$ 182 mil`)).toBeInTheDocument();
+
+    // tabela de tendência: números curtos e farol claro, sem negrito
+    const tabela = cartao('Tabela financeira mês a mês');
+    expect(within(tabela).getByRole('table')).toHaveClass('tbl-tendencia');
+    expect(within(tabela).getByRole('cell', { name: '7,02 mi' })).toHaveClass('cf-ok');
+    expect(within(tabela).getAllByRole('cell', { name: '26 d' }).length).toBeGreaterThan(0);
   });
 
   it('DRE: abre por nível, abre e fecha cada conta e filtra os desvios', async () => {
@@ -279,6 +298,13 @@ describe('Painéis financeiros', () => {
     renderizarApp('/demo/resultado');
     const dre = await screen.findByRole('article', { name: /^DRE gerencial/ });
     const linha = (nome: string) => within(dre).queryByRole('row', { name: new RegExp(nome) });
+
+    // valores cheios, sem o código da conta, e a unidade da tendência ao lado da faísca
+    const receitaBruta = linha('Receita bruta')!;
+    expect(within(receitaBruta).getByRole('cell', { name: '6.950.000' })).toBeInTheDocument();
+    expect(within(dre).queryByText('100.00')).toBeNull();
+    expect(within(receitaBruta).getByTitle('Em reais')).toHaveTextContent('$');
+    expect(within(linha('^Custos')!).getByTitle('Em % da receita bruta')).toHaveTextContent('%');
 
     // começa no nível 2: grupos abertos, contas de nível 3 fechadas
     expect(linha('Venda de produtos')).not.toBeNull();
@@ -372,11 +398,89 @@ describe('Painéis financeiros', () => {
     expect(within(saoJorge).getByText('sem histórico').closest('td')).toHaveClass('muted');
     expect(saoJorge.querySelector('.pill')).toBeNull();
 
+    // ciclo de caixa: as réguas com os trechos da API, o rodapé e os prazos embaixo
+    const ciclo = cartao('Ciclo de caixa');
+    expect(
+      within(ciclo).getByRole('img', { name: 'Compra → venda → recebe: Estoque 15 d, Recebimento 31 d' }),
+    ).toBeInTheDocument();
+    expect(within(ciclo).getByText('22 dias')).toHaveClass('preso');
+    expect(ciclo).toHaveTextContent('Cada dia a menos libera cerca de R$ 230 mil');
+    expect(within(ciclo).getByRole('img', { name: 'Ciclo de caixa: prazos mês a mês' })).toBeInTheDocument();
+
     await user.click(screen.getByRole('button', { name: /Atraso/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Mais de 90 dias' }));
     await waitFor(() =>
       expect(consultar).toHaveBeenCalledWith('receber-pagar', { atraso: 'mais-90' }, expect.anything()),
     );
+  });
+});
+
+describe('Receber e pagar sem o estoque a custo', () => {
+  it('sem o prazo de estoque, a API manda o cartão de prazos no lugar do ciclo, e ele é desenhado', async () => {
+    const base = fixturesPainel['receber-pagar'];
+    const prazos: Cartao = {
+      id: 'prazos',
+      tipo: 'graficos',
+      largura: 7,
+      titulo: 'Prazos de recebimento e de pagamento',
+      subtitulo:
+        'Prazo médio, em dias, nos últimos 12 meses. Quanto maior a distância, mais tempo o dinheiro fica preso.',
+      nota: 'O ciclo de caixa completo (com o prazo de estoque) entra quando houver o custo do estoque.',
+      graficos: [
+        {
+          grafico: {
+            tipo: 'linhas',
+            unidade: 'dias',
+            rotulos: ['out', 'nov', 'dez', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set'],
+            titulos: [
+              'out-25',
+              'nov-25',
+              'dez-25',
+              'jan-26',
+              'fev-26',
+              'mar-26',
+              'abr-26',
+              'mai-26',
+              'jun-26',
+              'jul-26',
+              'ago-26',
+              'set-26',
+            ],
+            series: [
+              {
+                nome: 'Pagamento',
+                valores: [25, 24, 25, 25, 24, 24, 25, 24, 24, 24, 24, 24],
+                estilo: 'secundaria',
+                rotuloFim: 'Pagamento, 24 d',
+              },
+              {
+                nome: 'Recebimento',
+                valores: [26, 26, 27, 26, 26, 26, 27, 28, 29, 30, 30, 31],
+                estilo: 'principal',
+                rotuloFim: 'Recebimento, 31 d',
+              },
+            ],
+            marcadores: [{ serie: 1, i: 5, rotulo: '26 dias' }],
+          },
+        },
+      ],
+    };
+    const payload: PainelPayload = {
+      ...base,
+      cartoes: base.cartoes.map((c) => (c.id === 'ciclo-caixa' ? prazos : c)),
+    };
+    renderizarApp(
+      '/demo/receber-pagar',
+      undefined,
+      criarMockClient({ atrasoMs: 0, paineis: { ...fixturesPainel, 'receber-pagar': payload } }),
+    );
+    const cartaoPrazos = await screen.findByRole('article', {
+      name: /^Prazos de recebimento e de pagamento/,
+    });
+    expect(
+      within(cartaoPrazos).getByRole('img', { name: 'Prazos de recebimento e de pagamento' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('article', { name: /^Ciclo de caixa/ })).toBeNull();
   });
 });
 
