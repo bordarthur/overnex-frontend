@@ -123,3 +123,39 @@
     display: none;
   }
 }
+
+/* tendência: muitas colunas lado a lado; farol claro e sem negrito, para caber e não pesar */
+.tbl-tendencia td,
+.tbl-tendencia th {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.tbl-tendencia td:first-child {
+  white-space: nowrap;
+}
+.tbl.tbl-tendencia td.cf-ok,
+.tbl.tbl-tendencia td.cf-warn,
+.tbl.tbl-tendencia td.cf-crit {
+  font-weight: 400;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.tbl-tendencia td.cf-ok {
+  background: color-mix(in srgb, var(--ok) 10%, var(--surface));
+}
+.tbl-tendencia td.cf-warn {
+  background: color-mix(in srgb, var(--warn-mark) 14%, var(--surface));
+}
+.tbl-tendencia td.cf-crit {
+  background: color-mix(in srgb, var(--crit) 10%, var(--surface));
+}
+@media (max-width: 1400px) {
+  .tbl-tendencia td,
+  .tbl-tendencia th,
+  .tbl.tbl-tendencia td.cf-ok,
+  .tbl.tbl-tendencia td.cf-warn,
+  .tbl.tbl-tendencia td.cf-crit {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}

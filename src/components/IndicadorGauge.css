@@ -1,16 +1,28 @@
+/*
+ * Grade de velocímetros em flex com quebra: cada cartão tem a largura de uma coluna (--colunas por
+ * linha) e pode crescer, então a última linha, quando tem menos cartões, divide a largura toda
+ * (5 = 3 + 2, com os 2 de baixo ocupando a linha inteira). O meio pixel a menos evita que a soma
+ * arredondada de uma linha cheia empurre o último cartão para a linha de baixo.
+ */
 .fgrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  --colunas: 4;
+  --vao: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vao);
+}
+.fgrid > * {
+  flex: 1 1 calc((100% - (var(--colunas) - 1) * var(--vao)) / var(--colunas) - 0.5px);
+  min-width: 0;
 }
 .fgrid.n-1 {
-  grid-template-columns: minmax(0, 1fr);
+  --colunas: 1;
 }
 .fgrid.n-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  --colunas: 2;
 }
 .fgrid.n-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  --colunas: 3;
 }
 /* Com poucos cartões na linha, o cartão alarga mas o velocímetro não passa deste tamanho. */
 .gt-tile .gauge {
@@ -101,14 +113,14 @@
 @media (max-width: 1240px) {
   .fgrid,
   .fgrid.n-3 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    --colunas: 2;
   }
 }
 @media (max-width: 760px) {
   .fgrid,
   .fgrid.n-2,
   .fgrid.n-3 {
-    grid-template-columns: minmax(0, 1fr);
+    --colunas: 1;
   }
 }
 

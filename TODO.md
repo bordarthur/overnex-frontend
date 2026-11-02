@@ -17,6 +17,14 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 
 - [ ] **Painéis financeiros (Resultado, Receber e pagar): testar com a API.** O back publicou `GET /api/telas/resultado` (FIN-02) e `/api/telas/receber-pagar` (FIN-03) em 28/10/2026, e o contrato bate com [painel.ts](src/contracts/painel.ts) (conferido campo a campo contra o `api/openapi.json` do back). As fixtures foram ajustadas ao que a API manda. Falta abrir as duas telas com `VITE_API_MODO=api` e conferir: filtros Visão, Orçamento, Vendedor e Atraso, "Comparar com" (`?comparar=mes-anterior`), troca de mês e empresa, o `aviso` sem orçado, o estado vazio e o 403 do FIN-03 para perfil sem dado nominal. Não foi testado em 28/10 porque o `api/.env` do back aponta para o banco de produção com `AUTH_FAKE=1`, e o README do back proíbe usar o token fake assim: testar com o login real (`VITE_AUTH_MODO=api`) ou com a API apontada para um banco local.
 
+- [ ] **Ciclo de caixa e Tabela financeira: testar com a API.** O back fez em 30/10/2026, na branch `feat/ajustes-financeiros` (ainda não está na `dev`): a Tabela financeira sai sempre, com `variante: "tendencia"`, sem as linhas "Ciclo de caixa" e "Dívida líquida / EBITDA" (sem fonte); o Receber e pagar continua com o cartão "prazos" na API real, porque falta o estoque a custo para o prazo médio de estoque, e o `ciclo-caixa` só vem no demo (`VISAO_GERAL_DEMO=1`). O front desenha os dois (teste em [PainelTela.test.tsx](src/screens/paineis/PainelTela.test.tsx)). Falta conferir com `VITE_API_MODO=api`, como os outros painéis financeiros. O ciclo de caixa na API real depende da fonte do estoque a custo.
+
+- [ ] **Rótulos de mês com o ano: o back mandar.** Pedido em 30/10/2026: quando a série ou as colunas cruzam anos, o rótulo vem "mmm-aa" ("out-25"); num ano só, continua "out". As fixtures já seguem a regra (Resultado, Receber e pagar, Clientes e Pessoas; a Vendas já mandava assim). Os minigráficos de "Cada setor, mês a mês" (Pessoas) continuam com a inicial do mês ("O", "N"), com o ano na dica.
+
+- [ ] **DRE gerencial: o back mandar valores cheios e a unidade da tendência.** Pedido em 30/10/2026: valores em reais (não em milhar), `rotuloConta` "Conta (R$)" e `tendencia.unidade` em cada linha: `pct` (% da receita bruta) para Deduções, Custos e Despesas variáveis, com as contas de dentro, e para o subtotal EBITDA; `brl` para as outras. O front já mostra "$" ou "%" ao lado da faísca e não mostra mais o código da conta. Ver [DreCartao.tsx](src/screens/paineis/DreCartao.tsx).
+
+- [ ] **"Custos" no "Resultado mês a mês": o back mandar.** Pedido em 30/10/2026: um combo "Custos" (grupo 120) logo depois de "Receita bruta", antes de "Margem de contribuição"; barra vermelha quando o custo passa do orçado; linha de cima em % da receita bruta. A fixture já tem os 6 gráficos ([resultado.json](src/api/fixtures/resultado.json)).
+
 - [ ] **Painéis comerciais (Vendas, Equipe comercial, Clientes): ligar à API.** O front está pronto com as fixtures do mockup Total M2.0.1 ([painel.ts](src/contracts/painel.ts), [PainelTela.tsx](src/screens/paineis/PainelTela.tsx), fixtures em [src/api/fixtures/](src/api/fixtures/)). Falta o back criar `GET /api/telas/vendas`, `/api/telas/equipe-comercial` e `/api/telas/clientes` nesse contrato (prompt entregue em 26/10/2026) e testar com `VITE_API_MODO=api`: filtros Canal, Linha e Supervisor indo na consulta, troca de mês e empresa, estados vazio e sem permissão. O back também precisa mandar `explicacao` nos cartões (prompt entregue em 26/10/2026); sem ela, o botão "i" não aparece.
 
 - [ ] **Login com e-mail e senha: ligar à API.** O front está pronto e funciona com o login fake ([AuthProvider.tsx](src/auth/AuthProvider.tsx), [authClient.ts](src/auth/authClient.ts), telas em [screens/login/](src/screens/login/)). Falta o back criar `/api/auth/*` no contrato de [auth.ts](src/contracts/auth.ts) (Supabase Auth com refresh em cookie httpOnly; prompt entregue em 23/10/2026) e testar com `VITE_AUTH_MODO=api`: entrar, recarregar e continuar logado, renovação depois de vencer o token, sair, convite e recuperação de senha pelo e-mail. Com o mockup Login M2.0.0, o back também precisa:
@@ -65,8 +73,9 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
   - no celular, "Indicador" some da produtividade (o título do gráfico ao lado diz qual é);
 
 - [ ] **Painéis financeiros, partes do mockup que não encaixam nas regras ou no back** (decidir com o usuário). Onde havia recomendação, o front já a seguiu; falta confirmar:
-  - cartões marcados "A decidir" no mockup (Ponte do EBITDA, Maiores desvios, Nível 3 da DRE e Tabela financeira): estão nas fixtures; o back só os manda depois da aprovação;
-  - sem fonte no back: saldo em conta, "Saldo em 30 dias", "Saldo no fim" das janelas e o Ciclo de caixa (falta prazo de estoque a custo). O front mostra se vierem; no lugar do Ciclo, só o gráfico de prazos;
+  - cartões marcados "A decidir" no mockup (Ponte do EBITDA, Maiores desvios e Nível 3 da DRE): estão nas fixtures; o back só os manda depois da aprovação. A Tabela financeira foi aprovada em 30/10/2026;
+  - sem fonte no back: saldo em conta, "Saldo em 30 dias" e "Saldo no fim" das janelas. O front mostra se vierem;
+  - "Pagamento" no Ciclo de caixa em grafite médio, não em azul como no mockup (azul é status, decisão de 28/10/2026);
   - PDD ("regra a definir") e limite de crédito (`en_limitecredito` existe na PJ?);
   - "Quem cobrar hoje" ficou sem a caixa de marcar (sem gravar no back, a marcação sumiria ao recarregar);
   - títulos "Contas a receber" e "Contas a pagar" em cinza (no mockup, azul e vermelho: cor de status usada como enfeite). Pelo mesmo motivo, "A receber" e "A pagar" das janelas também ficaram sem cor;
@@ -109,6 +118,20 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
+
+- [x] 30/10/2026 · "Custos" no "Resultado mês a mês" (fixture), entre "Receita bruta" e "Margem de contribuição": 6 gráficos, 3 em cima e 3 embaixo. Conferido no navegador (Edge headless, 1440 px) com o mock.
+
+- [x] 30/10/2026 · DRE gerencial: sem o código da conta na tela, valores cheios na fixture ("6.950.000", cabeçalho "Conta (R$)") e "$" ou "%" ao lado da faísca, conforme a `tendencia.unidade` de cada linha (% da receita bruta em Deduções, Custos, Despesas variáveis e EBITDA). Conferido no navegador (Edge headless, 1440 px) com o mock: a tabela cabe sem rolagem.
+
+- [x] 30/10/2026 · Rótulos de mês com o ano ("out-25") nas fixtures quando a série cruza anos, e eixo x que mostra um rótulo sim, outro não quando o rótulo não cabe: o espaçamento passa a contar o tamanho do rótulo ([geometria.ts](src/charts/geometria.ts), em barras, linhas, combo e empilhado). Conferido no navegador (Edge headless, 1440 e 390 px) com o mock: tabela financeira sem rolagem, combos do Resultado e empilhados no celular sem rótulo encavalado.
+
+- [x] 30/10/2026 · Grade de velocímetros da Visão geral acima de 4: 5 ficam 3 + 2, 6 ficam 3 + 3, 7 ficam 4 + 3 e 8 ficam 4 + 4; acima de 8, 4 por linha ([grade.ts](src/screens/visao-geral/grade.ts)). A linha de baixo, com menos cartões, divide a largura toda (grade em flex com quebra, [IndicadorGauge.css](src/components/IndicadorGauge.css)); até 1240 px, com 2 por linha, o último de uma quantidade ímpar ocupa a linha inteira. Conferido no navegador (Edge headless, 1440, 1100 e 390 px) com o seletor "Linhas de custo" do mock.
+
+- [x] 30/10/2026 · Ciclo de caixa e Tabela financeira como no mockup Total M2.1.1:
+  - "Ciclo de caixa" no Receber e pagar, no lugar de "Prazos": réguas de estoque, recebimento, pagamento e dinheiro preso, rodapé e o gráfico de prazos embaixo (cartão `ciclo-caixa`, [CicloCaixa.tsx](src/screens/paineis/CicloCaixa.tsx));
+  - "Tabela financeira mês a mês" com a variante `tendencia`: números curtos ("6,64 mi", "26 d") e farol claro sem negrito, cabendo sem rolagem a 1440 px ([TabelaCartao.tsx](src/screens/paineis/TabelaCartao.tsx)).
+
+  Conferido no navegador (Edge headless, 1440 px claro e escuro) com o mock.
 
 - [x] 30/10/2026 · Painel Pessoas no visual do mockup Total M2.1.1, com dado fictício, no grupo **Pessoas** do menu: aviso de painel restrito, KPIs, o que mudou na equipe, faturamento por colaborador, colaboradores por setor (empilhado com os números e o total em cima), cada setor mês a mês, cargos e salários, folha por setor, admissões, desligamentos e turnover (chave por setor), turnover por setor, tempo de casa e produtividade por setor (escolher a linha troca o gráfico ao lado). Cartões novos `numero-grafico` ([NumeroGrafico.tsx](src/screens/paineis/NumeroGrafico.tsx)) e `lista-detalhe` ([ListaDetalhe.tsx](src/screens/paineis/ListaDetalhe.tsx)), `visoes` no cartão de gráficos, faísca compartilhada com a DRE ([Faisca.tsx](src/charts/Faisca.tsx)) e `casasMil` para reais em milhares com vírgula ("R$ 54,7 mil"). "Ver painel" de "Folha sobre a receita" leva a Pessoas. Conferido no navegador (Edge headless, 1440 px claro e escuro, 1100 px e 390 px) com o mock.
 

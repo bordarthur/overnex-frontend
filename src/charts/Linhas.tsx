@@ -1,7 +1,7 @@
 import type { EstiloLinha, GraficoLinhas } from '../contracts/painel';
 import { LinhaDica, Tooltip } from '../components/Tooltip';
 import { formatarEixo, formatarNaDica, margemEixo, useFoco } from './escala';
-import { ticksRedondos } from './geometria';
+import { passoDosRotulos, ticksRedondos } from './geometria';
 import { useLargura } from './useLargura';
 import './charts.css';
 
@@ -59,7 +59,7 @@ function Desenho({ grafico, aria, altura = 230, largura }: Props & { largura: nu
   hi = Math.max(hi, ticks[ticks.length - 1] ?? hi);
   const x = (i: number) => P.l + (n === 1 ? iw / 2 : (i * iw) / (n - 1));
   const y = (v: number) => P.t + ih - ((v - lo) / (hi - lo)) * ih;
-  const passo = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 52))));
+  const passo = passoDosRotulos(rotulos, iw, { minimo: 52, peloMenos: 2 });
 
   const caminhos = series.map((s) => {
     const pts: [number, number][] = [];

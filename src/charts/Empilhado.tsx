@@ -1,7 +1,7 @@
 import type { GraficoEmpilhado } from '../contracts/painel';
 import { LinhaDica, Tooltip } from '../components/Tooltip';
 import { formatarEixo, formatarNaDica, useFoco } from './escala';
-import { ticksRedondos } from './geometria';
+import { passoDosRotulos, ticksRedondos } from './geometria';
 import { useLargura } from './useLargura';
 import './charts.css';
 
@@ -60,6 +60,7 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
   const y = (v: number) => P.t + ih - (v / hi) * ih;
   const slot = iw / n;
   const bw = Math.min(34, slot * 0.62);
+  const passo = passoDosRotulos(rotulos, iw, { peloMenos: 2 });
   const totalFoco = foco ? totais?.[foco.i] : undefined;
 
   return (
@@ -111,9 +112,11 @@ function Desenho({ grafico, aria, altura = 240, largura }: Props & { largura: nu
                   {eixo(totais[i])}
                 </text>
               )}
-              <text className="ax" x={x0 + bw / 2} y={H - 8} textAnchor="middle">
-                {r}
-              </text>
+              {i % passo === 0 && (
+                <text className="ax" x={x0 + bw / 2} y={H - 8} textAnchor="middle">
+                  {r}
+                </text>
+              )}
             </g>
           );
         })}

@@ -78,13 +78,18 @@
   display: inline-block;
   width: 16px;
 }
-.dre .code {
+/* tendência: a unidade ($ ou %) à esquerda da faísca */
+.dre-tend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.dre-tend-un {
+  width: 10px;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--ink-3);
-  font-size: 12px;
-  font-variant-numeric: tabular-nums;
-  min-width: 62px;
-  display: inline-block;
-  margin-right: 6px;
+  text-align: center;
 }
 .dre tr.n1 td {
   font-weight: 600;
@@ -154,4 +159,7 @@
   .tgl .sw::after {
     transition: none;
   }
+}
+.dre tr.sub.final .dre-tend-un {
+  color: #9a9a9a;
 }

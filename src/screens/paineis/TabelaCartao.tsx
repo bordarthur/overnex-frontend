@@ -41,7 +41,7 @@ export function TabelaCartao({ cartao }: { cartao: CartaoTabela }) {
                 <tr key={i} className={linha.status ? `rowcf-${STATUS[linha.status].classe}` : undefined}>
                   {linha.celulas.map((c, j) => (
                     <td key={j} className={[classeColuna(j), classeCelula(c)].filter(Boolean).join(' ')}>
-                      <ConteudoCelula celula={c} />
+                      <ConteudoCelula celula={c} curto={variante === 'tendencia'} />
                     </td>
                   ))}
                 </tr>

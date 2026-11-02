@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { anguloPonteiro, quebrarRotulo, ticksRedondos } from './geometria';
+import { anguloPonteiro, passoDosRotulos, quebrarRotulo, ticksRedondos } from './geometria';
 
 describe('anguloPonteiro', () => {
   it('vai de 0° no mínimo a 180° no máximo', () => {
@@ -16,6 +16,23 @@ describe('anguloPonteiro', () => {
 
   it('escala sem largura não quebra', () => {
     expect(anguloPonteiro(5, 10, 10)).toBe(0);
+  });
+});
+
+describe('passoDosRotulos', () => {
+  const meses = ['out', 'nov', 'dez', 'jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set'];
+  const comAno = meses.map((m, i) => `${m}-${i < 3 ? 25 : 26}`);
+
+  it('rótulo curto com espaço: mostra todos', () => {
+    expect(passoDosRotulos(meses, 330, { minimo: 26 })).toBe(1);
+  });
+
+  it('o mesmo espaço com "out-25": mostra um sim, um não', () => {
+    expect(passoDosRotulos(comAno, 330, { minimo: 26 })).toBe(2);
+  });
+
+  it('o espaçamento mínimo do gráfico continua valendo para rótulos curtos', () => {
+    expect(passoDosRotulos(meses, 330, { minimo: 52 })).toBe(2);
   });
 });
 

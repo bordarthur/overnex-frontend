@@ -295,8 +295,9 @@ export interface Celula {
 
 export interface CartaoTabela extends CartaoBase {
   tipo: 'tabela';
-  // calor: células coloridas e centralizadas (atingimento mês a mês)
-  variante?: 'padrao' | 'compacta' | 'calor';
+  // calor: células coloridas e centralizadas (atingimento mês a mês). tendencia: para ler a tendência,
+  // não número a número: números curtos (6,64 mi, 26 d) e farol claro, sem negrito (tabela financeira)
+  variante?: 'padrao' | 'compacta' | 'calor' | 'tendencia';
   colunas: { rotulo: string; alinhar?: 'esquerda' | 'direita' | 'centro'; ocultarNoCelular?: boolean }[];
   // status da linha pinta o fundo dela
   linhas: { status?: Status; celulas: Celula[] }[];
@@ -364,7 +365,7 @@ export interface CartaoMatriz extends CartaoBase {
 
 export interface LinhaDre {
   id: string;
-  // código da conta no plano ("100.01"); subtotais não têm
+  // código da conta no plano ("100.01"); subtotais não têm. Não aparece na tela (decisão de 30/10/2026)
   codigo?: string;
   nome: string;
   // 0 = subtotal (Receita líquida, Lucro bruto...); 1 a 3 = níveis do plano de contas
@@ -385,8 +386,9 @@ export interface LinhaDre {
   status: Status;
   // esta linha ou alguma abaixo dela fora de "saudavel": é o que fica com "Só desvios"
   comDesvio: boolean;
-  // últimos 6 meses
-  tendencia: { realizado: number[]; comparacao: number[] };
+  // últimos 6 meses, em reais (brl) ou em % da receita bruta (pct), como a API escolher para a conta;
+  // a unidade aparece ao lado da faísca ("$" ou "%")
+  tendencia: { realizado: number[]; comparacao: number[]; unidade?: 'brl' | 'pct' };
 }
 
 /** DRE em árvore: abre por nível, filtra os desvios e mostra a tendência de cada conta. */
@@ -491,6 +493,28 @@ export interface CartaoListaDetalhe extends CartaoBase {
   }[];
 }
 
+/**
+ * Ciclo de caixa em réguas de dias: compra → venda → recebe, compra → paga e o dinheiro preso.
+ * Cada trecho vai de `de` a `ate` (em dias), já calculados; a régua vai até o maior `ate`.
+ */
+export interface CartaoCicloCaixa extends CartaoBase {
+  tipo: 'ciclo-caixa';
+  linhas: {
+    rotulo: string;
+    trechos: {
+      // texto dentro do trecho ("Estoque 15 d")
+      rotulo: string;
+      de: number;
+      ate: number;
+      estilo: 'estoque' | 'recebimento' | 'pagamento' | 'preso';
+    }[];
+  }[];
+  // frases do rodapé, lado a lado ("Eram 17 dias em março; hoje 22")
+  rodape?: Trecho[][];
+  // os prazos mês a mês, embaixo
+  grafico?: GraficoLinhas;
+}
+
 export type Cartao =
   | CartaoAndamentoMes
   | CartaoFatores
@@ -508,7 +532,8 @@ export type Cartao =
   | CartaoDoisLados
   | CartaoBarrasHorizontais
   | CartaoNumeroGrafico
-  | CartaoListaDetalhe;
+  | CartaoListaDetalhe
+  | CartaoCicloCaixa;
 
 export interface PainelPayload {
   tela: TelaPainel;
