@@ -13,7 +13,7 @@ import { mensagemErro } from './mensagemErro';
  * e o "Sua sessão terminou" (a sessão caiu no meio do uso; só pede a senha da mesma conta).
  */
 export function LoginTela() {
-  const { sessaoEncerrada } = useAuth();
+  const { sessaoEncerrada, encerradaPorInatividade } = useAuth();
   const [outraConta, setOutraConta] = useState(false);
   const [bloqueio, setBloqueio] = useState<ApiErro | null>(null);
 
@@ -21,6 +21,7 @@ export function LoginTela() {
   return (
     <FormEntrar
       conta={outraConta ? null : sessaoEncerrada}
+      porInatividade={encerradaPorInatividade}
       onOutraConta={() => setOutraConta(true)}
       onBloqueio={setBloqueio}
     />
@@ -30,11 +31,13 @@ export function LoginTela() {
 interface PropsFormEntrar {
   /** Sessão encerrada: a conta que estava logada. */
   conta: UsuarioAuth | null;
+  /** A sessão caiu por ficar sem uso, e não por a renovação ser recusada. */
+  porInatividade: boolean;
   onOutraConta: () => void;
   onBloqueio: (erro: ApiErro) => void;
 }
 
-function FormEntrar({ conta, onOutraConta, onBloqueio }: PropsFormEntrar) {
+function FormEntrar({ conta, porInatividade, onOutraConta, onBloqueio }: PropsFormEntrar) {
   const { entrar } = useAuth();
   const [erro, setErro] = useState<string | null>(null);
   const [senhaInvalida, setSenhaInvalida] = useState(false);
@@ -128,7 +131,11 @@ function FormEntrar({ conta, onOutraConta, onBloqueio }: PropsFormEntrar) {
     return (
       <LayoutAcesso
         titulo="Sua sessão terminou"
-        subtitulo="Por segurança, a sessão foi encerrada. Entre de novo para continuar de onde parou."
+        subtitulo={
+          porInatividade
+            ? 'Por segurança, a sessão foi encerrada depois de um tempo sem uso. Entre de novo para continuar de onde parou.'
+            : 'Por segurança, a sessão foi encerrada. Entre de novo para continuar de onde parou.'
+        }
       >
         <div className="acesso-quem">
           <span className="acesso-avatar" aria-hidden="true">

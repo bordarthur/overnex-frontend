@@ -11,16 +11,18 @@ interface Props {
   cartao: Cartao;
   /** controle no canto do cabeçalho (ex.: Valor/Volume) */
   controle?: ReactNode;
+  /** sem o cabeçalho na tela (o conteúdo já se apresenta); o título fica para o leitor de tela */
+  semCabecalho?: boolean;
   children: ReactNode;
 }
 
 /** O que todo cartão de painel tem: título, pílula, explicação, subtítulo, legenda, chamada e nota. */
-export function CaixaCartao({ cartao, controle, children }: Props) {
+export function CaixaCartao({ cartao, controle, semCabecalho = false, children }: Props) {
   const idTitulo = useId();
   const { legenda = [] } = cartao;
   return (
     <article className={`card s${cartao.largura}`} aria-labelledby={idTitulo}>
-      <div className="card-h">
+      <div className={semCabecalho ? 'visualmente-oculto' : 'card-h'}>
         <div>
           <div className="card-titulo">
             <h2 id={idTitulo}>

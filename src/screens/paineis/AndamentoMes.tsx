@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Degraus } from '../../charts/Degraus';
 import { Segmentado } from '../../components/Segmentado';
 import type { CartaoAndamentoMes } from '../../contracts/painel';
@@ -32,7 +32,24 @@ export function AndamentoMes({ cartao }: { cartao: CartaoAndamentoMes }) {
           {cartao.estatisticas.map((e) => (
             <div key={e.rotulo} className={`ms${e.status ? ` cf-${STATUS[e.status].classe}` : ''}`}>
               <span>{e.rotulo}</span>
-              <b>{formatarExibicao(e.valor, { comSinal: e.comSinal })}</b>
+              {e.partes?.length ? (
+                // cada parte inteira; a linha quebra entre elas quando não cabem juntas
+                <b className="ms-partes">
+                  {e.partes.map((parte, i, todas) => (
+                    <Fragment key={i}>
+                      {i > 0 && ' '}
+                      <span>
+                        {formatarExibicao(parte, { comSinal: e.comSinal })}
+                        {i < todas.length - 1 && ' ·'}
+                      </span>
+                    </Fragment>
+                  ))}
+                </b>
+              ) : (
+                <b title={formatarExibicao(e.valor, { comSinal: e.comSinal })}>
+                  {formatarExibicao(e.valor, { comSinal: e.comSinal })}
+                </b>
+              )}
               {e.contexto && <em>{e.contexto}</em>}
             </div>
           ))}

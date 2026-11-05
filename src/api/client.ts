@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { PainelPayload, TelaPainel } from '../contracts/painel';
+import type { PainelPayload, TabelaNomes, TelaPainel } from '../contracts/painel';
 import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
 
@@ -58,6 +58,16 @@ export interface ApiClient {
     filtros?: FiltrosPainel,
     opcoes?: { signal?: AbortSignal },
   ): Promise<PainelPayload>;
+  /**
+   * Tabela de uma linha por pessoa de um cartão com "Mostrar nomes": GET /api/telas/{tela}/cartoes/{id}/nomes,
+   * com os mesmos filtros do painel. Só é pedida com a chave ligada; a API recusa (403) quem não pode ver.
+   */
+  obterNomes(
+    tela: TelaPainel,
+    cartao: string,
+    filtros?: FiltrosPainel,
+    opcoes?: { signal?: AbortSignal },
+  ): Promise<TabelaNomes>;
 }
 
 export const ApiClientContext = createContext<ApiClient | null>(null);

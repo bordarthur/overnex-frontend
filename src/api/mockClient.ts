@@ -1,10 +1,11 @@
-import type { PainelPayload, TelaPainel } from '../contracts/painel';
+import type { PainelPayload, TabelaNomes, TelaPainel } from '../contracts/painel';
 import type { SessaoPayload } from '../contracts/sessao';
 import type { Indicador, Secao, VisaoGeralPayload } from '../contracts/visaoGeral';
 import { ApiErro, type ApiClient } from './client';
 import fixtureClientes from './fixtures/clientes.json';
 import fixtureEquipe from './fixtures/equipe-comercial.json';
 import fixturePessoas from './fixtures/pessoas.json';
+import fixturePessoasNomes from './fixtures/pessoas-cargos-salarios-nomes.json';
 import fixtureReceberPagar from './fixtures/receber-pagar.json';
 import fixtureResultado from './fixtures/resultado.json';
 import fixtureVendas from './fixtures/vendas.json';
@@ -23,6 +24,11 @@ export const fixturesPainel: Record<TelaPainel, PainelPayload> = {
   resultado: fixtureResultado as unknown as PainelPayload,
   'receber-pagar': fixtureReceberPagar as unknown as PainelPayload,
   pessoas: fixturePessoas as unknown as PainelPayload,
+};
+
+/** "Mostrar nomes": a tabela de uma linha por pessoa, por tela e cartão. Pessoas fictícias. */
+export const fixturesNomes: Record<string, TabelaNomes> = {
+  'pessoas/cargos-salarios': fixturePessoasNomes as unknown as TabelaNomes,
 };
 
 // Linhas de custo além das que o Automático mostra, para o seletor "Linhas de custo" no mock.
@@ -144,6 +150,14 @@ export function criarMockClient({
         };
       if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
       throw new ApiErro(403, 'Acesso negado.');
+    },
+    async obterNomes(tela, cartao, _filtros, opcoes) {
+      await esperar(opcoes?.signal);
+      if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
+      if (cenario === 'sem-permissao') throw new ApiErro(403, 'Você não pode ver os nomes deste cartão.');
+      const tabela = fixturesNomes[`${tela}/${cartao}`];
+      if (!tabela) throw new ApiErro(404, 'Este cartão não tem nomes.');
+      return tabela;
     },
   };
 }

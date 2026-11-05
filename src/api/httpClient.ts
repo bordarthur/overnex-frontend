@@ -1,4 +1,4 @@
-import type { PainelPayload } from '../contracts/painel';
+import type { PainelPayload, TabelaNomes } from '../contracts/painel';
 import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
 import { ApiErro, type ApiClient } from './client';
@@ -71,6 +71,13 @@ export function criarHttpClient({
     obterPainel(tela, filtros = {}, opcoes) {
       const consulta = new URLSearchParams(filtros).toString();
       return obter<PainelPayload>(`/telas/${tela}${consulta ? `?${consulta}` : ''}`, opcoes?.signal);
+    },
+    obterNomes(tela, cartao, filtros = {}, opcoes) {
+      const consulta = new URLSearchParams(filtros).toString();
+      return obter<TabelaNomes>(
+        `/telas/${tela}/cartoes/${encodeURIComponent(cartao)}/nomes${consulta ? `?${consulta}` : ''}`,
+        opcoes?.signal,
+      );
     },
   };
 }

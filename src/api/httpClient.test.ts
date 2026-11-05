@@ -47,6 +47,14 @@ describe('cliente HTTP', () => {
     expect(fetch.mock.calls[1]![0]).toBe('/api/telas/equipe-comercial?mes=2026-09&canal=varejo');
   });
 
+  it('pede os nomes de um cartão na rota dele, com os filtros do painel', async () => {
+    const { api, fetch } = criar(json({ colunas: [], linhas: [] }));
+    await api.obterNomes('pessoas', 'cargos-salarios', { mes: '2026-09', empresa: 'e1' });
+    const [url, init] = fetch.mock.calls[0]!;
+    expect(url).toBe('/api/telas/pessoas/cartoes/cargos-salarios/nomes?mes=2026-09&empresa=e1');
+    expect(init?.headers).toMatchObject({ Authorization: 'Bearer fake:abc' });
+  });
+
   it('grava a escolha de um seletor da Visão geral com PUT', async () => {
     const { api, fetch } = criar(new Response(null, { status: 204 }));
     await expect(api.salvarPreferenciaVisaoGeral('linhas-custo', '3')).resolves.toBeUndefined();

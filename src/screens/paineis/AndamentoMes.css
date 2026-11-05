@@ -113,6 +113,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.ms b.ms-partes {
+  white-space: normal;
+  overflow: visible;
+  line-height: 1.25;
+}
+.ms b.ms-partes span {
+  white-space: nowrap;
+  color: inherit;
+}
 .ms em {
   font-style: normal;
   color: var(--ink-3);

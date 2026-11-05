@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router';
+import { CartaoCobertura } from '../../components/CartaoCobertura';
 import { CartaoInadimplencia } from '../../components/CartaoInadimplencia';
 import { CartaoPagarLancado } from '../../components/CartaoPagarLancado';
 import { CartaoProximosDias } from '../../components/CartaoProximosDias';
@@ -60,6 +61,7 @@ export function SecaoVisaoGeral({ secao, periodos, empresa, soLeitura }: Props) 
         const chave = `${c.tipo}-${i}`;
         if (c.tipo === 'inadimplencia') return <CartaoInadimplencia key={chave} cartao={c} />;
         if (c.tipo === 'pagar-lancado') return <CartaoPagarLancado key={chave} cartao={c} />;
+        if (c.tipo === 'cobertura') return <CartaoCobertura key={chave} cartao={c} />;
         return (
           <CartaoProximosDias
             key={chave}

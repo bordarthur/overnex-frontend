@@ -39,6 +39,12 @@
   --c4: #2a6fb0;
   --c5: #8db6dd;
   --c6: #d98a00;
+  /* entra e sai do caixa ("Próximos 7, 15 e 30 dias"): tons próprios, não são o --ok e o --crit do status */
+  --fluxo-entra: #4c86bc;
+  --fluxo-sai: #bf544b;
+  /* títulos e fundos dos lados do "Contas a receber e a pagar": o mesmo tom do mockup, sem ser o status */
+  --fluxo-entra-texto: #2a6fb0;
+  --fluxo-sai-texto: #b3342a;
   /* faixas */
   --band: rgba(42, 111, 176, 0.08);
   --negfill: rgba(179, 52, 42, 0.14);
@@ -79,6 +85,8 @@
     --c4: #7ab3ea;
     --c5: #3f6f9c;
     --c6: #f0ae4a;
+    --fluxo-entra-texto: #7ab3ea;
+    --fluxo-sai-texto: #f48a7e;
     --band: rgba(122, 179, 234, 0.1);
     --negfill: rgba(244, 138, 126, 0.18);
     --areafill: rgba(237, 237, 237, 0.05);
@@ -117,6 +125,8 @@
   --c4: #7ab3ea;
   --c5: #3f6f9c;
   --c6: #f0ae4a;
+  --fluxo-entra-texto: #7ab3ea;
+  --fluxo-sai-texto: #f48a7e;
   --band: rgba(122, 179, 234, 0.1);
   --negfill: rgba(244, 138, 126, 0.18);
   --areafill: rgba(237, 237, 237, 0.05);

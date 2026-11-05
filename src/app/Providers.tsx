@@ -12,6 +12,9 @@ import { TemaProvider } from '../theme/TemaProvider';
 const atrasoMock = Number(import.meta.env.VITE_MOCK_ATRASO_MS ?? 300);
 const usarApi = import.meta.env.VITE_API_MODO === 'api';
 const usarAuthApi = import.meta.env.VITE_AUTH_MODO === 'api';
+// Só para testar o aviso sem esperar 30 min; sem a variável, vale o padrão do AuthProvider.
+const minutosInatividade = Number(import.meta.env.VITE_INATIVIDADE_MIN);
+const limiteInatividadeMs = minutosInatividade > 0 ? minutosInatividade * 60_000 : undefined;
 
 interface PropsProviders {
   children: ReactNode;
@@ -37,7 +40,7 @@ export function Providers({ children, apiClient, authClient, queryClient }: Prop
   return (
     <TemaProvider>
       <QueryClientProvider client={qc}>
-        <AuthProvider client={auth}>
+        <AuthProvider client={auth} limiteInatividadeMs={limiteInatividadeMs}>
           <ApiProvider apiClient={apiClient}>{children}</ApiProvider>
         </AuthProvider>
       </QueryClientProvider>

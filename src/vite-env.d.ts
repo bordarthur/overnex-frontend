@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_API_MODO?: 'mock' | 'api';
   readonly VITE_AUTH_MODO?: 'fake' | 'api';
   readonly VITE_AUTH_FAKE_OBJECT_ID?: string;
+  readonly VITE_INATIVIDADE_MIN?: string;
 }
 
 interface ImportMeta {

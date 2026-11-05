@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiErro } from '../../api/client';
 import { criarMockClient, fixtureSessao, fixtureVisaoGeral } from '../../api/mockClient';
 import type { CartaoProximosDias, VisaoGeralPayload } from '../../contracts/visaoGeral';
+import { financeiroSemSaldo } from '../../test/fixtures/financeiroSemSaldo';
 import fixtureModulo from '../../test/fixtures/visao-geral-modulo.json';
 import { renderizarApp } from '../../test/renderizar';
 
@@ -40,6 +41,7 @@ describe('Visão geral', () => {
     ).toEqual([
       'Próximos 7, 15 e 30 dias Saudável',
       'Contas a pagar lançadas Atenção',
+      'Cobertura de caixa Crítico',
       'Inadimplência corrente Atenção',
     ]);
     expect(
@@ -108,28 +110,162 @@ describe('Visão geral', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Pessoas' })).toBeInTheDocument();
   });
 
-  it('próximos dias: o modo muda o fim de cada janela, a pílula e a contagem do Financeiro', async () => {
+  it('próximos dias: a projeção soma as vendas novas e as contas a lançar, e o fim vem da API', async () => {
     const user = userEvent.setup();
     renderizarApp('/demo/visao-geral');
     const cartao = await screen.findByRole('article', { name: /^Próximos 7, 15 e 30 dias/ });
 
-    expect(within(cartao).getAllByText('entra mais do que sai')).toHaveLength(3);
-    expect(within(cartao).getByText('R$ 1,60 mi')).toBeInTheDocument();
+    expect(within(cartao).getAllByText('caixa no fim')).toHaveLength(3);
+    // o fim aparece ao lado do traço e na coluna da direita
+    expect(within(cartao).getAllByText('R$ 3,02 mi')).toHaveLength(2);
+    expect(within(cartao).getByText('caixa mínimo R$ 500 mil')).toBeInTheDocument();
+    expect(cartao.querySelectorAll('.b-saldo')).not.toHaveLength(0);
+    expect(within(contagemDa('Financeiro')).getByText('1 crítico')).toBeInTheDocument();
     expect(within(contagemDa('Financeiro')).getByText('2 atenção')).toBeInTheDocument();
     expect(within(contagemDa('Financeiro')).getByText('1 saudável')).toBeInTheDocument();
 
-    await user.click(within(cartao).getByRole('button', { name: 'Com o que falta lançar' }));
+    await user.click(within(cartao).getByRole('button', { name: 'Com a projeção' }));
 
-    expect(within(cartao).getAllByText('sai mais do que entra')).toHaveLength(3);
-    expect(within(cartao).getByText('−R$ 1,05 mi')).toBeInTheDocument();
-    expect(within(cartao).getByRole('heading', { level: 2 })).toHaveTextContent('Atenção');
+    expect(within(cartao).getAllByText('R$ 1,21 mi')).toHaveLength(2);
     expect(
       within(cartao).getByRole('img', {
-        name: /^30 dias: A receber R\$ 5,26 mi, A pagar R\$ 3,66 mi, Falta/,
+        name:
+          '30 dias: Saldo hoje R$ 1,42 mi, A receber R$ 5,26 mi, Vendas novas, pela média recebida R$ 840 mil, ' +
+          'A pagar R$ 3,66 mi, Contas a lançar, pela média paga R$ 2,65 mi',
       }),
     ).toBeInTheDocument();
+  });
+
+  it('próximos dias: a pílula e a contagem do Financeiro seguem o status do modo escolhido', async () => {
+    const user = userEvent.setup();
+    const secoes = fixtureVisaoGeral.secoes.map((s) => ({
+      ...s,
+      cartoes: s.cartoes.map((c) =>
+        c.tipo === 'proximos-dias'
+          ? {
+              ...c,
+              modos: c.modos.map((m) => (m.id === 'projecao' ? { ...m, status: 'atencao' as const } : m)),
+            }
+          : c,
+      ),
+    }));
+    renderizarApp('/demo/visao-geral', { ...fixtureVisaoGeral, secoes });
+    const cartao = await screen.findByRole('article', { name: /^Próximos 7, 15 e 30 dias/ });
+
+    await user.click(within(cartao).getByRole('button', { name: 'Com a projeção' }));
+
+    expect(within(cartao).getByRole('heading', { level: 2 })).toHaveTextContent('Atenção');
     expect(within(contagemDa('Financeiro')).getByText('3 atenção')).toBeInTheDocument();
     expect(within(contagemDa('Financeiro')).queryByText(/saudável/)).toBeNull();
+  });
+
+  it('contas a pagar lançadas: um gráfico por grupo, com a nota do grupo quando vem', async () => {
+    renderizarApp('/demo/visao-geral');
+    const cartao = await screen.findByRole('article', { name: /^Contas a pagar lançadas/ });
+
+    expect(within(cartao).getByText('Por grupo de pagamento')).toBeInTheDocument();
+    const grupos = within(cartao).getAllByRole('img');
+    expect(grupos.map((g) => g.getAttribute('aria-label')?.split(':')[0])).toEqual([
+      'Fornecedores',
+      'Custos fixos, despesas e impostos',
+      'Dívida',
+      'Capex',
+    ]);
+    expect(within(grupos[1]!).getByText('31%')).toHaveClass('s-crit');
+    // capex vem sem farol: o número fica neutro
+    expect(within(grupos[3]!).getByText('0%')).toHaveClass('s-neu');
+    expect(within(grupos[3]!).getByText(/^Oscila de R\$ 50 mil/)).toBeInTheDocument();
+    expect(within(grupos[0]!).queryByText(/^Oscila/)).toBeNull();
+  });
+
+  it('cobertura de caixa: um quadrado por dia, os cobertos preenchidos e até a média contornados', async () => {
+    renderizarApp('/demo/visao-geral');
+    const cartao = await screen.findByRole('article', { name: /^Cobertura de caixa/ });
+
+    expect(within(cartao).getByText('7 dias')).toHaveClass('t-crit');
+    expect(within(cartao).getByText('19/10').tagName).toBe('B');
+    const regua = within(cartao).getByRole('img', { name: 'hoje: 7 dias, de 30 dias; média: 12' });
+    expect(regua.querySelectorAll('.cb-days i')).toHaveLength(30);
+    expect(regua.querySelectorAll('.cb-days i.f')).toHaveLength(7);
+    expect(regua.querySelectorAll('.cb-days i.o')).toHaveLength(5);
+    expect(within(cartao).getByText('média 12')).toBeInTheDocument();
+  });
+
+  it('inadimplência: o a vencer fica só na barra; os quadros são do vencido', async () => {
+    renderizarApp('/demo/visao-geral');
+    const cartao = await screen.findByRole('article', { name: /^Inadimplência corrente/ });
+
+    expect(within(cartao).getByText('A vencer: R$ 6,60 mi, 92,6% da carteira')).toBeInTheDocument();
+    expect([...cartao.querySelectorAll('.at2 span')].map((q) => q.textContent)).toEqual([
+      '1 a 30 dias',
+      '31 a 60 dias',
+      '61 a 90 dias',
+      'Mais de 90 dias',
+    ]);
+  });
+
+  it('Financeiro sem fonte de saldo (como a API manda para a PJ): sem saldo, sem cobertura, um grupo', async () => {
+    const user = userEvent.setup();
+    renderizarApp('/demo/visao-geral', financeiroSemSaldo(fixtureVisaoGeral));
+    const financeiro = await screen.findByRole('region', { name: 'Financeiro' });
+
+    expect(
+      within(financeiro)
+        .getAllByRole('heading', { level: 2 })
+        .map((h) => h.textContent),
+    ).toEqual([
+      'Próximos 7, 15 e 30 dias Saudável',
+      'Contas a pagar lançadas Atenção',
+      'Inadimplência corrente Atenção',
+    ]);
+    expect(within(financeiro).queryByText('Saldo em conta hoje')).toBeNull();
+
+    const proximos = within(financeiro).getByRole('article', { name: /^Próximos 7, 15 e 30 dias/ });
+    expect(proximos.querySelector('.b-saldo')).toBeNull();
+    expect(proximos.querySelector('.pj-min')).toBeNull();
+    expect(within(proximos).getAllByText('entra mais do que sai')).toHaveLength(3);
+    await user.click(within(proximos).getByRole('button', { name: 'Com a projeção' }));
+    expect(
+      within(proximos).getByRole('img', {
+        name:
+          '30 dias: A receber R$ 5,26 mi, Vendas novas, pela média recebida R$ 840 mil, ' +
+          'A pagar R$ 3,66 mi, Contas a lançar, pela média paga R$ 2,65 mi',
+      }),
+    ).toBeInTheDocument();
+    expect(within(proximos).getAllByText('sai mais do que entra')).toHaveLength(3);
+
+    const lancadas = within(financeiro).getByRole('article', { name: /^Contas a pagar lançadas/ });
+    expect(within(lancadas).getByText('Pago por mês e lançado para 30 dias')).toBeInTheDocument();
+    expect(within(lancadas).getAllByRole('img')).toHaveLength(1);
+  });
+
+  it('inadimplência: toda faixa marcada "só na barra" fica fora dos quadros', async () => {
+    const secoes = fixtureVisaoGeral.secoes.map((s) => ({
+      ...s,
+      cartoes: s.cartoes.map((c) => {
+        if (c.tipo !== 'inadimplencia') return c;
+        const [aVencer, ...vencido] = c.carteira;
+        const compensacao = {
+          rotulo: 'Em compensação',
+          valor: { valor: 1980000, unidade: 'brl' as const },
+          percentual: 12.5,
+          status: 'saudavel' as const,
+          soNaBarra: true,
+        };
+        return { ...c, carteira: [aVencer!, compensacao, ...vencido] };
+      }),
+    }));
+    renderizarApp('/demo/visao-geral', { ...fixtureVisaoGeral, secoes });
+    const cartao = await screen.findByRole('article', { name: /^Inadimplência corrente/ });
+
+    expect(cartao.querySelectorAll('.inad-bar > span')).toHaveLength(6);
+    expect(within(cartao).getByText('Em compensação: R$ 1,98 mi, 12,5% da carteira')).toBeInTheDocument();
+    expect([...cartao.querySelectorAll('.at2 span')].map((q) => q.textContent)).toEqual([
+      '1 a 30 dias',
+      '31 a 60 dias',
+      '61 a 90 dias',
+      'Mais de 90 dias',
+    ]);
   });
 
   it('linhas de custo: a escolha grava na API e a Custos volta com as linhas escolhidas', async () => {
@@ -210,7 +346,7 @@ describe('Visão geral', () => {
     renderizarApp('/demo/visao-geral', { ...fixtureVisaoGeral, secoes });
     const cartao = await screen.findByRole('article', { name: /^Próximos 7, 15 e 30 dias/ });
     expect(within(cartao).queryByRole('group', { name: 'Contas a pagar consideradas' })).toBeNull();
-    expect(within(cartao).getAllByText('entra mais do que sai')).toHaveLength(3);
+    expect(within(cartao).getAllByText('caixa no fim')).toHaveLength(3);
   });
 
   it('mostra a etiqueta quando a seção vem com módulo', async () => {

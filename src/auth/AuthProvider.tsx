@@ -3,21 +3,42 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { SessaoAuth, UsuarioAuth } from '../contracts/auth';
 import { AuthContext, type Auth, type EstadoAuth } from './auth';
 import type { AuthClient } from './authClient';
+import { useInatividade } from './useInatividade';
 
 // Renova o token quando falta menos que isto para vencer.
 const MARGEM_RENOVACAO_MS = 60_000;
+// Sem uso por este tempo, a sessão cai; o aviso aparece um pouco antes.
+const LIMITE_INATIVIDADE_MS = 30 * 60_000;
+const AVISO_INATIVIDADE_MS = 2 * 60_000;
+
+interface Encerrada {
+  usuario: UsuarioAuth;
+  porInatividade: boolean;
+}
+
+interface PropsAuthProvider {
+  client: AuthClient;
+  /** Para testes e desenvolvimento: tempo sem uso até a sessão cair. */
+  limiteInatividadeMs?: number;
+  children: ReactNode;
+}
 
 /**
  * Sessão do usuário. O access token fica só na memória (num ref); ao recarregar a página,
  * a sessão volta pelo cookie httpOnly de refresh, que só a API lê.
+ * Depois de 30 min sem uso, a sessão cai (ver useInatividade).
  * Precisa estar dentro do QueryClientProvider: ao sair, o cache é apagado.
  */
-export function AuthProvider({ client, children }: { client: AuthClient; children: ReactNode }) {
+export function AuthProvider({
+  client,
+  limiteInatividadeMs = LIMITE_INATIVIDADE_MS,
+  children,
+}: PropsAuthProvider) {
   const queryClient = useQueryClient();
   const [estado, setEstado] = useState<EstadoAuth>('verificando');
   const [usuario, setUsuario] = useState<UsuarioAuth | null>(null);
   const [saiu, setSaiu] = useState(false);
-  const [sessaoEncerrada, setSessaoEncerrada] = useState<UsuarioAuth | null>(null);
+  const [encerrada, setEncerrada] = useState<Encerrada | null>(null);
   const sessao = useRef<SessaoAuth | null>(null);
   const renovando = useRef<Promise<string | null> | null>(null);
 
@@ -26,7 +47,7 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
       sessao.current = nova;
       setUsuario(nova?.usuario ?? null);
       setEstado(nova ? 'autenticado' : 'anonimo');
-      setSessaoEncerrada(null);
+      setEncerrada(null);
       // Nada de um usuário pode sobrar no cache para o próximo.
       if (!nova) queryClient.clear();
     },
@@ -41,7 +62,7 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
         const antes = sessao.current?.usuario ?? null;
         aplicar(nova);
         // Caiu no meio do uso (não ao abrir o site): o login oferece continuar com a mesma conta.
-        if (!nova && antes) setSessaoEncerrada(antes);
+        if (!nova && antes) setEncerrada({ usuario: antes, porInatividade: false });
         return nova?.accessToken ?? null;
       })
       .finally(() => {
@@ -62,12 +83,32 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
     renovarToken().catch(() => aplicar(null));
   }, [renovarToken, aplicar]);
 
+  // Como na renovação recusada, o login oferece continuar com a mesma conta e volta para a tela em que estava.
+  const encerrarPorInatividade = useCallback(() => {
+    const atual = sessao.current;
+    if (!atual) return;
+    // A API revoga o refresh; se falhar, a sessão some deste navegador do mesmo jeito.
+    client.sair(atual.accessToken).catch(() => {});
+    aplicar(null);
+    setEncerrada({ usuario: atual.usuario, porInatividade: true });
+  }, [client, aplicar]);
+
+  const { restanteS: avisoInatividade, continuar: continuarConectado } = useInatividade({
+    ativo: estado === 'autenticado',
+    limiteMs: limiteInatividadeMs,
+    avisoMs: Math.min(AVISO_INATIVIDADE_MS, limiteInatividadeMs / 2),
+    onVencer: encerrarPorInatividade,
+  });
+
   const auth = useMemo<Auth>(
     () => ({
       estado,
       usuario,
       saiu,
-      sessaoEncerrada,
+      sessaoEncerrada: encerrada?.usuario ?? null,
+      encerradaPorInatividade: encerrada?.porInatividade ?? false,
+      avisoInatividade,
+      continuarConectado,
       getToken,
       renovarToken,
       async entrar(email, senha) {
@@ -91,7 +132,18 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
         }
       },
     }),
-    [estado, usuario, saiu, sessaoEncerrada, getToken, renovarToken, client, aplicar],
+    [
+      estado,
+      usuario,
+      saiu,
+      encerrada,
+      avisoInatividade,
+      continuarConectado,
+      getToken,
+      renovarToken,
+      client,
+      aplicar,
+    ],
   );
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;

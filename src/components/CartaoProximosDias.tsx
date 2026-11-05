@@ -17,9 +17,10 @@ interface Props {
 }
 
 /**
- * Uma linha por janela: em cima, o saldo de hoje (quando houver) e o que vence a receber; embaixo, o
- * que vence a pagar volta do fim da barra de cima e, no modo com falta, o que ainda falta lançar.
- * O traço marca onde a janela termina. As barras só empilham os valores; o fim vem pronto da API.
+ * Uma linha por janela: em cima, o saldo de hoje (quando houver), o que vence a receber e, no modo com
+ * vendas novas, a projeção delas; embaixo, o que vence a pagar volta do fim da barra de cima e, no modo
+ * com falta, o que ainda falta lançar. O traço marca onde a janela termina, com o valor ao lado.
+ * As barras só empilham os valores; o fim vem pronto da API.
  */
 export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
   const idTitulo = useId();
@@ -27,11 +28,19 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
   const { janelas, legenda, minimo } = cartao;
   const atual = cartao.modos.find((m) => m.id === modo) ?? cartao.modos[0];
   const comFalta = atual?.comFalta ?? false;
+  const comNovas = atual?.comNovas ?? false;
   const base = cartao.saldo?.valor ?? 0;
+  const novasDe = (j: (typeof janelas)[number], m?: { comNovas?: boolean }) =>
+    m?.comNovas ? (j.novas?.valor ?? 0) : 0;
+  const faltaDe = (j: (typeof janelas)[number], m?: { comFalta: boolean }) =>
+    m?.comFalta ? j.falta.valor : 0;
 
-  // escala: do menor ponto com falta (ou zero) ao fim da barra de cima, em passos redondos
-  const topos = janelas.map((j) => base + j.receber.valor);
-  const pisos = janelas.map((j, i) => (topos[i] ?? 0) - j.pagar.valor - j.falta.valor);
+  // escala: a mesma em todos os modos, do menor ponto (ou zero) ao maior fim da barra de cima
+  const modos = cartao.modos.length ? cartao.modos : [undefined];
+  const topos = janelas.flatMap((j) => modos.map((m) => base + j.receber.valor + novasDe(j, m)));
+  const pisos = janelas.flatMap((j) =>
+    modos.map((m) => base + j.receber.valor + novasDe(j, m) - j.pagar.valor - faltaDe(j, m)),
+  );
   const lo0 = Math.min(0, ...pisos);
   const hi0 = Math.max(...topos, minimo?.valor ?? 0);
   const marcas = ticksRedondos(lo0, hi0, 5);
@@ -46,16 +55,20 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
     width: `${Math.abs(x(b) - x(a))}%`,
   });
 
-  // valor dentro da barra só quando cabe
+  // valor dentro da barra só quando cabe; o do traço vai para baixo dele quando não cabe à esquerda
   useLayoutEffect(() => {
     refGrade.current?.querySelectorAll<HTMLElement>('.pj-b em').forEach((em) => {
       const barra = em.parentElement;
       em.style.visibility = barra && em.offsetWidth + 4 > barra.clientWidth ? 'hidden' : '';
     });
+    refGrade.current?.querySelectorAll<HTMLElement>('.pj-ml').forEach((ml) => {
+      ml.classList.toggle('flip', ml.offsetLeft < ml.offsetWidth + 8);
+    });
   }, [refGrade, largura, cartao, modo]);
 
+  const classeModo = `${comFalta ? ' m-falta' : ''}${comNovas ? ' m-novas' : ''}`;
   return (
-    <article className={`card fin pj${comFalta ? ' m-falta' : ''}`} aria-labelledby={idTitulo}>
+    <article className={`card fin pj${classeModo}`} aria-labelledby={idTitulo}>
       <CabecalhoCartao
         idTitulo={idTitulo}
         titulo={cartao.titulo}
@@ -85,6 +98,12 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
           <i className="b-rec" aria-hidden="true" />
           {legenda.receber}
         </span>
+        {legenda.novas && (
+          <span className="lg-novas" aria-hidden={!comNovas}>
+            <i className="b-novas" aria-hidden="true" />
+            {legenda.novas}
+          </span>
+        )}
         <span>
           <i className="b-pag" aria-hidden="true" />
           {legenda.pagar}
@@ -104,14 +123,17 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
             )}
             {lo < 0 && <div className="pj-zero" style={{ left: `${x(0)}%` }} />}
           </div>
-          {janelas.map((j, i) => {
-            const topo = topos[i] ?? 0;
+          {janelas.map((j) => {
+            const receberAte = base + j.receber.valor;
+            const novas = novasDe(j, atual);
+            const topo = receberAte + novas;
             const fimLancado = topo - j.pagar.valor;
             const fim = j.fim[atual?.id ?? ''];
             const classe = fim?.status ? ` s-${STATUS[fim.status].classe}` : '';
             const partes = [
               cartao.saldo && legenda.saldo ? `${legenda.saldo} ${formatarValor(cartao.saldo)}` : null,
               `${legenda.receber} ${formatarValor(j.receber)}`,
+              comNovas && j.novas && legenda.novas ? `${legenda.novas} ${formatarValor(j.novas)}` : null,
               `${legenda.pagar} ${formatarValor(j.pagar)}`,
               comFalta ? `${legenda.falta} ${formatarValor(j.falta)}` : null,
             ].filter(Boolean);
@@ -133,11 +155,18 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
                   )}
                   <span
                     className={`pj-b top b-rec${cartao.saldo ? ' emenda' : ''}`}
-                    style={trecho(base, topo)}
+                    style={trecho(base, receberAte)}
                     title={`${legenda.receber}: ${formatarValor(j.receber)}`}
                   >
                     <em>{formatarValor(j.receber)}</em>
                   </span>
+                  {j.novas && (
+                    <span
+                      className="pj-b top b-novas"
+                      style={trecho(receberAte, topo)}
+                      title={`${legenda.novas ?? ''}: ${formatarValor(j.novas)}`}
+                    />
+                  )}
                   <span
                     className="pj-b bot b-pag"
                     style={trecho(fimLancado, topo)}
@@ -154,7 +183,18 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
                     }
                     title={`${legenda.falta}: ${formatarValor(j.falta)}`}
                   />
-                  {fim && <i className={`pj-mk${classe}`} style={{ left: `${x(fim.valor.valor)}%` }} />}
+                  {fim && (
+                    <>
+                      <i className={`pj-mk${classe}`} style={{ left: `${x(fim.valor.valor)}%` }} />
+                      <span
+                        className={`pj-ml${classe}`}
+                        style={{ left: `${x(fim.valor.valor)}%` }}
+                        aria-hidden="true"
+                      >
+                        {formatarValor(fim.valor)}
+                      </span>
+                    </>
+                  )}
                 </div>
                 {fim && (
                   <div className={`pj-end${classe}`}>
