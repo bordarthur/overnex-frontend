@@ -1,12 +1,17 @@
-/* Cartões do Financeiro (próximos dias, contas lançadas). As barras são grafite: azul, laranja e
-   vermelho ficam só para status (o mockup pinta a receber de azul e a pagar de vermelho). */
+/* Cartões do Financeiro (próximos dias, contas lançadas, cobertura). No "Próximos 7, 15 e 30 dias" e
+   no "Contas a pagar lançadas", como no mockup: o que entra em azul e o que sai em vermelho, sólidos
+   no que já está lançado e listrados no tom deles nas projeções, sobre o cinza do saldo e dos meses. */
 .fin {
   --fx-saldo: color-mix(in srgb, var(--ink) 16%, var(--surface));
-  --fx-rec: color-mix(in srgb, var(--ink) 38%, var(--surface));
-  --fx-pag: color-mix(in srgb, var(--ink) 72%, var(--surface));
-  --fx-hatch: repeating-linear-gradient(
+  --fx-cinza: color-mix(in srgb, var(--ink) 24%, var(--surface));
+  --fx-hatch-entra: repeating-linear-gradient(
     -45deg,
-    color-mix(in srgb, var(--ink) 55%, transparent) 0 1.5px,
+    color-mix(in srgb, var(--fluxo-entra) 85%, transparent) 0 1.5px,
+    transparent 1.5px 5.5px
+  );
+  --fx-hatch-sai: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--fluxo-sai) 85%, transparent) 0 1.5px,
     transparent 1.5px 5.5px
   );
 }
@@ -18,18 +23,23 @@
   margin-bottom: 26px;
   align-items: center;
 }
+/* barras e legenda do "Próximos dias" */
 .b-saldo {
-  background: var(--fx-saldo);
+  background: var(--fx-cinza);
 }
 .b-rec {
-  background: var(--fx-rec);
+  background: var(--fluxo-entra);
 }
 .b-pag {
-  background: var(--fx-pag);
+  background: var(--fluxo-sai);
+}
+.b-novas {
+  background: var(--fx-hatch-entra);
+  box-shadow: inset 0 0 0 1px var(--fluxo-entra);
 }
 .b-falta {
-  background: var(--fx-hatch);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 50%, transparent);
+  background: var(--fx-hatch-sai);
+  box-shadow: inset 0 0 0 1px var(--fluxo-sai);
 }
 
 /* legenda */
@@ -52,11 +62,13 @@
   border-radius: 2px;
   display: inline-block;
 }
-.pj-leg .lg-falta {
+.pj-leg .lg-falta,
+.pj-leg .lg-novas {
   opacity: 0;
   transition: opacity 0.4s;
 }
-.pj.m-falta .pj-leg .lg-falta {
+.pj.m-falta .pj-leg .lg-falta,
+.pj.m-novas .pj-leg .lg-novas {
   opacity: 1;
 }
 
@@ -157,8 +169,13 @@
   white-space: nowrap;
   color: var(--ink);
 }
+/* as vendas novas continuam o a receber */
+.pj-b.b-novas {
+  border-radius: 0 3px 3px 0;
+}
+.pj-b.b-rec em,
 .pj-b.b-pag em {
-  color: var(--surface);
+  color: #fff;
 }
 .pj-mk {
   position: absolute;
@@ -178,6 +195,29 @@
 }
 .pj-mk.s-crit {
   background: var(--crit);
+}
+
+/* valor do fim ao lado do traço, na linha de baixo; sem espaço à esquerda, vai para baixo do traço */
+.pj-ml {
+  position: absolute;
+  top: 24px;
+  line-height: 18px;
+  font-size: 11px;
+  color: var(--ink-3);
+  white-space: nowrap;
+  transform: translateX(calc(-100% - 8px));
+  transition: left 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+  pointer-events: none;
+}
+.pj-ml.flip {
+  top: 48px;
+  transform: translateX(-50%);
+}
+.pj-ml.s-warn {
+  color: var(--warn);
+}
+.pj-ml.s-crit {
+  color: var(--crit);
 }
 
 /* linhas de referência sobre a coluna das barras */
@@ -241,7 +281,9 @@
 @media (prefers-reduced-motion: reduce) {
   .pj-b,
   .pj-mk,
-  .pj-leg .lg-falta {
+  .pj-ml,
+  .pj-leg .lg-falta,
+  .pj-leg .lg-novas {
     transition: none;
   }
 }
@@ -294,6 +336,14 @@
   }
   .pj-end b {
     font-size: 18px;
+  }
+  .pj-ml {
+    display: none;
+  }
+  /* na tela estreita, o item que não vale no modo sai da legenda em vez de ocupar uma linha */
+  .pj:not(.m-falta) .pj-leg .lg-falta,
+  .pj:not(.m-novas) .pj-leg .lg-novas {
+    display: none;
   }
   .pj-ov {
     right: 0;

@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { ApiErro } from '../../api/client';
 import { criarMockClient, fixturesPainel } from '../../api/mockClient';
 import type { Cartao, PainelPayload } from '../../contracts/painel';
 import { MENOS } from '../../format';
@@ -39,6 +40,16 @@ describe('Painéis comerciais', () => {
     const bovinos = within(linhas).getByText('Bovinos').closest('tr');
     expect(bovinos).toHaveClass('rowcf-crit');
     expect(within(bovinos!).getByText('Crítico')).toBeInTheDocument();
+  });
+
+  it('andamento do mês: as estatísticas em partes mostram cada valor inteiro', async () => {
+    renderizarApp('/demo/vendas');
+    const andamento = await screen.findByRole('article', { name: /^Como o mês está andando/ });
+    const melhorPior = within(andamento).getByText('Melhor e pior dia').closest('.ms') as HTMLElement;
+    expect(melhorPior.querySelector('b')).toHaveTextContent('R$ 341 mil · R$ 287 mil');
+    expect(within(melhorPior).getByText('R$ 287 mil', { exact: false })).toBeInTheDocument();
+    expect(within(andamento).getByText('Para a supermeta')).toBeInTheDocument();
+    expect(within(andamento).getByText('No mesmo dia de setembro')).toBeInTheDocument();
   });
 
   it('a chave Valor/Volume troca o gráfico do mês', async () => {
@@ -383,9 +394,23 @@ describe('Painéis financeiros', () => {
     expect(within(janelas).getByText('Dado incompleto')).toBeInTheDocument();
 
     const lados = cartao('Contas a receber e a pagar');
+    // cada lado tem o próprio título: o do cartão fica só para o leitor de tela
+    expect(within(lados).getByRole('heading', { level: 2 }).closest('.visualmente-oculto')).not.toBeNull();
     const pagar = within(lados).getByRole('region', { name: 'Contas a pagar' });
     expect(within(pagar).getByText('lançado: 58% da média paga')).toBeInTheDocument();
-    expect(within(pagar).getByText('Mais de 90').closest('.at')).toHaveClass('zero');
+    // idade dos títulos: o a vencer só na barra, com o texto dentro; um quadro por faixa vencida
+    const receber = within(lados).getByRole('region', { name: 'Contas a receber' });
+    expect(within(receber).getByText('A vencer: R$ 6,60 mi, 92,6% da carteira')).toBeInTheDocument();
+    expect([...receber.querySelectorAll('.at2 span')].map((q) => q.textContent)).toEqual([
+      '1 a 30 dias',
+      '31 a 60',
+      '61 a 90',
+      'Mais de 90',
+    ]);
+    expect(within(receber).getByText('4,5% da carteira')).toBeInTheDocument();
+    // faixa zerada: quadro apagado, fora da barra
+    expect(within(pagar).getByText('Mais de 90').closest('.at2')).toHaveClass('zero');
+    expect(pagar.querySelectorAll('.inad-bar > span')).toHaveLength(4);
     expect(within(lados).getAllByText('vencido')).toHaveLength(4);
 
     const cobrar = cartao('Quem cobrar hoje');
@@ -609,5 +634,63 @@ describe('Painel Pessoas', () => {
     const lista = cartao('Produtividade por setor');
     expect(within(lista).getByRole('button', { name: 'Comercial' })).toHaveAttribute('aria-pressed', 'true');
     expect(within(lista).getByRole('img', { name: 'Comercial: faturamento por pessoa' })).toBeInTheDocument();
+  });
+});
+
+describe('Mostrar nomes (Cargos e salários)', () => {
+  it('ligada, pede a tabela de uma linha por pessoa com os filtros do painel; desligada, volta ao agregado', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const pedir = vi.spyOn(api, 'obterNomes');
+    renderizarApp('/demo/pessoas', undefined, api);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Pessoas' })).toBeInTheDocument();
+    const cargos = await waitFor(() => cartao('Cargos e salários'));
+    const chave = within(cargos).getByRole('switch', { name: 'Mostrar nomes' });
+    expect(chave).toHaveAttribute('aria-checked', 'false');
+    expect(within(cargos).getByText('Motorista entregador')).toBeInTheDocument();
+    // desligada, nada de nome é pedido
+    expect(pedir).not.toHaveBeenCalled();
+
+    await user.click(chave);
+    expect(await within(cargos).findByText('Renato Albuquerque')).toBeInTheDocument();
+    expect(chave).toHaveAttribute('aria-checked', 'true');
+    expect(within(cargos).getByRole('columnheader', { name: 'Pessoa' })).toBeInTheDocument();
+    expect(within(cargos).getByText(/Uma linha por pessoa/)).toBeInTheDocument();
+    expect(pedir).toHaveBeenCalledWith('pessoas', 'cargos-salarios', expect.any(Object), expect.anything());
+
+    await user.click(chave);
+    expect(within(cargos).queryByText('Renato Albuquerque')).toBeNull();
+    expect(within(cargos).getByRole('columnheader', { name: 'Cargo' })).toBeInTheDocument();
+    expect(within(cargos).getByText('Agregado por cargo. Nomes só no perfil de RH.')).toBeInTheDocument();
+  });
+
+  it('sem `nomes` no cartão (quem não pode ver dado nominal), não há chave', async () => {
+    const base = fixturesPainel.pessoas;
+    const payload: PainelPayload = {
+      ...base,
+      cartoes: base.cartoes.map((c) => (c.tipo === 'tabela' ? { ...c, nomes: null } : c)),
+    };
+    renderizarApp(
+      '/demo/pessoas',
+      undefined,
+      criarMockClient({ atrasoMs: 0, paineis: { ...fixturesPainel, pessoas: payload } }),
+    );
+    const cargos = await waitFor(() => cartao('Cargos e salários'));
+    expect(within(cargos).queryByRole('switch')).toBeNull();
+  });
+
+  it('recusa da API: mostra o texto dela no lugar da tabela', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    vi.spyOn(api, 'obterNomes').mockRejectedValue(
+      new ApiErro(403, 'Você não pode ver os nomes deste cartão.'),
+    );
+    renderizarApp('/demo/pessoas', undefined, api);
+    const cargos = await waitFor(() => cartao('Cargos e salários'));
+
+    await user.click(within(cargos).getByRole('switch', { name: 'Mostrar nomes' }));
+
+    expect(await within(cargos).findByText('Você não pode ver os nomes deste cartão.')).toBeInTheDocument();
+    expect(within(cargos).queryByText('Motorista entregador')).toBeNull();
   });
 });

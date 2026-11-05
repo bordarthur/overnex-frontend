@@ -1,18 +1,20 @@
+import { BarraIdade } from '../../components/BarraIdade';
 import { Kpi } from '../../components/Kpi';
 import { IconeStatus } from '../../components/Pill';
 import { Trechos } from '../../components/Trechos';
 import type { CartaoDoisLados } from '../../contracts/painel';
 import { formatarPct, formatarValor } from '../../format';
-import { STATUS } from '../../theme/status';
 import { CaixaCartao } from './CaixaCartao';
-// faixas de idade (.aging-tiles e .at), as mesmas do cartão de inadimplência
-import '../../components/CartaoInadimplencia.css';
 import './DoisLados.css';
 
-/** Duas metades lado a lado (contas a receber × a pagar): KPIs, idade dos títulos e maiores saldos. */
+/**
+ * Duas metades lado a lado (contas a receber × a pagar): KPIs, idade dos títulos (a barra com fitas
+ * até os quadros, como na inadimplência da Visão geral) e maiores saldos.
+ */
 export function DoisLados({ cartao }: { cartao: CartaoDoisLados }) {
   return (
-    <CaixaCartao cartao={cartao}>
+    // cada lado já tem o próprio título: o do cartão fica só para o leitor de tela
+    <CaixaCartao cartao={cartao} semCabecalho>
       <div className="lados">
         {cartao.lados.map((lado) => (
           <section key={lado.titulo} className="lado" aria-label={lado.titulo}>
@@ -34,18 +36,11 @@ export function DoisLados({ cartao }: { cartao: CartaoDoisLados }) {
               ))}
             </div>
             <p className="lado-l">Idade dos títulos</p>
-            <div className="aging-tiles">
-              {lado.idade.map((f) => (
-                <div
-                  key={f.rotulo}
-                  className={`at ${f.valor.valor === 0 ? 'zero' : f.status ? STATUS[f.status].classe : ''}`}
-                >
-                  <span>{f.rotulo}</span>
-                  <b>{formatarValor(f.valor)}</b>
-                  <em>{formatarPct(f.participacao)}</em>
-                </div>
-              ))}
-            </div>
+            <BarraIdade
+              faixas={lado.idade.map((f) => ({ ...f, percentual: f.participacao }))}
+              sufixo={lado.rotuloParticipacao}
+              aria={`${lado.titulo} por idade dos títulos`}
+            />
             {lado.observacao && (
               <p className="lado-obs">
                 <Trechos trechos={lado.observacao} />

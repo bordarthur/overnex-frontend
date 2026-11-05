@@ -15,6 +15,7 @@ import type { FiltroPainel, TelaPainel } from '../../contracts/painel';
 import { formatarAtualizacao } from '../../format';
 import { montarFiltros } from '../visao-geral/filtros';
 import { CartaoPainel } from './CartaoPainel';
+import { ConsultaPainelContext } from './consultaPainel';
 import { juntarFiltros } from './filtrosPainel';
 import { TELAS_PAINEL } from './telas';
 import './PainelTela.css';
@@ -38,7 +39,8 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
     () => juntarFiltros(montarFiltros(sessao.data), filtrosDaTela, { comparar }),
     [sessao.data, filtrosDaTela, comparar],
   );
-  const consulta = usePainel(tela, filtros.consulta(valores));
+  const filtrosConsulta = filtros.consulta(valores);
+  const consulta = usePainel(tela, filtrosConsulta);
   const dados = consulta.data;
   // Ajuste durante a renderização (padrão do React para estado derivado de props), sem efeito.
   if (dados && dados.filtros !== filtrosDaTela) setFiltrosDaTela(dados.filtros);
@@ -72,11 +74,13 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
         {d.destaques.length > 0 && <Destaques itens={d.destaques} />}
         {d.kpis.length > 0 && <LinhaKpis kpis={d.kpis} />}
         {d.apoios.length > 0 ? <Apoios itens={d.apoios} /> : <div className="painel-espaco" />}
-        <div className="grid">
-          {d.cartoes.map((c) => (
-            <CartaoPainel key={c.id} cartao={c} />
-          ))}
-        </div>
+        <ConsultaPainelContext.Provider value={{ tela, filtros: filtrosConsulta }}>
+          <div className="grid">
+            {d.cartoes.map((c) => (
+              <CartaoPainel key={c.id} cartao={c} />
+            ))}
+          </div>
+        </ConsultaPainelContext.Provider>
       </>
     );
   }

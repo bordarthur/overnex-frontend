@@ -266,6 +266,12 @@
   font-size: 11px;
   fill: var(--ink-2);
 }
+/* traço do nome afastado até a bolha */
+.ptlead {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+  opacity: 0.6;
+}
 
 /* degraus do mês */
 .nbd {

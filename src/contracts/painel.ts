@@ -24,6 +24,9 @@ export interface ItemValor {
   status?: Status;
   // "+2,1%" em vez de "2,1%"
   comSinal?: boolean;
+  // valores lado a lado ("R$ 1,21 mi · R$ 20 mil"), cada um inteiro; quando vem, a tela mostra estes no
+  // lugar de `valor` (por enquanto só nas estatísticas do andamento do mês)
+  partes?: Exibicao[] | null;
 }
 
 /** Filtro próprio da tela (Canal, Supervisor...). O valor escolhido vai na consulta: ?{id}={opcao.id}. */
@@ -302,6 +305,18 @@ export interface CartaoTabela extends CartaoBase {
   // status da linha pinta o fundo dela
   linhas: { status?: Status; celulas: Celula[] }[];
   vazio?: string;
+  // Chave "Mostrar nomes": a API só manda para quem pode ver dado nominal (perfil de RH). Ligada, o
+  // front pede a tabela de uma linha por pessoa em GET /api/telas/{tela}/cartoes/{id}/nomes.
+  nomes?: { rotulo: string } | null;
+}
+
+/** Resposta de GET /api/telas/{tela}/cartoes/{id}/nomes: a tabela de uma linha por pessoa. */
+export interface TabelaNomes {
+  // no lugar do subtítulo do cartão ("Uma linha por pessoa.")
+  subtitulo?: string | null;
+  colunas: CartaoTabela['colunas'];
+  linhas: CartaoTabela['linhas'];
+  vazio?: string | null;
 }
 
 /** Cartões de destaque lado a lado ("Mais vendas", "Precisa de apoio"). */
@@ -450,8 +465,17 @@ export interface CartaoDoisLados extends CartaoBase {
     // etiqueta de qualidade do dado ao lado do total
     alerta?: string;
     kpis: Kpi[];
-    // faixas de idade dos títulos; participacao em % do total do lado
-    idade: { rotulo: string; valor: Valor; participacao: number; status?: Status }[];
+    // faixas de idade dos títulos, na barra com fitas até os quadros; participacao em % do total do lado.
+    // soNaBarra: a faixa fica só na barra, com o rótulo dentro, sem quadro embaixo (o a vencer)
+    idade: {
+      rotulo: string;
+      valor: Valor;
+      participacao: number;
+      status?: Status;
+      soNaBarra?: boolean | null;
+    }[];
+    // depois do percentual de cada faixa ("da carteira", "do total"); sem ele, só o número
+    rotuloParticipacao?: string | null;
     observacao?: Trecho[];
     maiores: { nome: string; valor: Valor; participacao: number; etiqueta?: string }[];
   }[];

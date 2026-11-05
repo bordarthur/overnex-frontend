@@ -101,13 +101,16 @@ describe('Login', () => {
 });
 
 describe('Sessão encerrada', () => {
-  function renderizar() {
+  function renderizar(porInatividade = false) {
     const entrar = vi.fn<Auth['entrar']>(async () => {});
     const auth: Auth = {
       estado: 'anonimo',
       usuario: null,
       saiu: false,
       sessaoEncerrada: { nome: 'Ana Souza', email: 'ana@cliente.com.br' },
+      encerradaPorInatividade: porInatividade,
+      avisoInatividade: null,
+      continuarConectado: () => {},
       getToken: async () => null,
       renovarToken: async () => null,
       entrar,
@@ -136,6 +139,12 @@ describe('Sessão encerrada', () => {
     await user.click(screen.getByRole('button', { name: 'Continuar' }));
 
     expect(entrar).toHaveBeenCalledWith('ana@cliente.com.br', 'segredo123');
+  });
+
+  it('por inatividade, explica que foi por ficar sem uso', () => {
+    renderizar(true);
+    expect(screen.getByRole('heading', { level: 1, name: 'Sua sessão terminou' })).toBeInTheDocument();
+    expect(screen.getByText(/depois de um tempo sem uso/)).toBeInTheDocument();
   });
 
   it('"Entrar com outra conta" volta ao formulário completo', async () => {

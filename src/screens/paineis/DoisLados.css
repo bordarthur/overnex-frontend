@@ -1,17 +1,39 @@
+/* Sem o cabeçalho do cartão na tela, as duas metades ocupam o cartão inteiro (tirando o padding dele),
+   cada uma com o fundo no tom do título: a primeira é o que entra (a receber), a segunda o que sai
+   (a pagar), como no contrato. */
 .lados {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: -20px -22px -30px;
 }
 .lado {
   min-width: 0;
-  padding: 0 22px;
+  padding: 20px 22px 26px;
 }
 .lado:first-child {
-  padding-left: 0;
   border-right: 1px solid var(--line);
+  border-radius: 13px 0 0 13px;
+  background: color-mix(in srgb, var(--fluxo-entra-texto) 5%, var(--surface));
 }
 .lado:last-child {
-  padding-right: 0;
+  border-radius: 0 13px 13px 0;
+  background: color-mix(in srgb, var(--fluxo-sai-texto) 4%, var(--surface));
+}
+/* com chamada ou nota embaixo, as metades param antes delas, sem chegar ao fundo do cartão */
+.lados:has(~ .callout, ~ .note) {
+  margin-bottom: 0;
+}
+.lados:has(~ .callout, ~ .note) .lado:first-child {
+  border-bottom-left-radius: 0;
+}
+.lados:has(~ .callout, ~ .note) .lado:last-child {
+  border-bottom-right-radius: 0;
+}
+.lado:first-child .lado-h h3 {
+  color: var(--fluxo-entra-texto);
+}
+.lado:last-child .lado-h h3 {
+  color: var(--fluxo-sai-texto);
 }
 .lado-h {
   display: flex;
@@ -52,9 +74,16 @@
   color: var(--ink-3);
   margin: 14px 0 6px;
 }
-.lado .at.zero {
-  background: var(--surface-2);
-  opacity: 0.6;
+/* metade da largura: fitas mais curtas e quadros mais baixos que na Visão geral */
+.lado .barra-idade {
+  --bi-vao: 48px;
+}
+.lado .at2 {
+  min-height: 84px;
+  padding: 10px 10px;
+}
+.lado .at2 b {
+  font-size: 15px;
 }
 .lado-obs {
   font-size: 12.5px;
@@ -100,23 +129,28 @@
   vertical-align: 1px;
 }
 
+/* uma metade embaixo da outra: o traço passa para baixo da primeira, e a última fecha o cartão */
 @media (max-width: 1240px) {
   .lados {
     grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-  }
-  .lado,
-  .lado:first-child,
-  .lado:last-child {
-    padding: 0;
   }
   .lado:first-child {
     border-right: 0;
     border-bottom: 1px solid var(--line);
-    padding-bottom: 18px;
+    border-radius: 13px 13px 0 0;
+  }
+  .lado:last-child {
+    border-radius: 0 0 13px 13px;
   }
 }
+/* no celular o cartão tem 16px de padding nos lados e em cima */
 @media (max-width: 760px) {
+  .lados {
+    margin: -16px -16px -30px;
+  }
+  .lado {
+    padding: 16px 16px 24px;
+  }
   .lado-k {
     grid-template-columns: minmax(0, 1fr);
   }

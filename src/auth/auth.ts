@@ -12,6 +12,12 @@ export interface Auth {
   saiu: boolean;
   /** Quem estava logado quando a sessão caiu no meio do uso (a renovação foi recusada). Senão, null. */
   sessaoEncerrada: UsuarioAuth | null;
+  /** true quando a sessão encerrada caiu por inatividade (e não por a renovação ser recusada). */
+  encerradaPorInatividade: boolean;
+  /** Segundos até a sessão cair por inatividade, quando o aviso está na tela. Senão, null. */
+  avisoInatividade: number | null;
+  /** Fecha o aviso de inatividade e conta a sessão como em uso de novo. */
+  continuarConectado: () => void;
   /** Token para chamar a API, renovado perto de vencer. Fica só na memória: nunca guardar em storage. */
   getToken: () => Promise<string | null>;
   /** Pede um token novo (depois de um 401). null quando a sessão acabou; aí o estado vira anônimo. */

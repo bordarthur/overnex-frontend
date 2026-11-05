@@ -1,0 +1,156 @@
+/* barra das faixas de idade, fitas e quadros (inadimplência da Visão geral e Receber e pagar) */
+.barra-idade {
+  position: relative;
+  --bi-vao: 96px;
+}
+.inad-bar {
+  display: flex;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 6px 0 0;
+  gap: 2px;
+}
+/* texto dentro da faixa que fica só na barra (o a vencer) */
+.inad-bar > span {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.inad-bar em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--ink);
+  opacity: 0.78;
+  padding: 0 10px;
+  white-space: nowrap;
+}
+.ib-ok {
+  background: color-mix(in srgb, var(--ok) 55%, var(--surface));
+}
+.ib-warn {
+  background: var(--warn-mark);
+}
+.ib-c1 {
+  background: color-mix(in srgb, var(--crit) 60%, var(--surface));
+}
+.ib-c2 {
+  background: color-mix(in srgb, var(--crit) 80%, var(--surface));
+}
+.ib-c3 {
+  background: var(--crit);
+}
+.ib-neu {
+  background: var(--fx-cinza, color-mix(in srgb, var(--ink) 24%, var(--surface)));
+}
+.ic2-rib {
+  position: absolute;
+  left: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.rb {
+  opacity: 0.22;
+}
+.rb-ok {
+  fill: var(--ok);
+}
+.rb-warn {
+  fill: var(--warn-mark);
+}
+.rb-c1,
+.rb-c2,
+.rb-c3 {
+  fill: var(--crit);
+}
+.rb-neu {
+  fill: var(--ink-3);
+}
+.ic2-tiles {
+  display: grid;
+  grid-template-columns: repeat(var(--n-quadros, 5), minmax(0, 1fr));
+  gap: 10px;
+  margin-top: var(--bi-vao);
+}
+.at2 {
+  /* a fita chega pela borda de cima do quadro */
+  border-radius: 0 0 12px 12px;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  font-size: 12px;
+  border: 1.8px solid;
+  background: var(--surface);
+  min-height: 112px;
+  min-width: 0;
+}
+.at2 span {
+  color: var(--ink-2);
+}
+.at2 b {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 16.5px;
+  white-space: nowrap;
+}
+.at2 em {
+  font-style: normal;
+  color: var(--ink-3);
+}
+.at2.ok {
+  border-color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 8%, var(--surface));
+}
+.at2.ok b {
+  color: var(--ok);
+}
+.at2.warn {
+  border-color: var(--warn-mark);
+  background: color-mix(in srgb, var(--warn-mark) 9%, var(--surface));
+}
+.at2.warn b {
+  color: var(--warn);
+}
+.at2.c1 {
+  border-color: color-mix(in srgb, var(--crit) 55%, var(--surface));
+}
+.at2.c2 {
+  border-color: color-mix(in srgb, var(--crit) 78%, var(--surface));
+}
+.at2.c3 {
+  border-color: var(--crit);
+  background: color-mix(in srgb, var(--crit) 7%, var(--surface));
+}
+.at2.c1 b,
+.at2.c2 b,
+.at2.c3 b {
+  color: var(--crit);
+}
+.at2.neu {
+  border-color: var(--line);
+}
+/* faixa zerada: sem pedaço na barra nem fita, o quadro fica apagado */
+.at2.zero {
+  border-color: var(--line);
+  border-radius: 12px;
+  opacity: 0.6;
+}
+
+@media (max-width: 760px) {
+  .ic2-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 16px;
+  }
+  .ic2-rib {
+    display: none;
+  }
+  .at2 {
+    border-radius: 12px;
+  }
+  .inad-bar em {
+    font-size: 10.5px;
+    padding: 0 6px;
+  }
+}

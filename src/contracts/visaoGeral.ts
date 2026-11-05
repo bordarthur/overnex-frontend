@@ -78,7 +78,8 @@ export interface CartaoInadimplencia extends Partial<CabecalhoCartao> {
   percentual: Valor;
   texto: Trecho[];
   nota: string;
-  carteira: { rotulo: string; valor: Valor; percentual: number; status: Status }[];
+  // soNaBarra: a faixa fica só na barra, com o rótulo dentro, sem quadro embaixo (o a vencer)
+  carteira: { rotulo: string; valor: Valor; percentual: number; status: Status; soNaBarra?: boolean }[];
   serie: { rotulos: string[]; valores: number[]; media: number };
 }
 
@@ -88,12 +89,14 @@ export interface ValorRotulado {
   rotulo: string;
 }
 
-/** Um modo do seletor do cartão de próximos dias ("Só o lançado", "Com o que falta lançar"). */
+/** Um modo do seletor do cartão de próximos dias ("Só o lançado", "Com a projeção"). */
 export interface ModoProximosDias {
   id: string;
   rotulo: string;
   // true: completa o a pagar com o que falta lançar
   comFalta: boolean;
+  // true: completa o a receber com as vendas novas
+  comNovas?: boolean;
   status: Status | null;
 }
 
@@ -105,6 +108,8 @@ export interface JanelaProximosDias {
   pagar: Valor;
   // o que falta lançar para chegar à média paga, proporcional aos dias
   falta: Valor;
+  // vendas novas para chegar à média recebida, proporcional aos dias
+  novas?: Valor | null;
   // onde o caixa termina em cada modo (pelo id do modo): valor, status e o texto embaixo do valor
   fim: Record<string, { valor: Valor; status: Status | null; texto: string }>;
 }
@@ -118,27 +123,65 @@ export interface CartaoProximosDias extends CabecalhoCartao {
   nota: string;
   // o primeiro é o padrão
   modos: ModoProximosDias[];
-  legenda: { saldo: string | null; receber: string; pagar: string; falta: string };
+  legenda: { saldo: string | null; receber: string; novas?: string | null; pagar: string; falta: string };
   saldo: Valor | null;
   // caixa mínimo da empresa: a linha tracejada ("caixa mínimo R$ 500 mil")
   minimo: { valor: number; rotulo: string } | null;
   janelas: JanelaProximosDias[];
 }
 
-/** O que já está lançado a pagar nos próximos dias, contra o que a empresa pagou por mês. */
+/** Um grupo de pagamento: o que foi pago por mês e o que está lançado para os próximos dias. */
+export interface GrupoPagar {
+  nome: string;
+  // null: grupo sem farol (capex oscila muito para tratar o que falta como falta)
+  status: Status | null;
+  percentual: Valor;
+  // ao lado do percentual: "lançado; falta R$ 1,04 mi"
+  texto: string;
+  pagos: { rotulo: string; valor: Valor }[];
+  media: ValorRotulado;
+  proximos: { rotulo: string; lancado: ValorRotulado; falta: ValorRotulado };
+  // embaixo do gráfico do grupo
+  nota: string | null;
+}
+
+/** O que já está lançado a pagar nos próximos dias, contra o que a empresa pagou por mês, por grupo. */
 export interface CartaoPagarLancado extends CabecalhoCartao {
   tipo: 'pagar-lancado';
   status: Status;
   percentual: Valor;
   // o texto ao lado do número grande
   texto: string;
+  // embaixo do texto: quanto falta e em quais grupos
   nota: string;
-  pagos: { rotulo: string; valor: Valor }[];
-  media: ValorRotulado;
-  proximos: { rotulo: string; lancado: ValorRotulado; falta: ValorRotulado };
+  // acima dos grupos ("Por grupo de pagamento")
+  rotuloGrupos: string;
+  grupos: GrupoPagar[];
 }
 
-export type CartaoSecao = CartaoInadimplencia | CartaoProximosDias | CartaoPagarLancado;
+/** Quantos dias o saldo de hoje paga, se nada entrar: a régua de dias e os últimos meses. */
+export interface CartaoCobertura extends CabecalhoCartao {
+  tipo: 'cobertura';
+  status: Status;
+  dias: Valor;
+  texto: Trecho[];
+  nota: string;
+  // um quadrado por dia: os cobertos preenchidos e, até a referência, contornados
+  regua: {
+    total: number;
+    cobertos: number;
+    referencia: number;
+    rotuloCobertos: string;
+    rotuloReferencia: string;
+    // datas nas pontas ("12/10", "11/11")
+    inicio: string;
+    fim: string;
+  };
+  // o último valor é o de hoje
+  serie: { titulo: string; rotulos: string[]; valores: number[]; media: { valor: number; rotulo: string } };
+}
+
+export type CartaoSecao = CartaoInadimplencia | CartaoProximosDias | CartaoPagarLancado | CartaoCobertura;
 
 /**
  * Escolha que fica salva para o cliente e muda o que a seção mostra (na Custos: quantas linhas de

@@ -6,6 +6,7 @@ import { useSessao } from '../api/useSessao';
 import { useAuth } from '../auth/auth';
 import { destinoSeguro } from '../auth/destino';
 import { EstadoTela } from '../components/EstadoTela';
+import { AvisoInatividade } from './AvisoInatividade';
 
 // Estados fora da moldura (sem rail): ao abrir o site e no redirecionamento de "/".
 function TelaSolta({ children }: { children: ReactNode }) {
@@ -28,7 +29,12 @@ export function RotaProtegida() {
     const voltar = !saiu && pathname !== '/' ? `?voltar=${encodeURIComponent(pathname + search)}` : '';
     return <Navigate to={`/entrar${voltar}`} replace />;
   }
-  return <Outlet />;
+  return (
+    <>
+      <Outlet />
+      <AvisoInatividade />
+    </>
+  );
 }
 
 /** Login e "esqueci a senha": quem já entrou vai direto para a tela pedida. */
