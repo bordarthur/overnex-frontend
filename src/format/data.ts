@@ -38,6 +38,12 @@ export function formatarDiaMes(dataIso: string): string {
   return `${dia}/${mes}`;
 }
 
+/** "2026-03-19" → "19/03/2026". A data vem sem hora, então não passa por fuso. */
+export function formatarData(dataIso: string): string {
+  const [ano, mes, dia] = dataIso.slice(0, 10).split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
 const hora = (p: Partes) => (p.minuto ? `${p.hora}h${String(p.minuto).padStart(2, '0')}` : `${p.hora}h`);
 
 /** "Dados até 12/10, atualizados hoje às 9h" ("ontem", ou "em 13/10" quando for mais antigo). */

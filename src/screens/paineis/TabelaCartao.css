@@ -79,6 +79,51 @@
   margin-left: 6px;
   vertical-align: 1px;
 }
+/* etiqueta vermelha (vencido, parou de comprar), como no mockup */
+.tagn.vermelha {
+  color: var(--crit);
+  background: var(--crit-bg);
+}
+/* pílula escura antes do texto: o mês, na semana a semana */
+.tag-marca {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--surface);
+  background: var(--ink);
+  border-radius: 5px;
+  padding: 0 6px;
+  margin-right: 8px;
+  vertical-align: 1px;
+}
+
+/* listrada: linhas alternadas em cinza (semana a semana) */
+.tbl-listrada td {
+  border-top: 0;
+}
+.tbl-listrada tbody tr:nth-child(even) td:not([class*='cf-']) {
+  background: var(--surface-2);
+}
+.tbl-listrada td:first-child,
+.tbl-listrada th:first-child {
+  padding-left: 10px;
+  white-space: nowrap;
+}
+@media (max-width: 760px) {
+  .tbl-listrada td,
+  .tbl-listrada th {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .tag-marca {
+    margin-right: 4px;
+  }
+}
+/* traço grosso em cima: outro mês começa */
+.tbl tr.sep td {
+  border-top: 2px solid var(--ink-2);
+}
 
 /* compacta: relatórios largos; o nome da linha não quebra */
 .tbl-compacta td:first-child {

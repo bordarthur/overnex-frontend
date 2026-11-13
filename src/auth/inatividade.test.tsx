@@ -9,24 +9,26 @@ import { AuthProvider } from './AuthProvider';
 
 const MIN = 60_000;
 
-const sessao = (): SessaoAuth => ({
+// O tempo de sessão parada é da pessoa e vem da API; aqui, 30 min.
+const sessao = (inatividadeSegundos = 30 * 60): SessaoAuth => ({
   accessToken: 't1',
   expiraEm: new Date(Date.now() + 60 * MIN).toISOString(),
   usuario: { nome: 'Ana', email: 'ana@cliente.com.br' },
+  inatividadeSegundos,
 });
 
-function clienteFalso() {
+function clienteFalso(inatividadeSegundos?: number) {
   return {
-    entrar: vi.fn<AuthClient['entrar']>(async () => sessao()),
-    renovar: vi.fn<AuthClient['renovar']>(async () => sessao()),
+    entrar: vi.fn<AuthClient['entrar']>(async () => sessao(inatividadeSegundos)),
+    renovar: vi.fn<AuthClient['renovar']>(async () => sessao(inatividadeSegundos)),
     sair: vi.fn<AuthClient['sair']>(async () => {}),
     esqueciSenha: vi.fn<AuthClient['esqueciSenha']>(async () => {}),
-    definirSenha: vi.fn<AuthClient['definirSenha']>(async () => sessao()),
+    definirSenha: vi.fn<AuthClient['definirSenha']>(async () => sessao(inatividadeSegundos)),
   } satisfies AuthClient;
 }
 
-async function montar() {
-  const client = clienteFalso();
+async function montar(inatividadeSegundos?: number) {
+  const client = clienteFalso(inatividadeSegundos);
   const queryClient = new QueryClient();
   queryClient.setQueryData(['sessao'], { qualquer: true });
   const ref: { atual: Auth | null } = { atual: null };
@@ -75,6 +77,28 @@ describe('inatividade', () => {
     expect(auth().saiu).toBe(false);
     expect(auth().sessaoEncerrada).toEqual({ nome: 'Ana', email: 'ana@cliente.com.br' });
     expect(auth().encerradaPorInatividade).toBe(true);
+  });
+
+  it('o tempo é o da pessoa, que a API manda: com 4 h, a sessão passa dos 30 min e cai nas 4 h', async () => {
+    await montar(4 * 3600);
+
+    passar(3 * 60 * MIN);
+    expect(aviso()).not.toBeInTheDocument();
+    expect(screen.getByText('autenticado')).toBeInTheDocument();
+
+    passar(58 * MIN);
+    expect(aviso()).toHaveTextContent('Termina em 02:00');
+    passar(2 * MIN);
+    expect(screen.getByText('anonimo')).toBeInTheDocument();
+  });
+
+  it('API que ainda não manda o tempo: vale o padrão de 30 min', async () => {
+    await montar(Number.NaN);
+
+    passar(28 * MIN);
+    expect(aviso()).toBeInTheDocument();
+    passar(2 * MIN);
+    expect(screen.getByText('anonimo')).toBeInTheDocument();
   });
 
   it.each([

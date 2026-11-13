@@ -2,10 +2,16 @@ import type { EstiloLinha, GraficoLinhas } from '../contracts/painel';
 import { LinhaDica, Tooltip } from '../components/Tooltip';
 import { formatarEixo, formatarNaDica, margemEixo, useFoco } from './escala';
 import { passoDosRotulos, ticksRedondos } from './geometria';
+import { colocarRotulos } from './rotulosMarcas';
 import { useLargura } from './useLargura';
 import './charts.css';
 
 const CLASSE_LINHA: Record<EstiloLinha, string> = { principal: '', secundaria: 'l2', pontilhada: 'l3' };
+// espaço em cima do gráfico, e até quanto ele cresce para caberem os rótulos dos pontos marcados
+const TOPO = 18;
+const TOPO_EXTRA = 45;
+// o mais alto que a linha de base de um rótulo chega (12px de letra)
+const TOPO_ROTULO = 12;
 
 interface Props {
   grafico: GraficoLinhas;
@@ -38,11 +44,10 @@ function Desenho({ grafico, aria, altura = 230, largura }: Props & { largura: nu
   const P = {
     l: margemEixo(grafico),
     r: comFim ? Math.max(64, Math.ceil(maiorFim * 6.6) + 14) : 20,
-    t: 18,
+    t: TOPO,
     b: 30,
   };
   const iw = W - P.l - P.r;
-  const ih = H - P.t - P.b;
 
   const todos = [
     ...series.flatMap((s) => s.valores.filter((v): v is number => v != null)),
@@ -58,16 +63,36 @@ function Desenho({ grafico, aria, altura = 230, largura }: Props & { largura: nu
   lo = Math.min(lo, ticks[0] ?? lo);
   hi = Math.max(hi, ticks[ticks.length - 1] ?? hi);
   const x = (i: number) => P.l + (n === 1 ? iw / 2 : (i * iw) / (n - 1));
-  const y = (v: number) => P.t + ih - ((v - lo) / (hi - lo)) * ih;
   const passo = passoDosRotulos(rotulos, iw, { minimo: 52, peloMenos: 2 });
 
-  const caminhos = series.map((s) => {
-    const pts: [number, number][] = [];
-    s.valores.forEach((v, i) => {
-      if (v != null) pts.push([x(i), y(v)]);
+  // a escala do y depende do topo do desenho, que cresce quando os rótulos dos pontos marcados não
+  // cabem acima da linha (dois empilhados num gráfico estreito)
+  const montar = (topo: number) => {
+    const ih = H - topo - P.b;
+    const y = (v: number) => topo + ih - ((v - lo) / (hi - lo)) * ih;
+    const caminhos = series.map((s) => {
+      const pts: [number, number][] = [];
+      s.valores.forEach((v, i) => {
+        if (v != null) pts.push([x(i), y(v)]);
+      });
+      return pts;
     });
-    return pts;
-  });
+    const marcas = marcadores.flatMap((m) => {
+      const v = series[m.serie]?.valores[m.i];
+      if (v == null) return [];
+      const linha = caminhos[m.serie] ?? [];
+      return [{ chave: `${m.serie}-${m.i}`, mx: x(m.i), my: y(v), texto: m.rotulo, linha }];
+    });
+    return { ih, y, caminhos, marcas, rotulosMarcas: colocarRotulos(marcas, P.l, W) };
+  };
+  let montado = montar(P.t);
+  for (let k = 0; k < 4 && P.t < TOPO + TOPO_EXTRA; k++) {
+    const falta = TOPO_ROTULO - Math.min(...montado.rotulosMarcas.map((r) => r.y));
+    if (!(falta > 0)) break;
+    P.t = Math.min(TOPO + TOPO_EXTRA, P.t + Math.ceil(falta) + 1);
+    montado = montar(P.t);
+  }
+  const { ih, y, caminhos, marcas, rotulosMarcas } = montado;
   const d = (pts: [number, number][]) =>
     'M' + pts.map(([a, b]) => `${a.toFixed(1)},${b.toFixed(1)}`).join('L');
   const yBase = y(Math.max(lo, Math.min(0, hi)));
@@ -107,9 +132,21 @@ function Desenho({ grafico, aria, altura = 230, largura }: Props & { largura: nu
           ) : null,
         )}
         {referencia && (
+          // `minimo`: laranja, com o rótulo à esquerda (caixa mínimo); `media`: cinza, à direita
           <>
-            <line className="ref" x1={P.l} x2={W - P.r} y1={y(referencia.valor)} y2={y(referencia.valor)} />
-            <text className="reflabel" x={W - P.r} y={y(referencia.valor) - 6} textAnchor="end">
+            <line
+              className={referencia.estilo === 'minimo' ? 'ref min' : 'ref'}
+              x1={P.l}
+              x2={W - P.r}
+              y1={y(referencia.valor)}
+              y2={y(referencia.valor)}
+            />
+            <text
+              className={referencia.estilo === 'minimo' ? 'reflabel min' : 'reflabel'}
+              x={referencia.estilo === 'minimo' ? P.l + 8 : W - P.r}
+              y={y(referencia.valor) - 6}
+              textAnchor={referencia.estilo === 'minimo' ? 'start' : 'end'}
+            >
               {referencia.rotulo}
             </text>
           </>
@@ -131,22 +168,14 @@ function Desenho({ grafico, aria, altura = 230, largura }: Props & { largura: nu
             </g>
           );
         })}
-        {marcadores.map((m) => {
-          const v = series[m.serie]?.valores[m.i];
-          if (v == null) return null;
-          const mx = x(m.i);
-          const my = y(v);
-          const ancora = mx > W - 140 ? 'end' : mx < P.l + 60 ? 'start' : 'middle';
+        {marcas.map((m, k) => {
+          // sempre acima da linha (ver colocarRotulos)
+          const r = rotulosMarcas[k]!;
           return (
-            <g key={`${m.serie}-${m.i}`}>
-              <circle className="mk" cx={mx} cy={my} r={4.5} />
-              <text
-                className="mklabel"
-                x={mx + (ancora === 'end' ? -8 : ancora === 'start' ? 8 : 0)}
-                y={my - 12}
-                textAnchor={ancora}
-              >
-                {m.rotulo}
+            <g key={m.chave}>
+              <circle className="mk" cx={m.mx} cy={m.my} r={4.5} />
+              <text className="mklabel" x={r.x} y={Math.max(TOPO_ROTULO, r.y)} textAnchor={r.ancora}>
+                {m.texto}
               </text>
             </g>
           );

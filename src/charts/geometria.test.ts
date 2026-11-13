@@ -1,5 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { anguloPonteiro, passoDosRotulos, quebrarRotulo, ticksRedondos } from './geometria';
+import { anguloPonteiro, passoDosRotulos, quebrarRotulo, ticksRedondos, topoDoCaminho } from './geometria';
+
+describe('topoDoCaminho', () => {
+  // y para baixo, como no SVG: o topo é o menor y
+  const linha: [number, number][] = [
+    [0, 100],
+    [10, 100],
+    [20, 140],
+    [30, 60],
+    [40, 80],
+  ];
+
+  it('pega o ponto mais alto da linha dentro do trecho', () => {
+    expect(topoDoCaminho(linha, 0, 40)).toBe(60);
+    expect(topoDoCaminho(linha, 0, 20)).toBe(100);
+  });
+
+  it('conta onde a linha cruza as bordas do trecho', () => {
+    // entre x=20 (y 140) e x=30 (y 60), em x=25 a linha está em y 100
+    expect(topoDoCaminho(linha, 12, 25)).toBe(100);
+    // trecho no meio de um segmento, sem nenhum ponto dentro
+    expect(topoDoCaminho(linha, 22, 24)).toBeCloseTo(108);
+  });
+
+  it('sem linha no trecho, null', () => {
+    expect(topoDoCaminho(linha, 50, 60)).toBeNull();
+    expect(topoDoCaminho([], 0, 10)).toBeNull();
+  });
+});
 
 describe('anguloPonteiro', () => {
   it('vai de 0° no mínimo a 180° no máximo', () => {

@@ -84,6 +84,10 @@ function Grade({ tabela, aviso, soAviso = false }: PropsGrade) {
     const alinhar = c?.alinhar ?? (i === 0 ? 'esquerda' : 'direita');
     return [ALINHAR[alinhar], c?.ocultarNoCelular ? 'so-largo' : ''].filter(Boolean).join(' ');
   };
+  const classeLinha = (linha: Tabela['linhas'][number]) =>
+    [linha.status ? `rowcf-${STATUS[linha.status].classe}` : '', linha.separar ? 'sep' : '']
+      .filter(Boolean)
+      .join(' ') || undefined;
   return (
     <div className="scroll-x">
       <table className={`tbl tbl-${variante}`}>
@@ -105,7 +109,7 @@ function Grade({ tabela, aviso, soAviso = false }: PropsGrade) {
             </tr>
           ) : (
             linhas.map((linha, i) => (
-              <tr key={i} className={linha.status ? `rowcf-${STATUS[linha.status].classe}` : undefined}>
+              <tr key={i} className={classeLinha(linha)}>
                 {linha.celulas.map((c, j) => (
                   <td key={j} className={[classeColuna(j), classeCelula(c)].filter(Boolean).join(' ')}>
                     <ConteudoCelula celula={c} curto={variante === 'tendencia'} />

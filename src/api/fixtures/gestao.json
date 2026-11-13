@@ -1,0 +1,435 @@
+{
+  "perfis": [
+    {
+      "id": "admin",
+      "rotulo": "Admin BORD",
+      "descricao": "Equipe BORD que configura o Overnex. Vê todas as empresas e todos os painéis.",
+      "clientes": "Todas, sem vínculo",
+      "sessaoPadraoMinutos": 1440
+    },
+    {
+      "id": "consultor",
+      "rotulo": "Consultor por carteira",
+      "descricao": "Consultor da BORD ou parceiro BPO. Vê só as empresas da carteira dele.",
+      "clientes": "As da carteira",
+      "sessaoPadraoMinutos": 480
+    },
+    {
+      "id": "cliente_principal",
+      "rotulo": "Cliente principal",
+      "descricao": "Dono ou diretor. Vê todos os painéis ligados da empresa, inclusive Pessoas.",
+      "clientes": "Uma ou mais do grupo",
+      "sessaoPadraoMinutos": 240
+    },
+    {
+      "id": "cliente_usuario",
+      "rotulo": "Cliente usuário",
+      "descricao": "Equipe do cliente. Vê os painéis que o perfil libera em cada empresa.",
+      "clientes": "Uma ou mais",
+      "sessaoPadraoMinutos": 240
+    }
+  ],
+  "sessoes": [30, 60, 240, 480, 720, 1440],
+  "camadas": [
+    { "id": "comercial", "rotulo": "Comercial", "grupo": "Universal Básico" },
+    { "id": "pessoas", "rotulo": "Pessoas", "grupo": "Universal Básico" },
+    { "id": "receber-pagar", "rotulo": "Receber e pagar", "grupo": "Universal Básico" },
+    { "id": "completo", "rotulo": "Universal Completo", "grupo": "Universal Completo" }
+  ],
+  "paineis": [
+    {
+      "codigo": "VG-01",
+      "nome": "Visão geral",
+      "camada": "comercial",
+      "exige": ["f_vendas_"],
+      "usa": ["f_vendas_", "f_metas_", "f_receitas_", "f_despesas_", "f_lancamentos_"],
+      "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
+    },
+    {
+      "codigo": "COM-01",
+      "nome": "Vendas",
+      "camada": "comercial",
+      "exige": ["f_vendas_"],
+      "usa": ["f_vendas_", "f_metas_", "d_bitem_"],
+      "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
+    },
+    {
+      "codigo": "COM-02",
+      "nome": "Equipe comercial",
+      "camada": "comercial",
+      "exige": ["f_vendas_"],
+      "usa": ["f_vendas_", "f_metas_", "d_vendedor_"],
+      "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
+    },
+    {
+      "codigo": "COM-03",
+      "nome": "Clientes e atendimentos",
+      "camada": "comercial",
+      "exige": ["f_vendas_"],
+      "usa": ["f_vendas_", "d_bitem_"],
+      "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
+    },
+    {
+      "codigo": "FIN-03",
+      "nome": "Receber e pagar",
+      "camada": "receber-pagar",
+      "exige": ["f_receitas_", "f_despesas_"],
+      "usa": ["f_receitas_", "f_despesas_", "d_cliente_", "d_fornecedor_", "d_vendedor_"],
+      "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
+    },
+    {
+      "codigo": "PES-01",
+      "nome": "Pessoas",
+      "camada": "pessoas",
+      "exige": ["f_folha_"],
+      "usa": ["f_folha_", "f_vendas_"],
+      "padrao": ["cliente_principal"]
+    },
+    {
+      "codigo": "FIN-02",
+      "nome": "Resultado",
+      "camada": "completo",
+      "exige": ["f_lancamentos_"],
+      "usa": ["f_lancamentos_", "f_orcamento_", "f_despesas_", "f_vendas_"],
+      "padrao": ["consultor", "cliente_principal"]
+    },
+    {
+      "codigo": "FIN-04",
+      "nome": "Fluxo de caixa",
+      "camada": "completo",
+      "exige": ["f_fluxo_"],
+      "usa": ["f_fluxo_", "f_receitas_", "f_despesas_"],
+      "padrao": ["consultor", "cliente_principal"]
+    }
+  ],
+  "fontes": [
+    { "prefixo": "f_vendas_", "linhas": 412380 },
+    { "prefixo": "f_metas_", "linhas": 2137 },
+    { "prefixo": "d_vendedor_", "linhas": 64 },
+    { "prefixo": "d_bitem_", "linhas": 3211 },
+    { "prefixo": "d_cliente_", "linhas": 5890 },
+    { "prefixo": "d_fornecedor_", "linhas": 742 },
+    { "prefixo": "f_receitas_", "linhas": 38214 },
+    { "prefixo": "f_despesas_", "linhas": 29640 },
+    { "prefixo": "f_lancamentos_", "linhas": 96410 },
+    { "prefixo": "f_orcamento_", "linhas": 1284 },
+    { "prefixo": "f_fluxo_", "linhas": 18220 },
+    { "prefixo": "f_folha_", "linhas": 18540 }
+  ],
+  "ultimaData": "09/11/2026",
+  "preferencias": [
+    {
+      "id": "linhas-custo",
+      "rotulo": "Linhas de custo",
+      "descricao": "Automático: as linhas que somam 80% do custo, no máximo 7, e o resto em Outros. A escolha fica salva para o cliente.",
+      "opcoes": [
+        { "id": "auto", "rotulo": "Automático (80%)" },
+        { "id": "1", "rotulo": "1" },
+        { "id": "2", "rotulo": "2" },
+        { "id": "3", "rotulo": "3" },
+        { "id": "4", "rotulo": "4" },
+        { "id": "5", "rotulo": "5" },
+        { "id": "6", "rotulo": "6" },
+        { "id": "7", "rotulo": "7" }
+      ],
+      "padrao": "auto"
+    }
+  ],
+  "cargas": [
+    {
+      "data": "10/11",
+      "inicio": "9h00",
+      "duracao": "2 min 04 s",
+      "tabelas": 12,
+      "status": "saudavel",
+      "statusRotulo": "ok",
+      "observacao": null
+    },
+    {
+      "data": "09/11",
+      "inicio": "9h00",
+      "duracao": "1 min 58 s",
+      "tabelas": 12,
+      "status": "saudavel",
+      "statusRotulo": "ok",
+      "observacao": null
+    },
+    {
+      "data": "06/11",
+      "inicio": "9h00",
+      "duracao": "2 min 11 s",
+      "tabelas": 12,
+      "status": "saudavel",
+      "statusRotulo": "ok",
+      "observacao": null
+    },
+    {
+      "data": "05/11",
+      "inicio": "9h31",
+      "duracao": "2 min 40 s",
+      "tabelas": 12,
+      "status": "critico",
+      "statusRotulo": "parcial",
+      "observacao": "1 fonte com erro: tempo esgotado ao ler as contas a pagar"
+    },
+    {
+      "data": "04/11",
+      "inicio": "9h00",
+      "duracao": "1 min 52 s",
+      "tabelas": 12,
+      "status": "saudavel",
+      "statusRotulo": "ok",
+      "observacao": null
+    }
+  ],
+  "clientes": [
+    {
+      "slug": "demo",
+      "nome": "Cliente Demo",
+      "sigla": "CD",
+      "sufixo": "demo",
+      "fontesFora": {},
+      "ligados": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
+      "acesso": {
+        "consultor": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02", "FIN-04"],
+        "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
+        "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"]
+      },
+      "feriados": [
+        { "data": "2026-03-19", "nome": "São José (estadual)" },
+        { "data": "2026-08-15", "nome": "Nossa Senhora da Assunção (Fortaleza)" }
+      ]
+    },
+    {
+      "slug": "pj",
+      "nome": "PJ",
+      "sigla": "PJ",
+      "sufixo": "pj",
+      "fontesFora": {
+        "f_orcamento_": { "status": "critico", "statusRotulo": "sem carga", "observacao": null },
+        "f_fluxo_": {
+          "status": "critico",
+          "statusRotulo": "erro",
+          "observacao": "Arquivo do saldo inicial não encontrado na pasta do cliente."
+        },
+        "f_folha_": { "status": "critico", "statusRotulo": "sem carga", "observacao": null }
+      },
+      "ligados": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02"],
+      "acesso": {
+        "consultor": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02"],
+        "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02"],
+        "cliente_usuario": ["VG-01", "COM-01", "COM-03"]
+      },
+      "feriados": []
+    },
+    {
+      "slug": "aurora",
+      "nome": "Agência Aurora",
+      "sigla": "AA",
+      "sufixo": "aurora",
+      "fontesFora": {
+        "f_metas_": { "status": "critico", "statusRotulo": "sem carga", "observacao": null },
+        "f_lancamentos_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
+        "f_orcamento_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
+        "f_fluxo_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null }
+      },
+      "ligados": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01"],
+      "acesso": {
+        "consultor": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"],
+        "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01"],
+        "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03"]
+      },
+      "feriados": [{ "data": "2026-04-13", "nome": "Aniversário de Fortaleza" }]
+    },
+    {
+      "slug": "sabor-do-mar",
+      "nome": "Restaurante Sabor do Mar",
+      "sigla": "SM",
+      "sufixo": "sabor",
+      "fontesFora": {
+        "f_lancamentos_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
+        "f_orcamento_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
+        "f_fluxo_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null }
+      },
+      "ligados": ["VG-01", "COM-01", "COM-03", "FIN-03", "PES-01"],
+      "acesso": {
+        "consultor": ["VG-01", "COM-01", "COM-03", "FIN-03"],
+        "cliente_principal": ["VG-01", "COM-01", "COM-03", "FIN-03", "PES-01"],
+        "cliente_usuario": ["VG-01", "COM-01"]
+      },
+      "feriados": []
+    },
+    {
+      "slug": "horizonte",
+      "nome": "Construtora Horizonte",
+      "sigla": "CH",
+      "sufixo": "horizonte",
+      "fontesFora": {},
+      "ligados": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
+      "acesso": {
+        "consultor": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02", "FIN-04"],
+        "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
+        "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"]
+      },
+      "feriados": []
+    }
+  ],
+  "usuarios": [
+    {
+      "id": "0d000000-0000-4000-8000-0000000000ad",
+      "nome": "Dora",
+      "email": "dora@bord.com.br",
+      "perfil": "admin",
+      "clientes": [],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 42,
+      "ultimo": "hoje, 9h14"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000000c0",
+      "nome": "Caio",
+      "email": "caio@bord.com.br",
+      "perfil": "consultor",
+      "clientes": ["demo", "pj"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 37,
+      "ultimo": "hoje, 8h50"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000000b0",
+      "nome": "BPO parceiro",
+      "email": "contato@bpoparceiro.com.br",
+      "perfil": "consultor",
+      "clientes": ["aurora", "sabor-do-mar"],
+      "sessaoMinutos": 240,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 6,
+      "ultimo": "04/11, 10h22"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001a1",
+      "nome": "Usuário de desenvolvimento",
+      "email": "dev@overnex.local",
+      "perfil": "cliente_principal",
+      "clientes": ["demo"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 21,
+      "ultimo": "ontem, 18h40"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001a2",
+      "nome": "Gerente comercial",
+      "email": "comercial@clientedemo.com.br",
+      "perfil": "cliente_usuario",
+      "clientes": ["demo"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 28,
+      "ultimo": "hoje, 8h31"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001a3",
+      "nome": "TV da recepção",
+      "email": "tv@clientedemo.com.br",
+      "perfil": "cliente_usuario",
+      "clientes": ["demo"],
+      "sessaoMinutos": 720,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 5,
+      "ultimo": "hoje, 7h02"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001a4",
+      "nome": "Antigo financeiro",
+      "email": "financeiro.antigo@clientedemo.com.br",
+      "perfil": "cliente_usuario",
+      "clientes": ["demo"],
+      "sessaoMinutos": null,
+      "ativo": false,
+      "convite": null,
+      "quando": "desativado 28/10, 17h05",
+      "entradas30d": 0,
+      "ultimo": "27/10, 11h48"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001b1",
+      "nome": "Diretoria PJ",
+      "email": "diretoria@pj.com.br",
+      "perfil": "cliente_principal",
+      "clientes": ["pj"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 18,
+      "ultimo": "hoje, 9h40"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001b2",
+      "nome": "Financeiro PJ",
+      "email": "financeiro@pj.com.br",
+      "perfil": "cliente_usuario",
+      "clientes": ["pj"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": "enviado",
+      "quando": "enviado ontem, 16h10",
+      "entradas30d": 0,
+      "ultimo": null
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001c1",
+      "nome": "Helena Prado",
+      "email": "helena@grupohorizonte.com.br",
+      "perfil": "cliente_principal",
+      "clientes": ["aurora", "horizonte"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 15,
+      "ultimo": "05/11, 19h12"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000000e0",
+      "nome": "Joana Ribeiro",
+      "email": "joana@sabordomar.com.br",
+      "perfil": "cliente_usuario",
+      "clientes": [],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": null,
+      "quando": null,
+      "entradas30d": 2,
+      "ultimo": "04/11, 11h05"
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001d1",
+      "nome": "Gerente da loja",
+      "email": "loja@sabordomar.com.br",
+      "perfil": "cliente_usuario",
+      "clientes": ["sabor-do-mar"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": "vencido",
+      "quando": "venceu 03/11, 14h20",
+      "entradas30d": 0,
+      "ultimo": null
+    }
+  ]
+}

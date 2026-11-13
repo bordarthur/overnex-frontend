@@ -2,9 +2,12 @@ import type { TelaPainel } from '../../contracts/painel';
 
 /**
  * Rótulos de tela (título e pergunta do cabeçalho), como nos mockups Total M2.0.1 e M2.1.1. `comparar`: a tela
- * aceita o chip global "Comparar com" na consulta.
+ * aceita o chip global "Comparar com" na consulta; `semComparar`: a tela não mostra esse chip.
  */
-export const TELAS_PAINEL: Record<TelaPainel, { titulo: string; pergunta: string; comparar?: boolean }> = {
+export const TELAS_PAINEL: Record<
+  TelaPainel,
+  { titulo: string; pergunta: string; comparar?: boolean; semComparar?: boolean }
+> = {
   vendas: {
     titulo: 'Vendas',
     pergunta: 'Vou bater a meta do mês? O que puxa para cima e o que puxa para baixo?',
@@ -25,6 +28,12 @@ export const TELAS_PAINEL: Record<TelaPainel, { titulo: string; pergunta: string
   'receber-pagar': {
     titulo: 'Receber e pagar',
     pergunta: 'O que entra e o que sai nos próximos dias, quem cobrar e o que vence?',
+  },
+  // O "Caixa" do mockup: a projeção de 60 dias e, embaixo, o realizado (DFC).
+  'fluxo-caixa': {
+    titulo: 'Fluxo de caixa',
+    pergunta: 'Quanto caixa vou ter nos próximos 60 dias e quanto a operação gerou?',
+    semComparar: true,
   },
   pessoas: {
     titulo: 'Pessoas',

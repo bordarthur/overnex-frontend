@@ -1,0 +1,158 @@
+/* campos da gaveta de edição (mockup Gestão M2.1.0) */
+.gst-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  border: 0;
+}
+.gst-campo > label,
+.gst-campo legend,
+.gst-rotulo {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  margin-bottom: 2px;
+  padding: 0;
+}
+.gst-campo input[type='email'],
+.gst-campo input[type='text'] {
+  font: inherit;
+  /* 16px: o iOS não dá zoom no campo */
+  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 12px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.gst-campo input:disabled {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.gst-campo input[type='text']:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 1px;
+}
+.gst-campo input[aria-invalid='true'] {
+  border-color: var(--crit);
+}
+.gst-dica {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.gst-campo-erro {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--crit);
+}
+.gst-opcoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.gst-aviso-campo {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--crit);
+  background: var(--crit-bg);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-top: 4px;
+}
+.gst-campo .seg {
+  align-self: flex-start;
+  flex-wrap: wrap;
+}
+.gst-acessos {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.gst-acessos b {
+  color: var(--ink);
+}
+
+/* rodapé: a recusa da API em cima, o acesso à esquerda e os botões à direita */
+.gst-gaveta-erro {
+  flex-basis: 100%;
+  margin-bottom: 0;
+}
+.gst-gaveta-acesso {
+  margin-right: auto;
+}
+
+/* prévia de "Ao entrar, a pessoa vê": uma miniatura da tela e o texto ao lado */
+.gst-previa-entrar {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.gst-previa-entrar .gst-dica {
+  max-width: 220px;
+}
+.gst-mini {
+  flex: none;
+  width: 100%;
+  max-width: 230px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.gst-mini-barra {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  background: var(--grafite);
+}
+.gst-mini-logo {
+  width: 60px;
+  height: 10px;
+  color: #f2f2f2;
+}
+.gst-mini-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 118px;
+  padding: 12px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.gst-mini-corpo b {
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.gst-mini-item {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 3px 8px;
+  background: var(--surface);
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gst-mini-corpo i {
+  display: block;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+.gst-mini-corpo i.curta {
+  width: 60%;
+}
+
+@media (max-width: 640px) {
+  .gst-opcoes {
+    grid-template-columns: 1fr;
+  }
+  .gst-previa-entrar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

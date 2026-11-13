@@ -1,15 +1,17 @@
 import type { ReactNode } from 'react';
 import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router';
-import { useAdiantarAoEntrar } from '../api/adiantar';
 import { semPermissao } from '../api/client';
+import { useClienteSlug } from '../api/useClienteSlug';
 import { useSessao } from '../api/useSessao';
 import { useAuth } from '../auth/auth';
 import { destinoSeguro } from '../auth/destino';
 import { EstadoTela } from '../components/EstadoTela';
+import { EscolhaEmpresa } from '../screens/entrada/EscolhaEmpresa';
 import { AvisoInatividade } from './AvisoInatividade';
+import { primeiraTela } from './menu';
 
 // Estados fora da moldura (sem rail): ao abrir o site e no redirecionamento de "/".
-function TelaSolta({ children }: { children: ReactNode }) {
+export function TelaSolta({ children }: { children: ReactNode }) {
   return <main className="tela-solta">{children}</main>;
 }
 
@@ -17,7 +19,6 @@ function TelaSolta({ children }: { children: ReactNode }) {
 export function RotaProtegida() {
   const { estado, saiu } = useAuth();
   const { pathname, search } = useLocation();
-  useAdiantarAoEntrar();
 
   if (estado === 'verificando')
     return (
@@ -52,12 +53,31 @@ export function SoAnonimo() {
   return <Outlet />;
 }
 
-/** "/": abre a Visão geral do cliente do usuário, que vem de /api/sessao. */
+/** A primeira tela liberada da empresa; sem nenhuma, a Visão geral (que mostra "sem acesso"). */
+const telaDeEntrada = (slug: string, telas: string[]) => `/${slug}/${primeiraTela(telas) ?? 'visao-geral'}`;
+
+/**
+ * "/": para onde a pessoa vai ao entrar, pelo que /api/sessao (sem empresa escolhida) diz dela:
+ * - Admin BORD: a Gestão;
+ * - uma empresa só: a primeira tela dela (a Visão geral, quando liberada);
+ * - duas ou mais: a tela "Escolha a empresa";
+ * - nenhuma: o aviso que a API mandou e o botão Sair.
+ */
 export function Inicio() {
   const sessao = useSessao();
   const { sair } = useAuth();
 
-  if (sessao.isSuccess) return <Navigate to={`/${sessao.data.cliente.slug}/visao-geral`} replace />;
+  if (sessao.isSuccess) {
+    const { gestao, cliente, clientes, telas, aviso } = sessao.data;
+    if (gestao) return <Navigate to="/gestao" replace />;
+    if (cliente) return <Navigate to={telaDeEntrada(cliente.slug, telas)} replace />;
+    if (clientes.length > 0) return <EscolhaEmpresa clientes={clientes} onSair={() => void sair()} />;
+    return (
+      <TelaSolta>
+        <EstadoTela tipo="vazio" texto={aviso ?? undefined} onSair={() => void sair()} />
+      </TelaSolta>
+    );
+  }
   return (
     <TelaSolta>
       {sessao.isPending ? (
@@ -69,4 +89,15 @@ export function Inicio() {
       )}
     </TelaSolta>
   );
+}
+
+/** "/<empresa>": abre a primeira tela liberada da empresa (é para onde o seletor de empresa manda). */
+export function InicioDaEmpresa() {
+  const slug = useClienteSlug();
+  const sessao = useSessao();
+
+  if (sessao.isSuccess) return <Navigate to={telaDeEntrada(slug, sessao.data.telas)} replace />;
+  if (sessao.isPending) return <EstadoTela tipo="carregando" />;
+  // Sem a sessão, tenta a Visão geral: a própria tela mostra o erro ou a falta de acesso.
+  return <Navigate to={`/${slug}/visao-geral`} replace />;
 }

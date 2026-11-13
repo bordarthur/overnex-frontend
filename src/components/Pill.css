@@ -27,3 +27,8 @@
   color: var(--crit);
   background: var(--crit-bg);
 }
+/* neutra (desativado, desligada, indisponível): cinza, sem cor de status nem de marca */
+.pill.neutro {
+  color: var(--ink-2);
+  background: var(--surface-2);
+}

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ApiErro, useApiClient } from '../../api/client';
+import { textoDaRecusa, useApiClient } from '../../api/client';
+import { useClienteSlug } from '../../api/useClienteSlug';
 import { CHAVE_VISAO_GERAL } from '../../api/useVisaoGeral';
 import { Segmentado } from '../../components/Segmentado';
 import type { SeletorSecao } from '../../contracts/visaoGeral';
@@ -19,17 +20,16 @@ interface Props {
 
 // Recusas com motivo (403, 404, 422): o texto que a API mandou. O resto, uma mensagem genérica.
 const mensagemDeErro = (erro: unknown) =>
-  erro instanceof ApiErro && [403, 404, 422].includes(erro.status)
-    ? erro.message
-    : 'Não foi possível salvar a escolha. Tente de novo.';
+  textoDaRecusa(erro, 'Não foi possível salvar a escolha. Tente de novo.');
 
 export function SeletorDaSecao({ seletor, empresa, soLeitura }: Props) {
   const api = useApiClient();
+  const cliente = useClienteSlug();
   const queryClient = useQueryClient();
   const salvar = useMutation({
-    mutationFn: (valor: string) => api.salvarPreferenciaVisaoGeral(seletor.id, valor, { empresa }),
+    mutationFn: (valor: string) => api.salvarPreferenciaVisaoGeral(cliente, seletor.id, valor, { empresa }),
     // devolve a promessa: a gravação só termina quando os números novos chegarem
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [CHAVE_VISAO_GERAL] }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [CHAVE_VISAO_GERAL, cliente] }),
   });
   const valor = salvar.isPending ? salvar.variables : seletor.valor;
 

@@ -1,0 +1,18 @@
+.selecao {
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 3px 6px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+.selecao:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.selecao:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 1px;
+}

@@ -17,6 +17,11 @@ export interface SessaoAuth {
   /** ISO 8601: quando o access token expira. */
   expiraEm: string;
   usuario: UsuarioAuth;
+  /**
+   * Tempo de sessão parada da pessoa, em segundos (4 h para os clientes, 8 h consultor, 24 h admin,
+   * ou o que a Gestão puser). Sem uso por esse tempo, o front derruba a sessão.
+   */
+  inatividadeSegundos: number;
 }
 
 /** De onde veio o link do e-mail: convite (primeiro acesso) ou recuperação de senha. */

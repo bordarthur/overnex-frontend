@@ -11,6 +11,7 @@ const sessao = (token: string, validaPorMs = 60 * 60_000): SessaoAuth => ({
   accessToken: token,
   expiraEm: new Date(Date.now() + validaPorMs).toISOString(),
   usuario: { nome: 'Ana', email: 'ana@cliente.com.br' },
+  inatividadeSegundos: 4 * 3600,
 });
 
 function clienteFalso(inicial: SessaoAuth | null) {

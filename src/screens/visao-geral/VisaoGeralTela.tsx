@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAdiantarMeses } from '../../api/adiantar';
 import { semPermissao } from '../../api/client';
+import { useClienteSlug } from '../../api/useClienteSlug';
 import { useSessao } from '../../api/useSessao';
 import { useVisaoGeral } from '../../api/useVisaoGeral';
 import { useAuth } from '../../auth/auth';
@@ -19,6 +20,7 @@ const PERGUNTA = 'Como está a empresa hoje, área por área, contra o orçado e
 
 export function VisaoGeralTela() {
   const { sair } = useAuth();
+  const cliente = useClienteSlug();
   const sessao = useSessao();
   const filtros = useMemo(() => montarFiltros(sessao.data), [sessao.data]);
   // Só os chips que o usuário trocou; os outros ficam no padrão do FiltroDef.
@@ -27,6 +29,7 @@ export function VisaoGeralTela() {
   const consultaFiltros = filtros.consulta(valores);
   const consulta = useVisaoGeral(consultaFiltros);
   useAdiantarMeses(
+    cliente,
     consultaFiltros,
     sessao.data?.periodos ?? [],
     consulta.isSuccess && !consulta.isPlaceholderData && !consulta.isFetching,

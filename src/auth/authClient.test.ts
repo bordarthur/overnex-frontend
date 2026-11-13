@@ -9,6 +9,7 @@ const SESSAO: SessaoAuth = {
   accessToken: 'jwt',
   expiraEm: '2026-10-23T15:00:00Z',
   usuario: { nome: 'Ana', email: 'ana@cliente.com.br' },
+  inatividadeSegundos: 4 * 3600,
 };
 
 function criar(...respostas: Response[]) {

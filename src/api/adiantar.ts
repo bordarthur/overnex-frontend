@@ -3,7 +3,6 @@ import { useEffect, useRef } from 'react';
 import { useAuth } from '../auth/auth';
 import type { PeriodoDisponivel } from '../contracts/sessao';
 import { useApiClient, type FiltrosVisaoGeral } from './client';
-import { opcoesSessao } from './useSessao';
 import { opcoesVisaoGeral } from './useVisaoGeral';
 
 // Pedidos adiantados: o front busca o que a pessoa provavelmente vai abrir, com as mesmas
@@ -11,20 +10,20 @@ import { opcoesVisaoGeral } from './useVisaoGeral';
 // apaga o cache inteiro, inclusive o que foi adiantado.
 
 /**
- * Assim que há sessão (entrou, definiu a senha ou renovou ao abrir o site), pede /api/sessao e a
- * Visão geral padrão juntas. Sem `mes`, a Visão geral não depende da sessão: a API usa o cliente e as
- * empresas do vínculo do usuário.
+ * Ao abrir uma empresa (ou trocar de empresa), pede a Visão geral padrão dela, seja qual for a tela
+ * aberta. Só quando a sessão diz que a Visão geral está liberada (`liberada`): sem isso o pedido
+ * viraria um 403 à toa, e toda negação fica no registro de acessos da API.
+ * A sessão vem antes porque é ela que dá o slug a quem entra por "/": a Visão geral precisa do
+ * `?cliente=` (obrigatório para o Admin BORD e para quem tem mais de uma empresa).
  */
-export function useAdiantarAoEntrar() {
-  const { estado } = useAuth();
+export function useAdiantarAoEntrar(cliente: string, liberada: boolean) {
   const api = useApiClient();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (estado !== 'autenticado') return;
-    void queryClient.prefetchQuery(opcoesSessao(api));
-    void queryClient.prefetchQuery(opcoesVisaoGeral(api));
-  }, [estado, api, queryClient]);
+    if (!cliente || !liberada) return;
+    void queryClient.prefetchQuery(opcoesVisaoGeral(api, cliente));
+  }, [cliente, liberada, api, queryClient]);
 }
 
 /**
@@ -42,7 +41,12 @@ export function mesesParaAdiantar(periodos: string[], mes: string | undefined): 
  * Um pedido por vez (cada Visão geral usa até 3 conexões do banco no back) e só com a aba visível.
  * O que já está fresco no cache não é pedido de novo (prefetchQuery respeita o staleTime).
  */
-export function useAdiantarMeses(filtros: FiltrosVisaoGeral, periodos: PeriodoDisponivel[], pronto: boolean) {
+export function useAdiantarMeses(
+  cliente: string,
+  filtros: FiltrosVisaoGeral,
+  periodos: PeriodoDisponivel[],
+  pronto: boolean,
+) {
   const api = useApiClient();
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
@@ -56,7 +60,7 @@ export function useAdiantarMeses(filtros: FiltrosVisaoGeral, periodos: PeriodoDi
   ).join(',');
 
   useEffect(() => {
-    if (!pronto || !alvos) return;
+    if (!pronto || !alvos || !cliente) return;
     const controle = new AbortController();
     void (async () => {
       for (const alvo of alvos.split(',')) {
@@ -64,13 +68,13 @@ export function useAdiantarMeses(filtros: FiltrosVisaoGeral, periodos: PeriodoDi
         await abaVisivel(controle.signal);
         // Filtro trocado, tela fechada ou sessão encerrada no meio do caminho: para por aqui.
         if (controle.signal.aborted || !(await getToken())) return;
-        const pedido = queryClient.prefetchQuery(opcoesVisaoGeral(api, { mes: alvo, empresa }));
+        const pedido = queryClient.prefetchQuery(opcoesVisaoGeral(api, cliente, { mes: alvo, empresa }));
         emCurso.current = pedido;
         await pedido;
       }
     })();
     return () => controle.abort();
-  }, [pronto, alvos, empresa, api, queryClient, getToken]);
+  }, [pronto, alvos, cliente, empresa, api, queryClient, getToken]);
 }
 
 // Resolve quando a aba estiver visível (ou quando a rodada for cancelada).

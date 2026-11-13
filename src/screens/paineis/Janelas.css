@@ -39,6 +39,13 @@
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+/* o que entra em azul e o que sai em vermelho, como no mockup (tons próprios, não o status) */
+.jan-r b.cor-entra {
+  color: var(--fluxo-entra-texto);
+}
+.jan-r b.cor-sai {
+  color: var(--fluxo-sai-texto);
+}
 .jan-r b.t-ok {
   color: var(--ok);
 }

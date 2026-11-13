@@ -11,6 +11,7 @@ export function ConteudoCelula({ celula: c, curto = false }: { celula: Celula; c
   const seta = c.seta && numero ? (numero > 0 ? '▲ ' : '▼ ') : '';
   return (
     <>
+      {c.marca && <span className="tag-marca">{c.marca}</span>}
       {c.valor != null && (
         <>
           {seta}
@@ -19,7 +20,9 @@ export function ConteudoCelula({ celula: c, curto = false }: { celula: Celula; c
             : formatarExibicao(c.valor, { comSinal: c.comSinal })}
         </>
       )}
-      {c.etiqueta && <span className="tagn">{c.etiqueta}</span>}
+      {c.etiqueta && (
+        <span className={c.tomEtiqueta === 'vermelho' ? 'tagn vermelha' : 'tagn'}>{c.etiqueta}</span>
+      )}
       {c.pill && (typeof c.pill === 'string' ? <Pill status={c.pill} /> : <Pill {...c.pill} />)}
       {c.sub && <span className="r-sub cel-sub">{c.sub}</span>}
     </>

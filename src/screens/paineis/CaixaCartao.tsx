@@ -2,9 +2,11 @@ import { useId, type ReactNode } from 'react';
 import { Explicacao } from '../../components/Explicacao';
 import { MarcaDagua } from '../../components/MarcaDagua';
 import { Pill } from '../../components/Pill';
+import { Segmentado } from '../../components/Segmentado';
 import { Trechos } from '../../components/Trechos';
 import type { Cartao } from '../../contracts/painel';
 import { STATUS } from '../../theme/status';
+import { useChaveDoCartao } from './consultaPainel';
 import './CaixaCartao.css';
 
 interface Props {
@@ -20,6 +22,8 @@ interface Props {
 export function CaixaCartao({ cartao, controle, semCabecalho = false, children }: Props) {
   const idTitulo = useId();
   const { legenda = [] } = cartao;
+  // filtro da tela que mora neste cartão ("Só lançados" e "Lançados + provisões")
+  const chave = useChaveDoCartao(cartao.id);
   return (
     <article className={`card s${cartao.largura}`} aria-labelledby={idTitulo}>
       <div className={semCabecalho ? 'visualmente-oculto' : 'card-h'}>
@@ -41,6 +45,14 @@ export function CaixaCartao({ cartao, controle, semCabecalho = false, children }
               </span>
             ))}
           </div>
+        )}
+        {chave && (
+          <Segmentado
+            rotulo={chave.rotulo}
+            opcoes={chave.opcoes}
+            valor={chave.valor}
+            onMudar={chave.onMudar}
+          />
         )}
         {controle}
       </div>

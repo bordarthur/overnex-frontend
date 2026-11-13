@@ -1,5 +1,6 @@
 import type { Cartao } from '../../contracts/painel';
 import { AndamentoMes } from './AndamentoMes';
+import { ArvoreMensal } from './ArvoreMensal';
 import { BarraPartes } from './BarraPartes';
 import { BarrasHorizontais } from './BarrasHorizontais';
 import { CicloCaixa } from './CicloCaixa';
@@ -16,6 +17,8 @@ import { Janelas } from './Janelas';
 import { ListaDetalhe } from './ListaDetalhe';
 import { Matriz } from './Matriz';
 import { NumeroGrafico } from './NumeroGrafico';
+import { OrigemProjecao } from './OrigemProjecao';
+import { Provisoes } from './Provisoes';
 import { TabelaCartao } from './TabelaCartao';
 
 /** Desenha o cartão pelo `tipo` que veio da API. */
@@ -41,6 +44,8 @@ export function CartaoPainel({ cartao }: { cartao: Cartao }) {
       return <Matriz cartao={cartao} />;
     case 'dre':
       return <DreCartao cartao={cartao} />;
+    case 'arvore-mensal':
+      return <ArvoreMensal cartao={cartao} />;
     case 'barra-partes':
       return <BarraPartes cartao={cartao} />;
     case 'desvios':
@@ -57,5 +62,9 @@ export function CartaoPainel({ cartao }: { cartao: Cartao }) {
       return <ListaDetalhe cartao={cartao} />;
     case 'ciclo-caixa':
       return <CicloCaixa cartao={cartao} />;
+    case 'origem-projecao':
+      return <OrigemProjecao cartao={cartao} />;
+    case 'provisoes':
+      return <Provisoes cartao={cartao} />;
   }
 }

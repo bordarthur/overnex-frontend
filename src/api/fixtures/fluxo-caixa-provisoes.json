@@ -1,0 +1,696 @@
+[
+  {
+    "id": "saldo-projetado",
+    "tipo": "graficos",
+    "largura": 12,
+    "titulo": "Saldo projetado dia a dia, 60 dias",
+    "subtitulo": "Títulos lançados mais as provisões pela média de 6 meses, nos dias em que cada grupo costuma ser pago.",
+    "explicacao": "Quanto vai ter no caixa no fim de cada dia dos próximos 60 dias. Parte do saldo da DFC no último dia com caixa e soma o que vence a receber e a pagar. Em “Lançados + provisões”, entra também a média do que ainda não foi lançado.",
+    "chamada": {
+      "status": "atencao",
+      "texto": [
+        {
+          "texto": "Contas a pagar incompletas: ",
+          "destaque": true
+        },
+        {
+          "texto": "só 58% da média paga está lançada para os próximos 30 dias. Em “Só lançados”, o caixa parece melhor do que vai ser; “Lançados + provisões” completa com a média."
+        }
+      ]
+    },
+    "graficos": [
+      {
+        "alto": true,
+        "grafico": {
+          "tipo": "linhas",
+          "unidade": "brl",
+          "rotulos": [
+            "13/10",
+            "14/10",
+            "15/10",
+            "16/10",
+            "17/10",
+            "18/10",
+            "19/10",
+            "20/10",
+            "21/10",
+            "22/10",
+            "23/10",
+            "24/10",
+            "25/10",
+            "26/10",
+            "27/10",
+            "28/10",
+            "29/10",
+            "30/10",
+            "31/10",
+            "01/11",
+            "02/11",
+            "03/11",
+            "04/11",
+            "05/11",
+            "06/11",
+            "07/11",
+            "08/11",
+            "09/11",
+            "10/11",
+            "11/11",
+            "12/11",
+            "13/11",
+            "14/11",
+            "15/11",
+            "16/11",
+            "17/11",
+            "18/11",
+            "19/11",
+            "20/11",
+            "21/11",
+            "22/11",
+            "23/11",
+            "24/11",
+            "25/11",
+            "26/11",
+            "27/11",
+            "28/11",
+            "29/11",
+            "30/11",
+            "01/12",
+            "02/12",
+            "03/12",
+            "04/12",
+            "05/12",
+            "06/12",
+            "07/12",
+            "08/12",
+            "09/12",
+            "10/12",
+            "11/12"
+          ],
+          "titulos": [
+            "13/10 · ter",
+            "14/10 · qua",
+            "15/10 · qui",
+            "16/10 · sex",
+            "17/10 · sáb",
+            "18/10 · dom",
+            "19/10 · seg",
+            "20/10 · ter",
+            "21/10 · qua",
+            "22/10 · qui",
+            "23/10 · sex",
+            "24/10 · sáb",
+            "25/10 · dom",
+            "26/10 · seg",
+            "27/10 · ter",
+            "28/10 · qua",
+            "29/10 · qui",
+            "30/10 · sex",
+            "31/10 · sáb",
+            "01/11 · dom",
+            "02/11 · seg",
+            "03/11 · ter",
+            "04/11 · qua",
+            "05/11 · qui",
+            "06/11 · sex",
+            "07/11 · sáb",
+            "08/11 · dom",
+            "09/11 · seg",
+            "10/11 · ter",
+            "11/11 · qua",
+            "12/11 · qui",
+            "13/11 · sex",
+            "14/11 · sáb",
+            "15/11 · dom",
+            "16/11 · seg",
+            "17/11 · ter",
+            "18/11 · qua",
+            "19/11 · qui",
+            "20/11 · sex",
+            "21/11 · sáb",
+            "22/11 · dom",
+            "23/11 · seg",
+            "24/11 · ter",
+            "25/11 · qua",
+            "26/11 · qui",
+            "27/11 · sex",
+            "28/11 · sáb",
+            "29/11 · dom",
+            "30/11 · seg",
+            "01/12 · ter",
+            "02/12 · qua",
+            "03/12 · qui",
+            "04/12 · sex",
+            "05/12 · sáb",
+            "06/12 · dom",
+            "07/12 · seg",
+            "08/12 · ter",
+            "09/12 · qua",
+            "10/12 · qui",
+            "11/12 · sex"
+          ],
+          "series": [
+            {
+              "nome": "Saldo projetado",
+              "valores": [
+                1599000, 1788000, 1756000, 1925000, 1925000, 1925000, 2104000, 1445000, 1603000, 1782000,
+                1961000, 1961000, 1961000, 2120000, 2308000, 2497000, 2676000, 2585000, 2585000, 2585000,
+                2585000, 2243000, 2022000, 1841000, 1730000, 1730000, 1730000, 1426000, 1125000, 1324000,
+                1682000, 1759000, 1759000, 1759000, 1647000, 1724000, 1802000, 1880000, 1880000, 1880000,
+                1880000, 1129000, 1207000, 1285000, 1362000, 1440000, 1440000, 1440000, 1517000, 1595000,
+                1673000, 1750000, 1828000, 1828000, 1828000, 1414000, 1491000, 1569000, 1146000, 1224000
+              ],
+              "estilo": "principal",
+              "area": true
+            }
+          ],
+          "referencia": {
+            "valor": 500000,
+            "rotulo": "Caixa mínimo R$ 500 mil",
+            "estilo": "minimo"
+          },
+          "marcadores": [
+            {
+              "serie": 0,
+              "i": 0,
+              "rotulo": "R$ 1,60 mi em 13/10"
+            },
+            {
+              "serie": 0,
+              "i": 28,
+              "rotulo": "Menor saldo R$ 1,13 mi em 10/11"
+            }
+          ],
+          "piso": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "origem-projecao",
+    "tipo": "origem-projecao",
+    "largura": 5,
+    "titulo": "De onde vem a projeção",
+    "subtitulo": "Próximos 60 dias. Lançados + provisões: só a inadimplência (V2) fica de fora.",
+    "explicacao": "De onde vem cada real da projeção: o que já está lançado no sistema e o que é estimado pela média. Riscado é o que não entra no saldo da visão escolhida.",
+    "barra": [
+      {
+        "rotulo": "Lançado",
+        "proporcao": 0.361,
+        "estilo": "lancado"
+      },
+      {
+        "rotulo": "Ainda não lançado",
+        "proporcao": 0.639,
+        "estilo": "nao-lancado"
+      }
+    ],
+    "texto": [
+      {
+        "texto": "Ainda não lançado: "
+      },
+      {
+        "texto": "−R$ 1,95 mi",
+        "destaque": true
+      },
+      {
+        "texto": " de efeito líquido pela média, já somado ao saldo desta visão."
+      }
+    ],
+    "grupos": [
+      {
+        "titulo": "Entradas",
+        "itens": [
+          {
+            "nome": "Títulos a receber já emitidos",
+            "valor": {
+              "valor": 5536000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "lançado",
+              "estilo": "lancado"
+            }
+          },
+          {
+            "nome": "Inadimplência esperada, pelo histórico (7,4%)",
+            "valor": {
+              "valor": -410000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "V2",
+              "estilo": "futuro"
+            },
+            "riscado": true
+          },
+          {
+            "nome": "Vendas ainda não faturadas, pela média recebida",
+            "valor": {
+              "valor": 7264000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "não lançado",
+              "estilo": "nao-lancado"
+            }
+          }
+        ]
+      },
+      {
+        "titulo": "Saídas",
+        "itens": [
+          {
+            "nome": "Títulos a pagar e compras lançados",
+            "valor": {
+              "valor": -3530000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "lançado",
+              "estilo": "lancado"
+            }
+          },
+          {
+            "nome": "Parcelas de empréstimos",
+            "valor": {
+              "valor": -260000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "lançado",
+              "estilo": "lancado"
+            }
+          },
+          {
+            "nome": "Fornecedores ainda não lançados, pela média",
+            "valor": {
+              "valor": -4790000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "não lançado",
+              "estilo": "nao-lancado"
+            }
+          },
+          {
+            "nome": "Folha e encargos, pela média",
+            "valor": {
+              "valor": -1640000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "não lançado",
+              "estilo": "nao-lancado"
+            }
+          },
+          {
+            "nome": "Impostos, pela média",
+            "valor": {
+              "valor": -1000000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "não lançado",
+              "estilo": "nao-lancado"
+            }
+          },
+          {
+            "nome": "Despesas fixas, pela média",
+            "valor": {
+              "valor": -1000000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "não lançado",
+              "estilo": "nao-lancado"
+            }
+          },
+          {
+            "nome": "Despesas variáveis, pela média",
+            "valor": {
+              "valor": -660000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "não lançado",
+              "estilo": "nao-lancado"
+            }
+          },
+          {
+            "nome": "Empréstimos e juros ainda não lançados",
+            "valor": {
+              "valor": -120000,
+              "unidade": "brl"
+            },
+            "etiqueta": {
+              "rotulo": "não lançado",
+              "estilo": "nao-lancado"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "semana-a-semana",
+    "tipo": "tabela",
+    "largura": 7,
+    "variante": "listrada",
+    "titulo": "Semana a semana",
+    "subtitulo": "Entradas e saídas previstas, com as provisões, e o saldo no fim de cada semana",
+    "explicacao": "Entradas e saídas previstas em cada semana, o saldo no último dia e o menor saldo dentro da semana, que mostra o aperto antes de o dinheiro entrar.",
+    "colunas": [
+      {
+        "rotulo": "Semana",
+        "alinhar": "esquerda"
+      },
+      {
+        "rotulo": "Entradas",
+        "ocultarNoCelular": true
+      },
+      {
+        "rotulo": "Saídas",
+        "ocultarNoCelular": true
+      },
+      {
+        "rotulo": "Saldo no fim"
+      },
+      {
+        "rotulo": "Menor saldo"
+      }
+    ],
+    "linhas": [
+      {
+        "celulas": [
+          {
+            "valor": "13/10 a 18/10",
+            "marca": "out"
+          },
+          {
+            "valor": {
+              "valor": 1194000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -693000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1925000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1599000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "19/10 a 25/10"
+          },
+          {
+            "valor": {
+              "valor": 1492000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -1457000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1961000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1445000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "separar": true,
+        "celulas": [
+          {
+            "valor": "26/10 a 01/11",
+            "marca": "nov"
+          },
+          {
+            "valor": {
+              "valor": 1492000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -869000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 2585000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 2120000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "02/11 a 08/11"
+          },
+          {
+            "valor": {
+              "valor": 1268000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -2123000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1730000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1730000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "09/11 a 15/11"
+          },
+          {
+            "valor": {
+              "valor": 1816000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -1787000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1759000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1125000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "16/11 a 22/11"
+          },
+          {
+            "valor": {
+              "valor": 1166000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -1045000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1880000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1647000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "23/11 a 29/11"
+          },
+          {
+            "valor": {
+              "valor": 1457000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -1897000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1440000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1129000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "separar": true,
+        "celulas": [
+          {
+            "valor": "30/11 a 06/12",
+            "marca": "dez"
+          },
+          {
+            "valor": {
+              "valor": 1457000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -1069000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1828000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1517000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "07/12 a 11/12"
+          },
+          {
+            "valor": {
+              "valor": 1457000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": -2061000,
+              "unidade": "brl"
+            }
+          },
+          {
+            "valor": {
+              "valor": 1224000,
+              "unidade": "brl"
+            },
+            "negrito": true
+          },
+          {
+            "valor": {
+              "valor": 1146000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "fundo": "saudavel"
+          }
+        ]
+      }
+    ]
+  }
+]

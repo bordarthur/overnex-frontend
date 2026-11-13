@@ -27,8 +27,8 @@ O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens.
 - **Segurança:**
   - CSP restritiva em `staticwebapp.config.json`: nada de domínio externo, `data:` URI, Google Fonts ou HTML cru;
   - o access token fica só na memória, nunca em `localStorage` ou `sessionStorage`;
-  - o slug do cliente na URL serve só para navegar: quem decide o acesso é a API, pelo token.
-- **Cores:** status usa só `--ok` (azul), `--warn` e `--crit`. As cores da marca (`--neon`, `--verde`) nunca indicam status.
+  - o slug do cliente na URL é só o pedido de quem navega: vai em `?cliente=` de toda chamada, e quem decide o acesso é a API, pelo token (slug que a pessoa não pode abrir responde 403).
+- **Cores:** seguem as do mockup, também fora de status (séries em azul ou laranja, chave ligada em verde, a receber em azul e a pagar em vermelho; decisão de 09/11/2026, no lugar da de 28/10/2026). Status continua só com `--ok` (azul), `--warn` e `--crit`, e as cores da marca (`--neon`, `--verde`) nunca indicam status. Cor fora de status usa token ou estilo próprio (`serie-azul`, `--fluxo-entra`), não a classe de status.
 - **Mockups de referência** (`overnex-mockup-parcial-G1-m1.6`, `overnex-mockup-login-m2_0_0`) não ficam no repositório. Quando o usuário traz um mockup, segue-se o mockup e avisa-se o que não encaixa nas regras ou no back, para ele decidir.
 
 ## Ambiente de desenvolvimento
@@ -36,10 +36,11 @@ O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens.
 - **Esta máquina (Windows):** não tem Docker, Postgres nem Python. Os testes com banco do back nunca rodaram aqui.
 - **Fonte dos dados** (`.env`, ver `.env.example`):
   - `VITE_API_MODO=mock` usa a fixture, com o estado da tela escolhido por `VITE_MOCK_CENARIO`;
-  - `VITE_API_MODO=api` usa a API local, que o Vite repassa de `/api` para `127.0.0.1:8000`.
+  - `VITE_API_MODO=api` usa a API local, que o Vite repassa de `/api` para `127.0.0.1:8001` (a API sobe com `uv run fastapi dev --port 8001`).
 - **Login** (`VITE_AUTH_MODO`):
   - `fake` (padrão) aceita qualquer e-mail. Senhas especiais: `errada`, `bloqueada` e `expira`. O link `/definir-senha?token_hash=vencido&type=recovery` mostra o link vencido;
   - `api` usa `/api/auth/*`.
+- **Pessoas do login fake** (pelo começo do e-mail; ver `src/auth/personasFake.ts`): `dora@…` é o Admin BORD, `caio@…` o consultor com duas empresas e `joana@…` a conta sem empresa (só no mock); qualquer outro e-mail é o usuário de desenvolvimento. Dora (`…0000000000ad`) e Caio (`…0000000000c0`) existem no seed local do back.
 - **Cliente e usuário de desenvolvimento:** PJ Cortes (slug `pj-cortes`, uma empresa) e `diretoria@lannconsult.com.br`. O token fake é `fake:0d000000-0000-4000-8000-0000000001a1`; a API local só o aceita com `AMBIENTE=dev` e `AUTH_FAKE=1`.
 
 ## Decisões em vigor
@@ -50,10 +51,15 @@ O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens.
   - o back usa o Supabase Auth e guarda o refresh token num cookie httpOnly;
   - o contrato está em `src/contracts/auth.ts`;
   - o visual segue o mockup Login M2.0.0. As partes que ficaram de fora estão em "A decidir" no `TODO.md`.
-- **Cliente por usuário:** cada usuário vê um cliente só. A visão de administrador da LANN, com vários clientes, fica para depois.
-- **Visão geral sem slug:** `obterVisaoGeral` e a query key não usam o slug.
+- **Empresa escolhida** (o "cliente" do contrato; decisão de 10/11/2026, no lugar de "um cliente por usuário" e de "Visão geral sem slug"):
+  - o slug da URL vai em `?cliente=` de `/api/sessao` e de toda rota `/api/telas/*`, e entra em toda query key;
+  - ao entrar (`Inicio`, em `src/app/Guardas.tsx`), a sessão sem empresa decide: Admin BORD vai para `/gestao`, quem tem uma empresa vai direto, quem tem mais de uma escolhe, e quem não tem nenhuma vê o `aviso` da API;
+  - o menu só mostra as telas de `telas` da sessão, e tela fora da lista mostra "sem acesso";
+  - nos rótulos da tela é "empresa"; no código e nos tipos, "cliente". O chip "Empresa" dos filtros é outra coisa (os CNPJs dentro do cliente).
+- **Gestão (Interno BORD):** rota `/gestao`, só com `gestao: true` na sessão, em arquivo separado do resto do app (`src/screens/gestao/`). Contrato em `src/contracts/gestao.ts`. Convite de usuário não é pela tela: o cadastro de login é por comando da BORD.
+- **Inatividade por pessoa:** o tempo vem de `inatividadeSegundos` (entrar, renovar e definir senha); sem ele, 30 min. `VITE_INATIVIDADE_MIN` passa por cima, para teste.
 - **Pedidos adiantados** (`src/api/adiantar.ts`):
-  - a Visão geral padrão sai junto com `/api/sessao`;
+  - a Visão geral padrão da empresa é pedida assim que a sessão dela diz que está liberada, seja qual for a tela aberta (em "/" não dá para pedir antes: falta o slug);
   - os meses vizinhos são pedidos um por vez, só com a aba visível, e valem 15 min no cache;
   - sair apaga o cache inteiro.
 
