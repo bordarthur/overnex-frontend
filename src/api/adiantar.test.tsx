@@ -13,12 +13,12 @@ function apiInstrumentada(obterSessao?: ApiClient['obterSessao']) {
   const base = criarMockClient({ atrasoMs: 0 });
   let ativos = 0;
   const registro = { maxAoMesmoTempo: 0 };
-  const obterVisaoGeral = vi.fn<ApiClient['obterVisaoGeral']>(async (filtros, opcoes) => {
+  const obterVisaoGeral = vi.fn<ApiClient['obterVisaoGeral']>(async (cliente, filtros, opcoes) => {
     ativos += 1;
     registro.maxAoMesmoTempo = Math.max(registro.maxAoMesmoTempo, ativos);
     try {
       await new Promise((r) => setTimeout(r, 5));
-      return await base.obterVisaoGeral(filtros, opcoes);
+      return await base.obterVisaoGeral(cliente, filtros, opcoes);
     } finally {
       ativos -= 1;
     }
@@ -26,7 +26,7 @@ function apiInstrumentada(obterSessao?: ApiClient['obterSessao']) {
   const sessao = vi.fn<ApiClient['obterSessao']>(obterSessao ?? base.obterSessao);
   const api: ApiClient = { ...base, obterSessao: sessao, obterVisaoGeral };
   // Mês de cada pedido da Visão geral, na ordem ("padrão" = sem `mes`).
-  const meses = () => obterVisaoGeral.mock.calls.map(([f]) => f?.mes ?? 'padrão');
+  const meses = () => obterVisaoGeral.mock.calls.map(([, f]) => f?.mes ?? 'padrão');
   return { api, obterVisaoGeral, obterSessao: sessao, registro, meses };
 }
 
@@ -44,7 +44,7 @@ afterEach(() => {
 });
 
 describe('pedidos adiantados', () => {
-  it('depois de entrar, a Visão geral sai junto com a /api/sessao, sem esperar por ela', async () => {
+  it('depois de entrar, a sessão diz a empresa, e a Visão geral sai com o slug dela, uma vez só', async () => {
     let liberarSessao!: (s: SessaoPayload) => void;
     const { api, obterVisaoGeral, obterSessao } = apiInstrumentada(
       () => new Promise((resolve) => (liberarSessao = resolve)),
@@ -56,14 +56,17 @@ describe('pedidos adiantados', () => {
     await user.type(screen.getByLabelText('Senha'), 'segredo123');
     await user.click(screen.getByRole('button', { name: 'Entrar' }));
 
-    // A sessão ainda não respondeu e a Visão geral já foi pedida.
-    await waitFor(() => expect(obterVisaoGeral).toHaveBeenCalledWith({}, expect.anything()));
-    expect(obterSessao).toHaveBeenCalledTimes(1);
+    // Em "/", a sessão vai sem empresa escolhida. Sem ela não há slug: a Visão geral ainda não saiu.
+    await waitFor(() => expect(obterSessao).toHaveBeenCalledWith(undefined, expect.anything()));
+    expect(obterVisaoGeral).not.toHaveBeenCalled();
 
     act(() => liberarSessao(fixtureSessao));
     expect(await screen.findByRole('heading', { level: 3, name: 'Vendas' })).toBeInTheDocument();
-    // A tela aproveitou o pedido adiantado.
-    expect(obterVisaoGeral.mock.calls.filter(([f]) => !f?.mes)).toHaveLength(1);
+    // A tela e o pedido adiantado da moldura dividem a mesma consulta, já com o slug.
+    expect(obterVisaoGeral.mock.calls.filter(([, f]) => !f?.mes)).toHaveLength(1);
+    expect(obterVisaoGeral).toHaveBeenCalledWith('demo', {}, expect.anything());
+    // Quem tem uma empresa só já recebeu a sessão dela em "/": não é pedida de novo com o slug.
+    expect(obterSessao).toHaveBeenCalledTimes(1);
   });
 
   it('depois da primeira tela, pede os 2 meses anteriores, um por vez', async () => {

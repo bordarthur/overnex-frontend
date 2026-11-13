@@ -3,11 +3,14 @@ import { Grafico } from '../../charts/Grafico';
 import { Segmentado } from '../../components/Segmentado';
 import { Trechos } from '../../components/Trechos';
 import type { CartaoGraficos } from '../../contracts/painel';
+import { STATUS } from '../../theme/status';
 import { CaixaCartao } from './CaixaCartao';
 import './GraficosCartao.css';
 
 // em três colunas os gráficos são miniaturas (cada setor, mês a mês)
 const ALTURA_EM_TRES = 160;
+// `alto`: o saldo projetado dia a dia, como no mockup
+const ALTURA_ALTO = 380;
 
 /** Um gráfico ou vários lado a lado, cada um com título e nota; com `visoes`, uma chave troca os gráficos. */
 export function GraficosCartao({ cartao }: { cartao: CartaoGraficos }) {
@@ -34,12 +37,17 @@ export function GraficosCartao({ cartao }: { cartao: CartaoGraficos }) {
     >
       <div className={varios ? `sm-grid${tres ? ' tres' : ''}` : undefined}>
         {graficos.map((g, i) => (
-          <div key={i} className="sm">
-            {g.titulo && <h3>{g.titulo}</h3>}
+          <div key={i} className={g.cor != null ? `sm cor-${g.cor}` : 'sm'}>
+            {g.titulo && (
+              <h3>
+                {g.cor != null && <i className="sm-cor" aria-hidden="true" />}
+                {g.titulo}
+              </h3>
+            )}
             <Grafico
               grafico={g.grafico}
               aria={[cartao.titulo, visao?.rotulo, g.titulo].filter(Boolean).join(': ')}
-              altura={tres ? ALTURA_EM_TRES : undefined}
+              altura={tres ? ALTURA_EM_TRES : g.alto ? ALTURA_ALTO : undefined}
             />
             {g.nota && <p className="note sm-nota">{g.nota}</p>}
           </div>
@@ -48,6 +56,22 @@ export function GraficosCartao({ cartao }: { cartao: CartaoGraficos }) {
       {visao?.nota && (
         <p className="note">
           <Trechos trechos={visao.nota} />
+        </p>
+      )}
+      {cartao.quadros && cartao.quadros.length > 0 && (
+        <div className="quadros">
+          {cartao.quadros.map((q) => (
+            <div key={q.rotulo} className={`quadro${q.status ? ` ${STATUS[q.status].classe}` : ''}`}>
+              <span className="quadro-rotulo">{q.rotulo}</span>
+              <b className="quadro-titulo">{q.titulo}</b>
+              <span className="quadro-texto">{q.texto}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {cartao.rodape && cartao.rodape.length > 0 && (
+        <p className="note">
+          <Trechos trechos={cartao.rodape} />
         </p>
       )}
     </CaixaCartao>

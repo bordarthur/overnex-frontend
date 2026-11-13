@@ -6,13 +6,14 @@ import { criarMockClient } from '../api/mockClient';
 import { useAuth } from '../auth/auth';
 import { criarAuthHttp, type AuthClient } from '../auth/authClient';
 import { criarAuthFake } from '../auth/authFake';
+import { personaDoToken } from '../auth/personasFake';
 import { AuthProvider } from '../auth/AuthProvider';
 import { TemaProvider } from '../theme/TemaProvider';
 
 const atrasoMock = Number(import.meta.env.VITE_MOCK_ATRASO_MS ?? 300);
 const usarApi = import.meta.env.VITE_API_MODO === 'api';
 const usarAuthApi = import.meta.env.VITE_AUTH_MODO === 'api';
-// Só para testar o aviso sem esperar 30 min; sem a variável, vale o padrão do AuthProvider.
+// Só para testar o aviso sem esperar; sem a variável, vale o tempo de sessão parada que a API manda.
 const minutosInatividade = Number(import.meta.env.VITE_INATIVIDADE_MIN);
 const limiteInatividadeMs = minutosInatividade > 0 ? minutosInatividade * 60_000 : undefined;
 
@@ -56,7 +57,12 @@ function ApiProvider({ apiClient, children }: { apiClient?: ApiClient; children:
       apiClient ??
       (usarApi
         ? criarHttpClient({ getToken, renovarToken })
-        : criarMockClient({ atrasoMs: atrasoMock, cenario: import.meta.env.VITE_MOCK_CENARIO })),
+        : criarMockClient({
+            atrasoMs: atrasoMock,
+            cenario: import.meta.env.VITE_MOCK_CENARIO,
+            // no mock, a pessoa é a do token do login fake (dora@… é o Admin BORD)
+            persona: async () => personaDoToken(await getToken()),
+          })),
     [apiClient, getToken, renovarToken],
   );
   return <ApiClientContext.Provider value={api}>{children}</ApiClientContext.Provider>;

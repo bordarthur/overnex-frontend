@@ -284,7 +284,7 @@ describe('Visão geral', () => {
     await user.click(within(linhas).getByRole('button', { name: '3' }));
 
     // sem empresa escolhida na tela, a gravação vai sem ela
-    expect(salvar).toHaveBeenCalledWith('linhas-custo', '3', { empresa: undefined });
+    expect(salvar).toHaveBeenCalledWith('demo', 'linhas-custo', '3', { empresa: undefined });
     expect(await within(custos).findByRole('article', { name: 'Outros (13 linhas)' })).toBeInTheDocument();
     expect(within(custos).getAllByRole('article')).toHaveLength(4);
     expect(within(linhas).getByRole('button', { name: '3' })).toHaveAttribute('aria-pressed', 'true');
@@ -393,7 +393,7 @@ describe('Visão geral', () => {
     await screen.findByRole('heading', { level: 3, name: 'Vendas' });
 
     // sem filtro, a consulta não leva mês nem empresa: a API usa o mais recente
-    expect(consultar).toHaveBeenCalledWith({}, expect.anything());
+    expect(consultar).toHaveBeenCalledWith('demo', {}, expect.anything());
 
     const periodo = await screen.findByRole('button', { name: /Período/ });
     expect(periodo).toHaveTextContent('Outubro de 2026');
@@ -406,12 +406,15 @@ describe('Visão geral', () => {
     ]);
     await user.click(meses[1]!);
     // o mês vai como AAAA-MM (setembro já foi adiantado; ver adiantar.test.tsx)
-    await waitFor(() => expect(consultar).toHaveBeenCalledWith({ mes: '2026-09' }, expect.anything()));
+    await waitFor(() =>
+      expect(consultar).toHaveBeenCalledWith('demo', { mes: '2026-09' }, expect.anything()),
+    );
 
     await user.click(screen.getByRole('button', { name: /Empresa/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Filial Maracanaú' }));
     // (depois dela sai o mês anterior adiantado, com a mesma empresa)
     expect(consultar).toHaveBeenCalledWith(
+      'demo',
       { mes: '2026-09', empresa: '0e000000-0000-4000-8000-000000000002' },
       expect.anything(),
     );
@@ -420,7 +423,7 @@ describe('Visão geral', () => {
     const antes = consultar.mock.calls.length;
     await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
     expect(await screen.findByRole('button', { name: /Período/ })).toHaveTextContent('Outubro de 2026');
-    expect(consultar.mock.calls.slice(antes)).not.toContainEqual([{}, expect.anything()]);
+    expect(consultar.mock.calls.slice(antes)).not.toContainEqual(['demo', {}, expect.anything()]);
   });
 
   it('o chip de filtro abre um menu navegável por teclado e só troca o rótulo', async () => {

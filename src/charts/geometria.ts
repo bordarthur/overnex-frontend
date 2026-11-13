@@ -33,6 +33,23 @@ export function pontoPolar(cx: number, cy: number, raio: number, angulo: number)
   return [+(cx + raio * Math.cos(angulo)).toFixed(1), +(cy - raio * Math.sin(angulo)).toFixed(1)];
 }
 
+/**
+ * O ponto mais alto (menor y, como no SVG) de uma linha entre x0 e x1, contando onde ela cruza as
+ * bordas do trecho. Sem linha no trecho, null.
+ */
+export function topoDoCaminho(pts: [number, number][], x0: number, x1: number): number | null {
+  const ys: number[] = [];
+  pts.forEach(([px, py], i) => {
+    if (px >= x0 && px <= x1) ys.push(py);
+    const prox = pts[i + 1];
+    if (!prox) return;
+    for (const borda of [x0, x1]) {
+      if (borda > px && borda < prox[0]) ys.push(py + ((prox[1] - py) * (borda - px)) / (prox[0] - px));
+    }
+  });
+  return ys.length > 0 ? Math.min(...ys) : null;
+}
+
 /** Rótulo em até duas linhas, quebrado no meio das palavras ("Custo da" / "mercadoria"). */
 export function quebrarRotulo(rotulo: string): [string, string] {
   const palavras = rotulo.split(' ');

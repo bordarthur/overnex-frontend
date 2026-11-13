@@ -1,0 +1,75 @@
+/* cartões dos perfis: também filtram a lista */
+.gst-perfis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.gst-perfil {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.gst-perfil b {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.gst-perfil b em {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+.gst-perfil > span {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.gst-perfil dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 12px;
+}
+.gst-perfil dt {
+  color: var(--ink-3);
+}
+.gst-perfil[aria-pressed='true'] {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+}
+.gst-perfil:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+}
+
+.gst-barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1100px) {
+  .gst-perfis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .gst-perfis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -1,12 +1,13 @@
 import { ApiErro } from '../api/client';
 import type { SessaoAuth } from '../contracts/auth';
 import type { AuthClient } from './authClient';
+import { OBJECT_ID_PADRAO, PERSONAS_FAKE, personaDoEmail } from './personasFake';
 import { atendeRequisitos } from './senha';
 
 // SÓ PARA DESENVOLVIMENTO (VITE_AUTH_MODO=fake): imita /api/auth/* sem API.
 // O token `fake:<object_id>` só vale na API local com AMBIENTE=dev e AUTH_FAKE=1; fora disso a API recusa.
-// O object_id padrão é o do usuário de desenvolvimento do back (diretoria@lannconsult.com.br, PJ Cortes).
-const OBJECT_ID_PADRAO = import.meta.env.VITE_AUTH_FAKE_OBJECT_ID || '0d000000-0000-4000-8000-0000000001a1';
+// O object_id padrão é o do usuário de desenvolvimento do back (diretoria@lannconsult.com.br, PJ Cortes);
+// os e-mails que começam com "dora", "caio" e "joana" entram como outras pessoas (ver personasFake.ts).
 const CHAVE_LOGADO = 'overnex-auth-fake';
 const EMAIL_PADRAO = 'dev@overnex.local';
 
@@ -31,7 +32,8 @@ interface OpcoesAuthFake {
 /**
  * Regras do fake (os textos imitam os que a API manda):
  * - entrar: qualquer e-mail; senha "errada" responde 401, "bloqueada" responde 429 e "expira" abre uma
- *   sessão curta que não renova
+ *   sessão curta que não renova. "dora@…" entra como Admin BORD, "caio@…" como consultor com duas
+ *   empresas e "joana@…" como conta sem empresa
  * - definir senha: token_hash "vencido" responde 410; senha sem os requisitos responde 400
  */
 export function criarAuthFake({
@@ -48,10 +50,14 @@ export function criarAuthFake({
   function abrir(novoEmail: string, validaPorMs = 60 * 60_000): SessaoAuth {
     email = novoEmail;
     if (lembrar) gravarLembrado(novoEmail);
+    const persona = personaDoEmail(novoEmail);
+    const { nome, inatividadeSegundos } = PERSONAS_FAKE[persona];
     return {
-      accessToken: `fake:${objectId}`,
+      // o usuário de desenvolvimento usa o `objectId` dado; as outras pessoas, o delas
+      accessToken: `fake:${persona === 'cliente' ? objectId : PERSONAS_FAKE[persona].objectId}`,
       expiraEm: new Date(Date.now() + validaPorMs).toISOString(),
-      usuario: { nome: 'Usuário de desenvolvimento', email: novoEmail },
+      usuario: { nome, email: novoEmail },
+      inatividadeSegundos,
     };
   }
 

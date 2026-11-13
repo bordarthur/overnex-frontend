@@ -14,6 +14,8 @@ const CLASSE_BARRA: Record<EstiloBarra, string> = {
   'serie-clara': 'sb3',
   fantasma: 'ghost',
   projecao: 'projb',
+  'serie-azul': 'azulb',
+  'serie-laranja': 'laranjab',
 };
 
 interface Props {

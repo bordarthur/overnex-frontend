@@ -31,3 +31,89 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* quadros embaixo dos gráficos (pago contra lançado): cinza sem status, no tom do status com ele */
+.quadros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.quadro {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+/* o laranja de atenção a 30%, como no mockup */
+.quadro.warn {
+  background: color-mix(in srgb, var(--warn-mark) 30%, var(--surface));
+  color: var(--ink);
+}
+.quadro.crit {
+  background: var(--crit-bg);
+  color: var(--ink);
+}
+.quadro.ok {
+  background: var(--ok-bg);
+  color: var(--ink);
+}
+.quadro-rotulo {
+  font-size: 12.5px;
+}
+.quadro-titulo {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--ink);
+}
+
+/* gráfico na cor de uma série da paleta (cada setor na cor dele, como no mockup) */
+.sm-cor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: 0;
+}
+.sm.cor-0 .bar,
+.sm.cor-0 .sm-cor {
+  fill: var(--c0);
+  background: var(--c0);
+}
+.sm.cor-1 .bar,
+.sm.cor-1 .sm-cor {
+  fill: var(--c1);
+  background: var(--c1);
+}
+.sm.cor-2 .bar,
+.sm.cor-2 .sm-cor {
+  fill: var(--c2);
+  background: var(--c2);
+}
+.sm.cor-3 .bar,
+.sm.cor-3 .sm-cor {
+  fill: var(--c3);
+  background: var(--c3);
+}
+.sm.cor-4 .bar,
+.sm.cor-4 .sm-cor {
+  fill: var(--c4);
+  background: var(--c4);
+}
+.sm.cor-5 .bar,
+.sm.cor-5 .sm-cor {
+  fill: var(--c5);
+  background: var(--c5);
+}
+.sm.cor-6 .bar,
+.sm.cor-6 .sm-cor {
+  fill: var(--c6);
+  background: var(--c6);
+}

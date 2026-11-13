@@ -32,6 +32,11 @@
   font-size: 11px;
   fill: var(--ink-2);
 }
+/* rótulo do caixa mínimo, no tom do texto de atenção (como no mockup) */
+.reflabel.min {
+  fill: var(--warn);
+  font-size: 12px;
+}
 .mk {
   fill: var(--surface);
   stroke: var(--series);
@@ -106,6 +111,13 @@
 }
 .bar.sb3 {
   fill: var(--c3);
+}
+/* cores de série do mockup, fora de status: financiamentos, admissões e desligamentos */
+.bar.azulb {
+  fill: var(--c4);
+}
+.bar.laranjab {
+  fill: var(--c6);
 }
 .bar.ghost {
   fill: none;
@@ -352,7 +364,10 @@
 }
 .legend i.sq,
 .legend i.quadrado-escuro,
-.legend i.quadrado-claro {
+.legend i.quadrado-medio,
+.legend i.quadrado-claro,
+.legend i.quadrado-azul,
+.legend i.quadrado-laranja {
   width: 10px;
   height: 10px;
   border-top: 0;
@@ -361,8 +376,17 @@
 .legend i.quadrado-escuro {
   background: var(--c0);
 }
+.legend i.quadrado-medio {
+  background: var(--c1);
+}
 .legend i.quadrado-claro {
   background: var(--c3);
+}
+.legend i.quadrado-azul {
+  background: var(--c4);
+}
+.legend i.quadrado-laranja {
+  background: var(--c6);
 }
 .legend i.sq.c0 {
   background: var(--c0);

@@ -1,0 +1,52 @@
+/* Árvore mês a mês: muitas colunas de número; a primeira (a conta) fica presa ao rolar no celular. */
+.arvore-mensal td,
+.arvore-mensal th {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.arvore-mensal td:first-child,
+.arvore-mensal th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--surface);
+  padding-right: 14px;
+}
+.arvore-mensal tr.sub td:first-child {
+  background: var(--surface-2);
+}
+.arvore-mensal tr.sub.final td:first-child {
+  background: var(--grafite);
+}
+/* subtotal com farol: o fundo do farol ganha do cinza do subtotal */
+.arvore-mensal tr.sub td.cfl-ok {
+  background: color-mix(in srgb, var(--ok) 14%, var(--surface-2));
+}
+.arvore-mensal tr.sub td.cfl-crit {
+  background: color-mix(in srgb, var(--crit) 14%, var(--surface-2));
+}
+.arvore-mensal tr.sub td.cfl-warn {
+  background: color-mix(in srgb, var(--warn-mark) 18%, var(--surface-2));
+}
+/* no celular, a conta presa quebra a linha e deixa espaço para os meses rolarem ao lado */
+@media (max-width: 760px) {
+  .arvore-mensal td:first-child,
+  .arvore-mensal th:first-child {
+    white-space: normal;
+    min-width: 128px;
+    max-width: 150px;
+    padding-right: 10px;
+  }
+  .arvore-mensal .acc {
+    align-items: flex-start;
+  }
+  .arvore-mensal .acc .caret {
+    margin-top: 4px;
+    flex: none;
+  }
+}
+/* coluna do período inteiro (acumulado), separada dos meses */
+.arvore-mensal .am-total {
+  border-left: 1.5px solid var(--line);
+  font-weight: 600;
+}

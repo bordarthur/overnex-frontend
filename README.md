@@ -26,20 +26,33 @@ npm run dev            # http://localhost:5173 → /demo/visao-geral
 
 ### Rotas e dados de desenvolvimento
 
-As rotas são `/:clienteSlug/visao-geral`, `/:clienteSlug/vendas`, `/:clienteSlug/equipe-comercial`, `/:clienteSlug/clientes`, `/:clienteSlug/resultado`, `/:clienteSlug/receber-pagar` e `/:clienteSlug/pessoas`. `/` abre a Visão geral do cliente da sessão (`cliente.slug` de `/api/sessao`; no mock, `demo`). O slug serve só para navegar: não vai para a API nem entra na chave do cache. Enquanto não há API, o cliente mock (`src/api/mockClient.ts`) responde conforme `VITE_MOCK_CENARIO`:
+A empresa aberta é o `:clienteSlug` da URL (o "cliente" do contrato; na tela, "empresa"). As rotas são `/:clienteSlug/visao-geral`, `/:clienteSlug/vendas`, `/:clienteSlug/equipe-comercial`, `/:clienteSlug/clientes`, `/:clienteSlug/resultado`, `/:clienteSlug/receber-pagar`, `/:clienteSlug/fluxo-caixa` e `/:clienteSlug/pessoas`. `/gestao` é a Gestão (abaixo). O slug vai em `?cliente=` de `/api/sessao` e de toda rota `/api/telas/*` e entra em toda chave do cache; quem decide o acesso é a API (slug que a pessoa não pode abrir responde 403, e a tela mostra "sem acesso").
 
-- `completo` (padrão): as fixtures completas (`src/api/fixtures/visao-geral.json` e, nos painéis, `vendas.json`, `equipe-comercial.json`, `clientes.json`, `resultado.json`, `receber-pagar.json` e `pessoas.json`)
+`/` decide para onde a pessoa vai, pela `/api/sessao` sem empresa escolhida (`Inicio`, em `src/app/Guardas.tsx`):
+
+- `gestao: true` (Admin BORD): `/gestao`;
+- `cliente` preenchido (uma empresa só): a primeira tela liberada dela, que é a Visão geral quando liberada;
+- duas ou mais em `clientes`: a tela "Escolha a empresa". Depois, a troca é pelo seletor do menu (no rail estreito e no celular, a sigla da empresa);
+- nenhuma: o texto de `aviso` e o botão Sair.
+
+O menu só mostra as telas cujo código vem em `telas` da sessão (`src/contracts/telas.ts`), e rota de tela fora da lista mostra "sem acesso".
+
+Enquanto não há API, o cliente mock (`src/api/mockClient.ts`) responde conforme `VITE_MOCK_CENARIO`:
+
+- `completo` (padrão): as fixtures completas (`src/api/fixtures/visao-geral.json` e, nos painéis, `vendas.json`, `equipe-comercial.json`, `clientes.json`, `resultado.json`, `receber-pagar.json`, `fluxo-caixa.json` e `pessoas.json`). No Fluxo de caixa, a chave "Lançados + provisões" troca a projeção pelos cartões de `fluxo-caixa-provisoes.json`; os outros filtros não mudam os números
 - `vazio`: sem seções, para ver o estado vazio
 - `erro`: falha de servidor, para ver o estado de erro
 - `sem-permissao`: 403, como a API responderia
 
-Com `VITE_API_MODO=api` no `.env`, o front usa o cliente HTTP (`src/api/httpClient.ts`) em vez do mock. Em dev, o Vite repassa `/api` para a API local em `http://127.0.0.1:8000` (a API não tem CORS; em produção, front e API dividem o domínio).
+No mock, quem está logado é a pessoa do login fake (ver "Login"), e a sessão, as telas liberadas e a Gestão saem de um banco na memória (`src/api/mockGestao.ts`, a partir de `fixtures/gestao.json`), com 5 empresas fictícias: a `demo` (a das fixtures das telas) e mais quatro, em que só o nome do cabeçalho muda. O que se grava na Gestão vale até recarregar a página.
+
+Com `VITE_API_MODO=api` no `.env`, o front usa o cliente HTTP (`src/api/httpClient.ts`) em vez do mock. Em dev, o Vite repassa `/api` para a API local em `http://127.0.0.1:8001`, que sobe com `uv run fastapi dev --port 8001` (a API não tem CORS; em produção, front e API dividem o domínio).
 
 ### Pedidos adiantados
 
 Para a Visão geral aparecer mais rápido (`src/api/adiantar.ts`):
 
-- Assim que há sessão, `/api/sessao` e a Visão geral padrão (sem `mes`) saem juntas. A Visão geral sem `mes` não depende da sessão: a API usa o cliente e as empresas do vínculo. A tela usa a mesma query key e aproveita a resposta.
+- Ao abrir uma empresa, a Visão geral padrão dela (sem `mes`) é pedida assim que a sessão diz que ela está liberada, seja qual for a tela aberta; a tela usa a mesma query key e aproveita a resposta. Entrando por `/`, a sessão vem antes, porque é ela que dá o slug (antes de 10/11/2026 as duas saíam juntas); quem tem uma empresa só não pede a sessão de novo com o slug.
 - Depois da primeira tela, os 2 meses anteriores de `periodos` são pedidos em segundo plano. Ao escolher um mês, o anterior a ele também. Um pedido adiantado por vez (cada Visão geral usa até 3 conexões do banco no back), só com a aba visível, e nada que já esteja fresco no cache.
 - A Visão geral vale 15 min no cache (o mesmo prazo do cache da API). Ao trocar de mês, os números anteriores ficam na tela, esmaecidos, até os novos chegarem.
 - Sair apaga o cache inteiro, inclusive o que foi adiantado.
@@ -58,8 +71,21 @@ Sem sessão, qualquer outra rota leva a `/entrar?voltar=<tela>`; depois de entra
 
 `VITE_AUTH_MODO` escolhe o login:
 
-- `fake` (padrão): `src/auth/authFake.ts`. Qualquer e-mail entra. Senhas especiais: `errada` (erro de login), `bloqueada` (acesso pausado) e `expira` (sessão que cai no primeiro pedido depois de 30 s, para ver "Sua sessão terminou"). O link com `token_hash=vencido` mostra o de link vencido. O token é `fake:<object_id>`, que a API local aceita quando roda com `AMBIENTE=dev` e `AUTH_FAKE=1` (padrão: usuário de desenvolvimento do back, `…0000000001a1`, ligado à PJ Cortes; troque com `VITE_AUTH_FAKE_OBJECT_ID`). Para o login sobreviver ao reload, guarda só um indicador "logado" no `sessionStorage`, nunca o token.
+- `fake` (padrão): `src/auth/authFake.ts`. Qualquer e-mail entra, e o começo dele escolhe a pessoa (`src/auth/personasFake.ts`): `dora@…` é o Admin BORD, `caio@…` o consultor com duas empresas e `joana@…` a conta sem empresa (só no mock); os outros são o usuário de desenvolvimento. Senhas especiais: `errada` (erro de login), `bloqueada` (acesso pausado) e `expira` (sessão que cai no primeiro pedido depois de 30 s, para ver "Sua sessão terminou"). O link com `token_hash=vencido` mostra o de link vencido. O token é `fake:<object_id>`, que a API local aceita quando roda com `AMBIENTE=dev` e `AUTH_FAKE=1` (padrão: usuário de desenvolvimento do back, `…0000000001a1`, ligado à PJ Cortes; troque com `VITE_AUTH_FAKE_OBJECT_ID`). Para o login sobreviver ao reload, guarda só um indicador "logado" no `sessionStorage`, nunca o token.
 - `api`: rotas `/api/auth/*` da API.
+
+### Sessão por inatividade
+
+Sem uso, a sessão cai, com aviso 2 minutos antes. O tempo é de cada pessoa e vem da API em `inatividadeSegundos` (entrar, renovar e definir senha): 4 h para os clientes, 8 h para o consultor e 24 h para o admin, ou o que a Gestão puser. Sem o campo, valem 30 min. `VITE_INATIVIDADE_MIN` passa por cima, para teste.
+
+### Gestão (Interno BORD)
+
+`/gestao`, só para o Admin BORD (`gestao: true` na sessão; as rotas `/api/admin/*` respondem 403 para os outros). Visual do mockup Gestão M2.1.0; contrato em `src/contracts/gestao.ts`. O código fica num arquivo separado do resto do app (`src/screens/gestao/`), que só a Gestão baixa.
+
+- **Empresas** (`/gestao/empresas/:slug?aba=…`): Implantação (camadas), Prontidão dos dados, Painéis (liga e desliga, com a prévia do menu), Preferências (as que a API mandar e os feriados), Usuários e acesso (quem acessa e a matriz do que cada perfil vê) e Cargas.
+- **Usuários** (`/gestao/usuarios?filtro=…`): a lista, os filtros que a API manda e a gaveta de edição (nome, perfil, empresas, sessão, desativar e reativar).
+
+A API responde 204 nas gravações e não devolve o estado novo: depois de gravar, a Gestão é pedida de novo (e a sessão, quando muda painel, perfil ou pessoa). Regra quebrada vem como 422 com o texto pronto, mostrado como veio. Convidar gente nova não é pela tela: no lugar do botão fica a `notaConvite` da API.
 
 ## Regras do projeto
 
@@ -77,11 +103,15 @@ A Visão geral desenha as seções e indicadores que vierem no JSON, na ordem em
 
 A seção pode trazer um `seletor` (na Custos, "Linhas de custo"): a escolha vai em `PUT /api/telas/visao-geral/preferencias/{id}` e vale para o cliente inteiro, então o front pede de novo todas as Visões gerais em cache. No mock, a escolha fica na memória até recarregar, e o "Outros" só muda de nome (os números dele são os da fixture).
 
+O cartão `provisoes` do Fluxo de caixa também grava: o período em `PUT /api/telas/{tela}/cartoes/{cartao}/periodo` e cada grupo (ligado e valor em reais, ou `null` para voltar ao sugerido) em `PUT /api/telas/{tela}/cartoes/{cartao}/grupos/{grupo}`, com a `empresa` da tela. Vale para todos que veem o painel; depois de gravar, o front pede a tela de novo, porque a API recalcula a projeção inteira. O campo mostra e recebe milhares ("630 mil"). No mock, as escolhas ficam na memória e só o cartão muda.
+
+Um filtro da tela com `cartao` (a `projecao` do Fluxo de caixa) não aparece na barra: vira a chave no cabeçalho daquele cartão, e "Limpar filtros" não mexe nela.
+
 ### Segurança
 
 - `innerHTML`, `outerHTML`, `insertAdjacentHTML` e `dangerouslySetInnerHTML` são proibidos no ESLint. Texto com destaque usa `Trecho[]` e o componente `Trechos`.
 - `staticwebapp.config.json` aplica uma CSP restritiva (`default-src 'self'`, sem domínios externos, sem `unsafe-inline`). Por isso as fontes vêm do `@fontsource` e a marca é servida como arquivo (o Vite não gera `data:` URI: `assetsInlineLimit: 0`).
-- O cliente na URL serve só para navegar. Quem decide o acesso é a API.
+- O cliente na URL é só o pedido de quem navega (vai em `?cliente=`). Quem decide o acesso é a API.
 - O access token nunca vai para `localStorage` ou `sessionStorage`; ao sair, o cache do TanStack Query é apagado. Os erros de login mostram o `detail` que a API mandou.
 - Nada de segredo no código. `.env` só tem variáveis `VITE_` públicas, que vão para o navegador.
 
@@ -90,12 +120,12 @@ A seção pode trazer um `seletor` (na Custos, "Linhas de custo"): a escolha vai
 ```
 src/
   app/         rotas, providers (QueryClient, Auth, Tema), moldura, CSS base
-  screens/     telas (visao-geral/, paineis/, login/)
+  screens/     telas (visao-geral/, paineis/, login/, entrada/, gestao/)
   charts/      gráficos em SVG próprio: Gauge, MiniTendencia, Linha, BarraEmpilhada e, nos painéis,
                Barras, Combo, Linhas, Empilhado, Dispersao, Degraus, Cascata (escolhidos em Grafico.tsx)
   components/  Rail, Cabecalho, BarraFiltros, Chip, Segmentado, FaixaSecao, Kpi, IndicadorGauge,
                CartaoInadimplencia, Pill, Tooltip, Assinatura, MarcaDagua, Marca, Trechos, EstadoTela,
-               CampoTexto
+               CampoTexto, Abas, Gaveta, CampoBusca, Selecao, OpcaoCartao
   contracts/   tipos do JSON (no futuro, gerados do OpenAPI)
   api/         client.ts (interface), httpClient.ts, mockClient.ts, fixtures/
   auth/        sessão (AuthProvider), clientes de /api/auth (real e fake), destino depois do login

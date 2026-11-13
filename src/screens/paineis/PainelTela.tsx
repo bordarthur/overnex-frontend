@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { semPermissao } from '../../api/client';
+import { useClienteSlug } from '../../api/useClienteSlug';
 import { usePainel } from '../../api/usePainel';
 import { useSessao } from '../../api/useSessao';
 import { useAuth } from '../../auth/auth';
@@ -15,7 +16,7 @@ import type { FiltroPainel, TelaPainel } from '../../contracts/painel';
 import { formatarAtualizacao } from '../../format';
 import { montarFiltros } from '../visao-geral/filtros';
 import { CartaoPainel } from './CartaoPainel';
-import { ConsultaPainelContext } from './consultaPainel';
+import { ChavesCartaoContext, ConsultaPainelContext } from './consultaPainel';
 import { juntarFiltros } from './filtrosPainel';
 import { TELAS_PAINEL } from './telas';
 import './PainelTela.css';
@@ -23,12 +24,13 @@ import './PainelTela.css';
 const SEM_FILTROS: FiltroPainel[] = [];
 
 /**
- * Tela de painel por cartões (Vendas, Equipe comercial, Clientes, Resultado, Receber e pagar, Pessoas). Desenha só o que veio no
+ * Tela de painel por cartões (Vendas, Equipe comercial, Clientes, Resultado, Receber e pagar, Fluxo de caixa, Pessoas). Desenha só o que veio no
  * payload, na ordem em que veio. Use com `key={tela}` para os filtros não passarem de uma tela a outra.
  */
 export function PainelTela({ tela }: { tela: TelaPainel }) {
-  const { titulo, pergunta, comparar } = TELAS_PAINEL[tela];
+  const { titulo, pergunta, comparar, semComparar } = TELAS_PAINEL[tela];
   const { sair } = useAuth();
+  const cliente = useClienteSlug();
   const sessao = useSessao();
   // Só os chips que o usuário trocou; os outros ficam no padrão.
   const [valores, setValores] = useState<Record<string, string>>({});
@@ -36,10 +38,14 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
   // de filtro o payload anterior continua (placeholder), então os chips não somem.
   const [filtrosDaTela, setFiltrosDaTela] = useState<FiltroPainel[]>(SEM_FILTROS);
   const filtros = useMemo(
-    () => juntarFiltros(montarFiltros(sessao.data), filtrosDaTela, { comparar }),
-    [sessao.data, filtrosDaTela, comparar],
+    () => juntarFiltros(montarFiltros(sessao.data), filtrosDaTela, { comparar, semComparar }),
+    [sessao.data, filtrosDaTela, comparar, semComparar],
   );
   const filtrosConsulta = filtros.consulta(valores);
+  const chavesCartao = useMemo(
+    () => filtros.noCartao(valores, (id, rotulo) => setValores((atual) => ({ ...atual, [id]: rotulo }))),
+    [filtros, valores],
+  );
   const consulta = usePainel(tela, filtrosConsulta);
   const dados = consulta.data;
   // Ajuste durante a renderização (padrão do React para estado derivado de props), sem efeito.
@@ -74,12 +80,14 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
         {d.destaques.length > 0 && <Destaques itens={d.destaques} />}
         {d.kpis.length > 0 && <LinhaKpis kpis={d.kpis} />}
         {d.apoios.length > 0 ? <Apoios itens={d.apoios} /> : <div className="painel-espaco" />}
-        <ConsultaPainelContext.Provider value={{ tela, filtros: filtrosConsulta }}>
-          <div className="grid">
-            {d.cartoes.map((c) => (
-              <CartaoPainel key={c.id} cartao={c} />
-            ))}
-          </div>
+        <ConsultaPainelContext.Provider value={{ cliente, tela, filtros: filtrosConsulta }}>
+          <ChavesCartaoContext.Provider value={chavesCartao}>
+            <div className="grid">
+              {d.cartoes.map((c) => (
+                <CartaoPainel key={c.id} cartao={c} />
+              ))}
+            </div>
+          </ChavesCartaoContext.Provider>
         </ConsultaPainelContext.Provider>
       </>
     );
@@ -101,7 +109,7 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
         filtros={filtros.defs}
         valores={valores}
         onMudar={(id, valor) => setValores((atual) => ({ ...atual, [id]: valor }))}
-        onLimpar={() => setValores({})}
+        onLimpar={() => setValores((atual) => filtros.limpar(atual))}
       />
       {/* Com o filtro trocado, os números anteriores ficam esmaecidos até os novos chegarem. */}
       <section className="panel" aria-label={titulo} aria-busy={consulta.isPlaceholderData}>

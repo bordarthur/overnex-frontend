@@ -1,0 +1,82 @@
+/* provisões: tabela com chave, valores e o campo do valor usado */
+.prov-tbl td {
+  vertical-align: middle;
+}
+.prov-tbl td:first-child {
+  width: 44px;
+}
+.prov-nome {
+  min-width: 220px;
+}
+/* grupo desligado: a linha apagada, como no mockup */
+.prov-tbl tr.desligado td {
+  color: var(--ink-3);
+}
+.prov-tbl tr.desligado td:not(:first-child) {
+  opacity: 0.6;
+}
+.prov-campo {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  color: var(--ink-2);
+}
+/* o campo e o "mil" não se separam */
+.prov-entrada {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.prov-campo input {
+  width: 92px;
+  box-sizing: border-box;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+.prov-campo input:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 1px;
+}
+.prov-campo input[aria-invalid='true'] {
+  border-color: var(--crit);
+}
+.prov-campo input:disabled {
+  color: var(--ink-3);
+  background: var(--surface-2);
+}
+.prov-invalido {
+  flex-basis: 100%;
+  text-align: right;
+  font-size: 12px;
+  color: var(--crit);
+  white-space: normal;
+}
+.prov-quem {
+  font-size: 11.5px;
+}
+.prov-estado {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-top: 10px;
+}
+.prov-erro {
+  color: var(--crit);
+}
+
+@media (max-width: 760px) {
+  .prov-nome {
+    min-width: 140px;
+  }
+  .prov-campo input {
+    width: 64px;
+  }
+}

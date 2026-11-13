@@ -7,7 +7,8 @@ import { useInatividade } from './useInatividade';
 
 // Renova o token quando falta menos que isto para vencer.
 const MARGEM_RENOVACAO_MS = 60_000;
-// Sem uso por este tempo, a sessão cai; o aviso aparece um pouco antes.
+// Sem uso por este tempo, a sessão cai; o aviso aparece um pouco antes. O tempo é de cada pessoa e
+// vem da API (`inatividadeSegundos`); este é só o padrão de quando ela não manda.
 const LIMITE_INATIVIDADE_MS = 30 * 60_000;
 const AVISO_INATIVIDADE_MS = 2 * 60_000;
 
@@ -18,7 +19,7 @@ interface Encerrada {
 
 interface PropsAuthProvider {
   client: AuthClient;
-  /** Para testes e desenvolvimento: tempo sem uso até a sessão cair. */
+  /** Para testes e desenvolvimento: tempo sem uso até a sessão cair, no lugar do que a API manda. */
   limiteInatividadeMs?: number;
   children: ReactNode;
 }
@@ -26,19 +27,17 @@ interface PropsAuthProvider {
 /**
  * Sessão do usuário. O access token fica só na memória (num ref); ao recarregar a página,
  * a sessão volta pelo cookie httpOnly de refresh, que só a API lê.
- * Depois de 30 min sem uso, a sessão cai (ver useInatividade).
+ * Depois do tempo de sessão parada da pessoa sem uso, a sessão cai (ver useInatividade).
  * Precisa estar dentro do QueryClientProvider: ao sair, o cache é apagado.
  */
-export function AuthProvider({
-  client,
-  limiteInatividadeMs = LIMITE_INATIVIDADE_MS,
-  children,
-}: PropsAuthProvider) {
+export function AuthProvider({ client, limiteInatividadeMs, children }: PropsAuthProvider) {
   const queryClient = useQueryClient();
   const [estado, setEstado] = useState<EstadoAuth>('verificando');
   const [usuario, setUsuario] = useState<UsuarioAuth | null>(null);
   const [saiu, setSaiu] = useState(false);
   const [encerrada, setEncerrada] = useState<Encerrada | null>(null);
+  // tempo de sessão parada da pessoa logada, como veio de entrar, renovar ou definir a senha
+  const [limiteDaPessoaMs, setLimiteDaPessoaMs] = useState(LIMITE_INATIVIDADE_MS);
   const sessao = useRef<SessaoAuth | null>(null);
   const renovando = useRef<Promise<string | null> | null>(null);
 
@@ -48,6 +47,7 @@ export function AuthProvider({
       setUsuario(nova?.usuario ?? null);
       setEstado(nova ? 'autenticado' : 'anonimo');
       setEncerrada(null);
+      if (nova) setLimiteDaPessoaMs(limiteDaSessao(nova));
       // Nada de um usuário pode sobrar no cache para o próximo.
       if (!nova) queryClient.clear();
     },
@@ -93,10 +93,11 @@ export function AuthProvider({
     setEncerrada({ usuario: atual.usuario, porInatividade: true });
   }, [client, aplicar]);
 
+  const limiteMs = limiteInatividadeMs ?? limiteDaPessoaMs;
   const { restanteS: avisoInatividade, continuar: continuarConectado } = useInatividade({
     ativo: estado === 'autenticado',
-    limiteMs: limiteInatividadeMs,
-    avisoMs: Math.min(AVISO_INATIVIDADE_MS, limiteInatividadeMs / 2),
+    limiteMs,
+    avisoMs: Math.min(AVISO_INATIVIDADE_MS, limiteMs / 2),
     onVencer: encerrarPorInatividade,
   });
 
@@ -147,4 +148,10 @@ export function AuthProvider({
   );
 
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+}
+
+// API que ainda não manda o campo (ou manda zero): vale o padrão.
+function limiteDaSessao(sessao: SessaoAuth): number {
+  const segundos = Number(sessao.inatividadeSegundos);
+  return segundos > 0 ? segundos * 1000 : LIMITE_INATIVIDADE_MS;
 }

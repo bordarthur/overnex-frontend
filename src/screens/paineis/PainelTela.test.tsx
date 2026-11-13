@@ -73,18 +73,19 @@ describe('Painéis comerciais', () => {
     const consultar = vi.spyOn(api, 'obterPainel');
     renderizarApp('/demo/vendas', undefined, api);
     await screen.findByText('Projeção de fechamento');
-    expect(consultar).toHaveBeenCalledWith('vendas', {}, expect.anything());
+    expect(consultar).toHaveBeenCalledWith('demo', 'vendas', {}, expect.anything());
 
     await user.click(await screen.findByRole('button', { name: /Canal/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Varejo' }));
     await waitFor(() =>
-      expect(consultar).toHaveBeenCalledWith('vendas', { canal: 'varejo' }, expect.anything()),
+      expect(consultar).toHaveBeenCalledWith('demo', 'vendas', { canal: 'varejo' }, expect.anything()),
     );
 
     await user.click(screen.getByRole('button', { name: /Período/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Setembro de 2026' }));
     await waitFor(() =>
       expect(consultar).toHaveBeenCalledWith(
+        'demo',
         'vendas',
         { canal: 'varejo', mes: '2026-09' },
         expect.anything(),
@@ -373,7 +374,12 @@ describe('Painéis financeiros', () => {
     await user.click(screen.getByRole('button', { name: /Comparar com/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Mês anterior' }));
     await waitFor(() =>
-      expect(consultar).toHaveBeenCalledWith('resultado', { comparar: 'mes-anterior' }, expect.anything()),
+      expect(consultar).toHaveBeenCalledWith(
+        'demo',
+        'resultado',
+        { comparar: 'mes-anterior' },
+        expect.anything(),
+      ),
     );
   });
 
@@ -435,7 +441,12 @@ describe('Painéis financeiros', () => {
     await user.click(screen.getByRole('button', { name: /Atraso/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Mais de 90 dias' }));
     await waitFor(() =>
-      expect(consultar).toHaveBeenCalledWith('receber-pagar', { atraso: 'mais-90' }, expect.anything()),
+      expect(consultar).toHaveBeenCalledWith(
+        'demo',
+        'receber-pagar',
+        { atraso: 'mais-90' },
+        expect.anything(),
+      ),
     );
   });
 });
@@ -506,6 +517,368 @@ describe('Receber e pagar sem o estoque a custo', () => {
       within(cartaoPrazos).getByRole('img', { name: 'Prazos de recebimento e de pagamento' }),
     ).toBeInTheDocument();
     expect(screen.queryByRole('article', { name: /^Ciclo de caixa/ })).toBeNull();
+  });
+});
+
+describe('Fluxo de caixa', () => {
+  it('desenha o aviso, os destaques e os cartões da API, sem o chip "Comparar com"', async () => {
+    renderizarApp('/demo/fluxo-caixa');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Fluxo de caixa' })).toBeInTheDocument();
+    expect(await screen.findByText(/Caixa realizado, pela data de compensação/)).toBeInTheDocument();
+    expect(screen.getByText('Saldo final de setembro')).toBeInTheDocument();
+    expect(document.querySelector('.apoios')).toHaveTextContent('Sem classificação');
+    expect(titulosDosCartoes()).toEqual([
+      'Saldo projetado dia a dia, 60 dias',
+      'De onde vem a projeção',
+      'Semana a semana',
+      'Provisões pelo histórico',
+      'Pago contra lançado Atenção',
+      'Para onde vai o caixa em 30 dias',
+      'Do saldo inicial ao saldo final',
+      'Geração de caixa realizada',
+      'Fluxo de caixa realizado',
+    ]);
+    expect(screen.getByRole('link', { name: 'Fluxo de caixa' })).toHaveAttribute('aria-current', 'page');
+    // o caixa não tem orçado: sem o chip de comparação; o filtro próprio da tela continua
+    expect(screen.queryByRole('button', { name: /Comparar com/ })).toBeNull();
+    expect(screen.getByRole('button', { name: /Visão/ })).toBeInTheDocument();
+    // a projeção não vira chip da barra: a chave fica no cabeçalho do saldo projetado
+    expect(screen.queryByRole('button', { name: /Projeção/ })).toBeNull();
+    const saldo = cartao('Saldo projetado');
+    expect(within(saldo).getByRole('group', { name: 'Projeção' })).toBeInTheDocument();
+    expect(within(saldo).getByRole('button', { name: 'Só lançados' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    // o caixa mínimo em laranja, com o rótulo à esquerda; o alerta das contas a pagar no fim
+    expect(within(saldo).getByText('Caixa mínimo R$ 500 mil')).toHaveClass('reflabel', 'min');
+    expect(within(saldo).getByText('R$ 1,59 mi em 13/10')).toBeInTheDocument();
+    expect(saldo.querySelector('.callout.warn')).toHaveTextContent('Contas a pagar incompletas');
+  });
+
+  it('a chave da projeção vai na consulta e troca o saldo, a origem e as semanas', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const consultar = vi.spyOn(api, 'obterPainel');
+    renderizarApp('/demo/fluxo-caixa', undefined, api);
+    const saldo = await screen.findByRole('article', { name: /^Saldo projetado/ });
+    const origem = cartao('De onde vem a projeção');
+    // só lançados: o que não foi lançado vem riscado, e a V2 também
+    expect(origem.querySelectorAll('li.riscado')).toHaveLength(8);
+    expect(within(origem).getByText(`${MENOS}R$ 410 mil`).tagName).toBe('S');
+
+    await user.click(within(saldo).getByRole('button', { name: 'Lançados + provisões' }));
+    await waitFor(() =>
+      expect(consultar).toHaveBeenCalledWith(
+        'demo',
+        'fluxo-caixa',
+        { projecao: 'provisoes' },
+        expect.anything(),
+      ),
+    );
+    expect(await within(cartao('Saldo projetado')).findByText(/^Menor saldo R\$/)).toBeInTheDocument();
+    expect(
+      within(cartao('Saldo projetado')).getByRole('button', { name: 'Lançados + provisões' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    // com provisões, só a inadimplência (V2) fica riscada
+    expect(cartao('De onde vem a projeção').querySelectorAll('li.riscado')).toHaveLength(1);
+    expect(cartao('Semana a semana')).toHaveTextContent('com as provisões');
+
+    // "Limpar filtros" volta a Visão ao padrão, mas não mexe na chave do cartão
+    await user.click(screen.getByRole('button', { name: /Visão/ }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Acumulado de 2026' }));
+    await waitFor(() =>
+      expect(consultar).toHaveBeenLastCalledWith(
+        'demo',
+        'fluxo-caixa',
+        { projecao: 'provisoes', visao: 'ano' },
+        expect.anything(),
+      ),
+    );
+    await user.click(await screen.findByRole('button', { name: 'Limpar filtros' }));
+    expect(screen.queryByRole('button', { name: 'Limpar filtros' })).toBeNull();
+    expect(
+      within(cartao('Saldo projetado')).getByRole('button', { name: 'Lançados + provisões' }),
+    ).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('semana a semana: o mês na pílula, o traço na virada do mês e o farol no menor saldo', async () => {
+    renderizarApp('/demo/fluxo-caixa');
+    const semanas = await screen.findByRole('article', { name: /^Semana a semana/ });
+    const linha = (texto: string) => within(semanas).getByText(texto).closest('tr') as HTMLElement;
+    expect(within(linha('13/10 a 18/10')).getByText('out')).toHaveClass('tag-marca');
+    expect(linha('13/10 a 18/10')).not.toHaveClass('sep');
+    expect(linha('26/10 a 01/11')).toHaveClass('sep');
+    expect(within(linha('26/10 a 01/11')).getByText('nov')).toBeInTheDocument();
+    expect(linha('02/11 a 08/11')).not.toHaveClass('sep');
+    const celulas = within(linha('13/10 a 18/10')).getAllByRole('cell');
+    expect(celulas.map((c) => c.textContent)).toEqual([
+      'out13/10 a 18/10',
+      'R$ 976 mil',
+      `${MENOS}R$ 450 mil`,
+      'R$ 1,95 mi',
+      'R$ 1,59 mi',
+    ]);
+    expect(celulas[4]).toHaveClass('cf-ok');
+  });
+
+  it('pago contra lançado: barras pelo farol, os quadros e o rodapé com destaques', async () => {
+    renderizarApp('/demo/fluxo-caixa');
+    const pago = await screen.findByRole('article', { name: /^Pago contra lançado/ });
+    const quadros = pago.querySelectorAll('.quadro');
+    expect(quadros).toHaveLength(2);
+    expect(quadros[0]).toHaveClass('warn');
+    expect(quadros[0]).toHaveTextContent('Próximos 30 dias58% da média paga');
+    expect(quadros[1]).not.toHaveClass('warn');
+    expect(within(pago).getByText('R$ 3,66 mi').tagName).toBe('B');
+    expect(pago.querySelectorAll('.bar.warnb')).toHaveLength(1);
+    expect(pago.querySelector('.legend i.quadrado-laranja')).not.toBeNull();
+  });
+
+  it('árvore mês a mês: abre por nível, mês sem movimento vazio e farol nas células da API', async () => {
+    const user = userEvent.setup();
+    renderizarApp('/demo/fluxo-caixa');
+    const fluxo = await screen.findByRole('article', { name: /^Fluxo de caixa realizado/ });
+    const linha = (nome: string) => within(fluxo).queryByRole('row', { name: new RegExp(nome) });
+
+    expect(
+      within(fluxo)
+        .getAllByRole('columnheader')
+        .map((c) => c.textContent),
+    ).toEqual(['Conta (R$)', 'abr-26', 'mai-26', 'jun-26', 'jul-26', 'ago-26', 'set-26']);
+    // começa no nível 2: grupos do plano à vista, contas de nível 3 fechadas
+    expect(linha('Recebimentos de clientes')).not.toBeNull();
+    expect(linha('Venda de produtos')).toBeNull();
+    expect(linha('Saldo final')).toHaveClass('final');
+    expect(within(linha('Saldo final')!).getByRole('cell', { name: '1.474.000' })).toBeInTheDocument();
+
+    await user.click(within(fluxo).getByRole('button', { name: 'Nível 3' }));
+    expect(linha('Venda de produtos')).not.toBeNull();
+    await user.click(within(fluxo).getByRole('button', { name: 'Nível 1' }));
+    expect(linha('Recebimentos de clientes')).toBeNull();
+    expect(linha('Geração operacional')).not.toBeNull();
+
+    const entradas = within(fluxo).getByRole('button', { name: /Entradas de financiamento/ });
+    await user.click(entradas);
+    expect(entradas).toHaveAttribute('aria-expanded', 'true');
+    // captação só em junho: os outros meses ficam vazios
+    const captacao = within(linha('Captação de empréstimos')!).getAllByRole('cell');
+    expect(captacao.slice(1).map((c) => c.textContent)).toEqual(['', '', '200.000', '', '', '']);
+
+    // geração negativa em vermelho, positiva em azul, como a API mandou
+    const geracao = within(linha('Geração operacional')!).getAllByRole('cell');
+    expect(geracao[2]).toHaveTextContent(`${MENOS}60.000`);
+    expect(geracao[2]).toHaveClass('cfl-crit');
+    expect(geracao[1]).toHaveClass('cfl-ok');
+    expect(fluxo).toHaveTextContent('Sem classificação: caixa de contas sem de-para');
+  });
+
+  it('a coluna do acumulado vem separada dos meses', async () => {
+    const base = fixturesPainel['fluxo-caixa'];
+    const payload: PainelPayload = {
+      ...base,
+      cartoes: base.cartoes.map((c) =>
+        c.tipo === 'arvore-mensal'
+          ? {
+              ...c,
+              colunas: [...c.colunas, { rotulo: 'Acumulado', total: true }],
+              linhas: c.linhas.map((l) => ({ ...l, valores: [...l.valores, 0] })),
+            }
+          : c,
+      ),
+    };
+    renderizarApp(
+      '/demo/fluxo-caixa',
+      undefined,
+      criarMockClient({ atrasoMs: 0, paineis: { ...fixturesPainel, 'fluxo-caixa': payload } }),
+    );
+    const fluxo = await screen.findByRole('article', { name: /^Fluxo de caixa realizado/ });
+    expect(within(fluxo).getByRole('columnheader', { name: 'Acumulado' })).toHaveClass('am-total');
+  });
+
+  it('o filtro Visão vai na consulta pelo id', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const consultar = vi.spyOn(api, 'obterPainel');
+    renderizarApp('/demo/fluxo-caixa', undefined, api);
+    await screen.findByRole('article', { name: /^Fluxo de caixa realizado/ });
+    await user.click(screen.getByRole('button', { name: /Visão/ }));
+    await user.click(screen.getByRole('menuitemradio', { name: 'Acumulado de 2026' }));
+    await waitFor(() =>
+      expect(consultar).toHaveBeenCalledWith('demo', 'fluxo-caixa', { visao: 'ano' }, expect.anything()),
+    );
+  });
+
+  it('provisões: chave, valor e período vão para a API, e a tela é pedida de novo', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const grupo = vi.spyOn(api, 'salvarGrupoProvisao');
+    const periodo = vi.spyOn(api, 'salvarPeriodoProvisoes');
+    const consultar = vi.spyOn(api, 'obterPainel');
+    renderizarApp('/demo/fluxo-caixa', undefined, api);
+    const provisoes = await screen.findByRole('article', { name: /^Provisões pelo histórico/ });
+    const linha = (nome: string) => within(provisoes).getByText(nome).closest('tr') as HTMLElement;
+
+    // investimentos começa desligado, com o campo parado
+    const investimentos = within(provisoes).getByRole('switch', { name: 'Usar: Investimentos' });
+    expect(investimentos).toHaveAttribute('aria-checked', 'false');
+    expect(linha('Investimentos')).toHaveClass('desligado');
+    expect(within(linha('Investimentos')).getByRole('textbox')).toBeDisabled();
+    expect(
+      within(linha('Fornecedores'))
+        .getAllByRole('cell')
+        .map((c) => c.textContent),
+    ).toEqual(['', 'Fornecedores', 'R$ 4,16 mi', 'R$ 3,53 mi', 'R$ 630 mil', 'mil']);
+    expect(within(linha('Fornecedores')).getByRole('textbox')).toHaveValue('630');
+
+    const chamadas = consultar.mock.calls.length;
+    await user.click(investimentos);
+    await waitFor(() =>
+      expect(grupo).toHaveBeenCalledWith(
+        'demo',
+        'fluxo-caixa',
+        'provisoes',
+        'investimentos',
+        { ligado: true, valor: null },
+        { empresa: undefined },
+      ),
+    );
+    // gravou: a tela é pedida de novo e a chave volta ligada, como a API respondeu
+    await waitFor(() => expect(consultar.mock.calls.length).toBeGreaterThan(chamadas));
+    expect(
+      await within(cartao('Provisões pelo histórico')).findByRole('switch', { name: 'Usar: Investimentos' }),
+    ).toHaveAttribute('aria-checked', 'true');
+
+    // valor digitado em mil vai em reais; volta com quem personalizou
+    const campo = within(cartao('Provisões pelo histórico')).getByRole('textbox', {
+      name: 'Valor usado: Fornecedores, em milhares de reais',
+    });
+    await user.clear(campo);
+    await user.type(campo, '800{Enter}');
+    await waitFor(() =>
+      expect(grupo).toHaveBeenLastCalledWith(
+        'demo',
+        'fluxo-caixa',
+        'provisoes',
+        'fornecedores',
+        { ligado: true, valor: 800000 },
+        { empresa: undefined },
+      ),
+    );
+    expect(
+      await within(cartao('Provisões pelo histórico')).findByText('personalizado por você agora'),
+    ).toBeInTheDocument();
+
+    // vazio volta ao sugerido
+    const personalizado = within(cartao('Provisões pelo histórico')).getByRole('textbox', {
+      name: 'Valor usado: Fornecedores, em milhares de reais',
+    });
+    expect(personalizado).toHaveValue('800');
+    await user.clear(personalizado);
+    await user.tab();
+    await waitFor(() =>
+      expect(grupo).toHaveBeenLastCalledWith(
+        'demo',
+        'fluxo-caixa',
+        'provisoes',
+        'fornecedores',
+        { ligado: true, valor: null },
+        { empresa: undefined },
+      ),
+    );
+
+    await user.click(within(cartao('Provisões pelo histórico')).getByRole('button', { name: '12 meses' }));
+    await waitFor(() =>
+      expect(periodo).toHaveBeenCalledWith(
+        'demo',
+        'fluxo-caixa',
+        'provisoes',
+        { periodo: '12-meses' },
+        { empresa: undefined },
+      ),
+    );
+    await waitFor(() =>
+      expect(
+        within(cartao('Provisões pelo histórico')).getByRole('button', { name: '12 meses' }),
+      ).toHaveAttribute('aria-pressed', 'true'),
+    );
+  });
+
+  it('provisões: texto que não é número não vai para a API, e a recusa da API aparece no cartão', async () => {
+    const user = userEvent.setup();
+    const api = criarMockClient({ atrasoMs: 0 });
+    const grupo = vi
+      .spyOn(api, 'salvarGrupoProvisao')
+      .mockRejectedValue(new ApiErro(422, 'O valor precisa ser zero ou mais.'));
+    renderizarApp('/demo/fluxo-caixa', undefined, api);
+    const provisoes = await screen.findByRole('article', { name: /^Provisões pelo histórico/ });
+    const campo = within(provisoes).getByRole('textbox', {
+      name: 'Valor usado: Folha e encargos, em milhares de reais',
+    });
+
+    await user.clear(campo);
+    await user.type(campo, 'mil{Enter}');
+    expect(within(provisoes).getByRole('alert')).toHaveTextContent('Digite um número em mil, zero ou mais.');
+    expect(campo).toHaveAttribute('aria-invalid', 'true');
+    expect(grupo).not.toHaveBeenCalled();
+
+    await user.clear(campo);
+    await user.type(campo, '900,5{Enter}');
+    await waitFor(() =>
+      expect(grupo).toHaveBeenCalledWith(
+        'demo',
+        'fluxo-caixa',
+        'provisoes',
+        'folha',
+        { ligado: true, valor: 900500 },
+        { empresa: undefined },
+      ),
+    );
+    expect(
+      await within(provisoes).findByText(/Não deu para salvar: O valor precisa ser zero ou mais\./),
+    ).toBeInTheDocument();
+  });
+
+  it('provisões: sem `editavel`, chaves, período e campos ficam parados', async () => {
+    const base = fixturesPainel['fluxo-caixa'];
+    const payload: PainelPayload = {
+      ...base,
+      cartoes: base.cartoes.map((c) => (c.tipo === 'provisoes' ? { ...c, editavel: false } : c)),
+    };
+    renderizarApp(
+      '/demo/fluxo-caixa',
+      undefined,
+      criarMockClient({ atrasoMs: 0, paineis: { ...fixturesPainel, 'fluxo-caixa': payload } }),
+    );
+    const provisoes = await screen.findByRole('article', { name: /^Provisões pelo histórico/ });
+    for (const chave of within(provisoes).getAllByRole('switch')) expect(chave).toBeDisabled();
+    for (const campo of within(provisoes).getAllByRole('textbox')) expect(campo).toBeDisabled();
+    expect(within(provisoes).getByRole('button', { name: '6 meses' })).toBeDisabled();
+  });
+
+  it('mostra os estados de vazio, sem permissão e erro', async () => {
+    const vazio = renderizarApp(
+      '/demo/fluxo-caixa',
+      undefined,
+      criarMockClient({ atrasoMs: 0, cenario: 'vazio' }),
+    );
+    expect(await screen.findByText('Ainda não há dados para este período.')).toBeInTheDocument();
+    vazio.unmount();
+
+    const sem = renderizarApp(
+      '/demo/fluxo-caixa',
+      undefined,
+      criarMockClient({ atrasoMs: 0, cenario: 'sem-permissao' }),
+    );
+    expect(
+      await screen.findByText('Você não tem acesso a esta tela. Fale com o gestor do seu painel.'),
+    ).toBeInTheDocument();
+    sem.unmount();
+
+    renderizarApp('/demo/fluxo-caixa', undefined, criarMockClient({ atrasoMs: 0, cenario: 'erro' }));
+    expect(
+      await screen.findByRole('button', { name: 'Tentar de novo' }, { timeout: 5000 }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -656,7 +1029,13 @@ describe('Mostrar nomes (Cargos e salários)', () => {
     expect(chave).toHaveAttribute('aria-checked', 'true');
     expect(within(cargos).getByRole('columnheader', { name: 'Pessoa' })).toBeInTheDocument();
     expect(within(cargos).getByText(/Uma linha por pessoa/)).toBeInTheDocument();
-    expect(pedir).toHaveBeenCalledWith('pessoas', 'cargos-salarios', expect.any(Object), expect.anything());
+    expect(pedir).toHaveBeenCalledWith(
+      'demo',
+      'pessoas',
+      'cargos-salarios',
+      expect.any(Object),
+      expect.anything(),
+    );
 
     await user.click(chave);
     expect(within(cargos).queryByText('Renato Albuquerque')).toBeNull();

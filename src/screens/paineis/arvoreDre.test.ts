@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { LinhaDre } from '../../contracts/painel';
+import type { LinhaArvoreMensal, LinhaDre } from '../../contracts/painel';
 import { abertasAteNivel, linhasVisiveis } from './arvoreDre';
 
 const linha = (id: string, nivel: LinhaDre['nivel'], pai?: string, comDesvio = false): LinhaDre => ({
@@ -52,5 +52,42 @@ describe('árvore da DRE', () => {
   it('"Só desvios" deixa as linhas que a API marcou e os subtotais', () => {
     const todas = abertasAteNivel(LINHAS, 3);
     expect(ids(linhasVisiveis(LINHAS, todas, true))).toEqual(['100', '100.01', '100.01.01', 'sub-rl']);
+  });
+});
+
+describe('árvore mês a mês (fluxo de caixa)', () => {
+  const linha = (id: string, nivel: LinhaArvoreMensal['nivel'], pai?: string): LinhaArvoreMensal => ({
+    id,
+    nome: id,
+    nivel,
+    pai,
+    valores: [0],
+  });
+  // Entradas (1) > plano nível 1 (2) > nível 2 (3) > nível 3 (4)
+  const FLUXO = [
+    linha('saldo-inicial', 0),
+    linha('ent', 1),
+    linha('receb', 2, 'ent'),
+    linha('vendas', 3, 'receb'),
+    linha('vendas-prod', 4, 'vendas'),
+    linha('fco', 0),
+  ];
+
+  it('vai até o nível 4, sem "Só desvios"', () => {
+    expect([...abertasAteNivel(FLUXO, 4)]).toEqual(['ent', 'receb', 'vendas']);
+    expect(linhasVisiveis(FLUXO, abertasAteNivel(FLUXO, 4)).map((l) => l.id)).toEqual([
+      'saldo-inicial',
+      'ent',
+      'receb',
+      'vendas',
+      'vendas-prod',
+      'fco',
+    ]);
+    expect(linhasVisiveis(FLUXO, abertasAteNivel(FLUXO, 2)).map((l) => l.id)).toEqual([
+      'saldo-inicial',
+      'ent',
+      'receb',
+      'fco',
+    ]);
   });
 });

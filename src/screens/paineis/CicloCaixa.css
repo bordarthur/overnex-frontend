@@ -37,9 +37,9 @@
   background: var(--series);
   color: var(--bg);
 }
-/* no mockup, azul; aqui em grafite médio, porque azul é status (decisão de 28/10/2026) */
+/* azul, como no mockup (cores do mockup também fora de status, decisão de 09/11/2026) */
 .cy-seg.pagamento {
-  background: var(--c1);
+  background: var(--c4);
   color: var(--bg);
 }
 .cy-seg.preso {

@@ -28,7 +28,7 @@ export function Janelas({ cartao }: { cartao: CartaoJanelas }) {
               return (
                 <div key={l.rotulo} className={classes.filter(Boolean).join(' ')}>
                   <span>{l.rotulo}</span>
-                  <b className={l.tom ? `t-${STATUS[l.tom].classe}` : undefined}>
+                  <b className={l.tom ? `t-${STATUS[l.tom].classe}` : l.cor ? `cor-${l.cor}` : undefined}>
                     {formatarValor(l.valor, { comSinal: l.comSinal })}
                   </b>
                 </div>
