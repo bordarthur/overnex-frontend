@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useGestao, useGravarGestao, useUsuariosGestao } from '../../api/useGestao';
+import { useGestao, useGravarGestao } from '../../api/useGestao';
 import { Chave } from '../../components/Chave';
 import type { ClienteGestaoPayload, MatrizDeAcesso, UsuarioDoCliente } from '../../contracts/gestao';
 import { erroDaGravacao } from './apoio';
+import { ConvidarUsuario } from './ConvidarUsuario';
 import { GavetaUsuario } from './GavetaUsuario';
-import { CelulaPessoa, CelulaSituacao, Empresas, SessaoDaPessoa } from './partesUsuarios';
+import { BotaoConvite, CelulaPessoa, CelulaSituacao, Empresas, SessaoDaPessoa } from './partesUsuarios';
 
 interface Props {
   cliente: ClienteGestaoPayload['cliente'];
@@ -24,8 +25,6 @@ export function AbaAcesso({ cliente, usuarios, acesso }: Props) {
 
 function QuemAcessa({ cliente, usuarios }: Pick<Props, 'cliente' | 'usuarios'>) {
   const gestao = useGestao();
-  // a nota do convite vem com a lista geral de pessoas
-  const { data: geral } = useUsuariosGestao();
   const [editando, setEditando] = useState<string | null>(null);
   const emEdicao = usuarios.find((u) => u.id === editando);
   const sessoes = gestao.data?.sessoes ?? [];
@@ -39,7 +38,7 @@ function QuemAcessa({ cliente, usuarios }: Pick<Props, 'cliente' | 'usuarios'>) 
             Pessoas ligadas a esta empresa. Admin BORD vê todas as empresas e não aparece aqui.
           </p>
         </div>
-        {geral && <p className="gst-convite">{geral.notaConvite}</p>}
+        <ConvidarUsuario empresa={cliente.slug} rotulo={`Convidar para ${cliente.nome}`} />
       </div>
       <div className="scroll-x">
         <table className="tbl gst-tbl">
@@ -83,7 +82,8 @@ function QuemAcessa({ cliente, usuarios }: Pick<Props, 'cliente' | 'usuarios'>) 
                   <CelulaSituacao situacao={u.situacao} />
                 </td>
                 <td>{u.paineisQueVe}</td>
-                <td>
+                <td className="gst-acoes-linha">
+                  <BotaoConvite usuario={u} />
                   <button
                     type="button"
                     className="link"

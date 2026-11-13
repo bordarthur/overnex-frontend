@@ -1,4 +1,10 @@
-import type { ClienteGestaoPayload, GestaoPayload, UsuariosPayload } from '../contracts/gestao';
+import type {
+  ClienteGestaoPayload,
+  ConvitePedido,
+  EmpresaCriada,
+  GestaoPayload,
+  UsuariosPayload,
+} from '../contracts/gestao';
 import type { PainelPayload, TabelaNomes } from '../contracts/painel';
 import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
@@ -15,7 +21,7 @@ interface OpcoesHttpClient {
   fetch?: typeof fetch;
 }
 
-type Metodo = 'GET' | 'PUT' | 'DELETE';
+type Metodo = 'GET' | 'PUT' | 'POST' | 'DELETE';
 
 /** Cliente da API real. Erros HTTP viram ApiErro com o status e o `detail` que a API mandou. */
 export function criarHttpClient({
@@ -53,6 +59,11 @@ export function criarHttpClient({
   // gravações respondem 204, sem corpo
   async function gravar(caminho: string, corpo: unknown): Promise<void> {
     await pedir(caminho, { metodo: 'PUT', corpo });
+  }
+
+  // os convites (202) e a empresa nova (201) respondem com corpo
+  async function enviar<T>(caminho: string, corpo?: unknown): Promise<T> {
+    return (await (await pedir(caminho, { metodo: 'POST', corpo })).json()) as T;
   }
 
   return {
@@ -129,6 +140,18 @@ export function criarHttpClient({
       },
       salvarAcessoDoUsuario(id, ativo) {
         return gravar(`${caminhoUsuario(id)}/acesso`, { ativo });
+      },
+      criarCliente(nova) {
+        return enviar<EmpresaCriada>('/admin/clientes', nova);
+      },
+      salvarCliente(slug, mudanca) {
+        return gravar(caminhoCliente(slug), mudanca);
+      },
+      convidarUsuario(novo) {
+        return enviar<ConvitePedido>('/admin/usuarios', novo);
+      },
+      reenviarConvite(id) {
+        return enviar<ConvitePedido>(`${caminhoUsuario(id)}/convite`);
       },
     },
   };

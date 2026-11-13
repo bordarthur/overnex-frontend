@@ -15,7 +15,11 @@ import {
   MSG,
   clienteDoBanco,
   criarBancoGestao,
+  criarEmpresa,
   gestaoDoBanco,
+  mudarEmpresa,
+  pedirConvite,
+  repedirConvite,
   gravarPreferenciaDoCliente,
   mudarAcessoDoPerfil,
   mudarAcessoDoUsuario,
@@ -346,6 +350,22 @@ export function criarMockClient({
       },
       async salvarAcessoDoUsuario(id, ativo) {
         mudarAcessoDoUsuario(banco, await admin(), id, ativo);
+      },
+      async criarCliente(nova) {
+        await admin();
+        return criarEmpresa(banco, nova);
+      },
+      async salvarCliente(slug, mudanca) {
+        await admin();
+        mudarEmpresa(banco, slug, mudanca);
+      },
+      async convidarUsuario(novo) {
+        await admin();
+        return pedirConvite(banco, novo);
+      },
+      async reenviarConvite(id) {
+        await admin();
+        return repedirConvite(banco, id);
       },
     },
   };

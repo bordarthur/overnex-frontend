@@ -186,6 +186,7 @@
     {
       "slug": "demo",
       "nome": "Cliente Demo",
+      "segmento": "Distribuição",
       "sigla": "CD",
       "sufixo": "demo",
       "fontesFora": {},
@@ -225,6 +226,7 @@
     {
       "slug": "aurora",
       "nome": "Agência Aurora",
+      "segmento": "Publicidade",
       "sigla": "AA",
       "sufixo": "aurora",
       "fontesFora": {
@@ -428,6 +430,20 @@
       "ativo": true,
       "convite": "vencido",
       "quando": "venceu 03/11, 14h20",
+      "entradas30d": 0,
+      "ultimo": null
+    },
+    {
+      "id": "0d000000-0000-4000-8000-0000000001c2",
+      "nome": "Sócio da Aurora",
+      "email": "socio@agenciaaurora.com.br",
+      "perfil": "cliente_principal",
+      "clientes": ["aurora"],
+      "sessaoMinutos": null,
+      "ativo": true,
+      "convite": "falhou",
+      "motivo": "O serviço de e-mail recusou o endereço.",
+      "quando": "tentativa hoje, 8h02",
       "entradas30d": 0,
       "ultimo": null
     }

@@ -2,10 +2,15 @@ import type { PersonaFake } from '../auth/personasFake';
 import type {
   CamadaDoCliente,
   ClienteGestaoPayload,
+  ConvitePedido,
+  EmpresaCriada,
+  MudancaEmpresa,
   FiltroUsuarios,
   FonteDoCliente,
   GestaoPayload,
   MudancaUsuario,
+  NovaEmpresa,
+  NovoUsuario,
   PainelDoCliente,
   StatusGestao,
   UsuarioGestao,
@@ -42,9 +47,20 @@ export const MSG = {
   adminEmail: 'Admin BORD só com e-mail da BORD.',
   ultimoAdmin: 'O Overnex precisa de pelo menos um Admin BORD ativo.',
   proprio: 'Você não pode tirar o próprio acesso de Admin BORD. Peça a outro Admin BORD.',
+  nomeDaEmpresa: 'Informe o nome da empresa.',
+  slug: 'O identificador só aceita letras minúsculas, números e hífen (ex.: pj-cortes).',
+  empresaCriada:
+    'Empresa criada. Já dá para convidar as pessoas; os painéis ligam quando a primeira ' +
+    'carga de dados chegar.',
+  email: 'E-mail inválido.',
+  jaTem: 'Este e-mail já tem cadastro no Overnex.',
+  desativado: 'O acesso desta pessoa está desativado. Reative antes de mandar o convite.',
+  jaEntrou: 'Esta pessoa já entrou no Overnex. Para trocar a senha, ela usa "Esqueci a senha".',
+  naFila: 'O convite desta pessoa já está na fila.',
+  conviteNaFila: 'Convite na fila: sai em instantes.',
   notaConvite:
-    'Novos acessos são criados pela equipe BORD, pelo comando de cadastro: a pessoa recebe o ' +
-    'convite por e-mail e cria a própria senha. Aqui se edita quem já tem acesso.',
+    'A pessoa recebe o convite por e-mail e cria a própria senha. O convite entra numa fila ' +
+    'e sai em cerca de um minuto; se o envio falhar, a situação da pessoa mostra o motivo.',
 } as const;
 
 interface FonteFora {
@@ -56,6 +72,8 @@ interface FonteFora {
 interface ClienteMock {
   slug: string;
   nome: string;
+  // o setor, texto livre
+  segmento?: string | null;
   sigla: string;
   // final do nome das tabelas do cliente (f_vendas_<sufixo>)
   sufixo: string;
@@ -79,7 +97,12 @@ interface UsuarioMock {
   // null = o padrão do perfil
   sessaoMinutos: number | null;
   ativo: boolean;
+  // fila (pedido pela Gestão, ainda não saiu) | falhou (o envio não saiu) | enviado | vencido
   convite: string | null;
+  // só em "falhou": por que o convite não saiu
+  motivo?: string | null;
+  // só em "fila": quando o job "manda" o convite (Date.now())
+  saiEm?: number;
   // texto do convite ("enviado ontem, 16h10") ou, desativado, de quando foi
   quando: string | null;
   quandoAntes?: string | null;
@@ -294,16 +317,22 @@ function usuario(banco: BancoGestao, u: UsuarioMock): UsuarioGestao {
     rotulo,
     quando,
     status,
+    detalhe: id === 'nao-enviado' ? (u.motivo ?? null) : null,
   });
+  const CONVITES: Record<string, [string, string, StatusGestao]> = {
+    fila: ['fila', 'Convite na fila', 'atencao'],
+    falhou: ['nao-enviado', 'Convite não enviado', 'critico'],
+    enviado: ['convite', 'Convite enviado', 'atencao'],
+    vencido: ['vencido', 'Convite vencido', 'critico'],
+  };
+  const doConvite = u.convite ? CONVITES[u.convite] : undefined;
   const comoEsta = !u.ativo
     ? situacao('inativo', 'Desativado', u.quando ?? '', 'neutro')
-    : u.convite === 'enviado'
-      ? situacao('convite', 'Convite enviado', u.quando ?? '', 'atencao')
-      : u.convite === 'vencido'
-        ? situacao('vencido', 'Convite vencido', u.quando ?? '', 'critico')
-        : !admin && clientes.length === 0
-          ? situacao('sem-empresa', 'Sem empresa', entrou, 'critico')
-          : situacao('ativo', 'Ativo', entrou, 'saudavel');
+    : doConvite
+      ? situacao(doConvite[0], doConvite[1], u.quando ?? '', doConvite[2])
+      : !admin && clientes.length === 0
+        ? situacao('sem-empresa', 'Sem empresa', entrou, 'critico')
+        : situacao('ativo', 'Ativo', entrou, 'saudavel');
 
   const aoEntrar: UsuarioGestao['aoEntrar'] = !u.ativo
     ? { tipo: 'nada', rotulo: 'Não entra: acesso desativado' }
@@ -327,10 +356,30 @@ function usuario(banco: BancoGestao, u: UsuarioMock): UsuarioGestao {
     situacao: comoEsta,
     acessos: { entradas30d: u.entradas30d, ultimo: u.ultimo },
     podeDesativar: u.ativo && !(admin && adminsAtivos < 2),
+    // ativo, ainda não entrou e sem pedido na fila
+    convite:
+      u.ativo && !u.ultimo && u.convite && u.convite !== 'fila'
+        ? { rotulo: u.convite === 'falhou' ? 'Tentar de novo' : 'Reenviar convite' }
+        : null,
   };
 }
 
-const todosOsUsuarios = (banco: BancoGestao) => porNome(banco.usuarios).map((u) => usuario(banco, u));
+// Quanto o convite fica na fila do mock, no lugar do job do back (cerca de um minuto).
+const TEMPO_NA_FILA_MS = 40_000;
+
+/** O "job" do mock: o convite que já esperou o tempo da fila passa a enviado. */
+function despacharFila(banco: BancoGestao) {
+  for (const u of banco.usuarios) {
+    if (u.convite !== 'fila' || u.saiEm === undefined || Date.now() < u.saiEm) continue;
+    u.convite = 'enviado';
+    u.quando = `enviado ${agora()}`;
+  }
+}
+
+function todosOsUsuarios(banco: BancoGestao) {
+  despacharFila(banco);
+  return porNome(banco.usuarios).map((u) => usuario(banco, u));
+}
 
 // ---------- GET /api/admin/* ----------
 
@@ -339,6 +388,7 @@ export function gestaoDoBanco(banco: BancoGestao): GestaoPayload {
     clientes: porNome(banco.clientes).map((c) => ({
       slug: c.slug,
       nome: c.nome,
+      segmento: c.segmento ?? null,
       camadas: camadas(c).map(({ id, rotulo, estado, estadoRotulo, status }) => ({
         id,
         rotulo,
@@ -389,7 +439,7 @@ export function clienteDoBanco(banco: BancoGestao, slug: string): ClienteGestaoP
   }
 
   return {
-    cliente: { slug: c.slug, nome: c.nome, logoUrl: null },
+    cliente: { slug: c.slug, nome: c.nome, segmento: c.segmento ?? null, logoUrl: null },
     resumo: [
       {
         rotulo: `${ativas} de ${listaCamadas.length} camadas ativas`,
@@ -437,7 +487,7 @@ export function usuariosDoBanco(banco: BancoGestao): UsuariosPayload {
     {
       id: 'pendentes',
       rotulo: 'Convites pendentes',
-      total: total((u) => u.situacao.id === 'convite' || u.situacao.id === 'vencido'),
+      total: total((u) => ['fila', 'nao-enviado', 'convite', 'vencido'].includes(u.situacao.id)),
       atencao: true,
     },
     {
@@ -535,6 +585,99 @@ export function mudarUsuario(banco: BancoGestao, autor: string, id: string, m: M
   u.clientes = slugs;
   // igual ao padrão do perfil = sem valor próprio
   u.sessaoMinutos = m.sessaoMinutos === sessaoPadrao(m.perfil) ? null : m.sessaoMinutos;
+}
+
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** Como POST /api/admin/clientes: a empresa nasce sem carga, com tudo desligado e sem pessoas. */
+export function criarEmpresa(banco: BancoGestao, m: NovaEmpresa): EmpresaCriada {
+  const nome = m.nome.trim().replace(/\s+/g, ' ');
+  if (!nome) throw new ApiErro(422, MSG.nomeDaEmpresa);
+  const semAcento = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const slug =
+    m.slug?.trim() ||
+    semAcento
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  if (!SLUG.test(slug)) throw new ApiErro(422, MSG.slug);
+  if (banco.clientes.some((c) => c.slug === slug))
+    throw new ApiErro(422, `Já existe uma empresa com o identificador ${slug}.`);
+
+  banco.clientes.push({
+    slug,
+    nome,
+    segmento: m.segmento?.trim().replace(/\s+/g, ' ') || null,
+    sigla: semAcento.slice(0, 2).toUpperCase(),
+    sufixo: slug.replace(/-/g, '_'),
+    fontesFora: Object.fromEntries(
+      dados.fontes.map((f) => [
+        f.prefixo,
+        { status: 'critico', statusRotulo: 'sem carga', observacao: null },
+      ]),
+    ),
+    ligados: [],
+    acesso: {},
+    feriados: [],
+    preferencias: {},
+  });
+  return { slug, nome, mensagem: MSG.empresaCriada };
+}
+
+/** Como PUT /api/admin/clientes/{slug}: troca o nome e o setor; o slug fica. */
+export function mudarEmpresa(banco: BancoGestao, slug: string, m: MudancaEmpresa) {
+  const c = clienteDoSlug(banco, slug);
+  const nome = m.nome.trim().replace(/\s+/g, ' ');
+  if (!nome) throw new ApiErro(422, MSG.nomeDaEmpresa);
+  c.nome = nome;
+  c.segmento = m.segmento?.trim().replace(/\s+/g, ' ') || null;
+}
+
+// formato mínimo, como no back; quem valida de verdade é o envio do e-mail
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
+/** Como POST /api/admin/usuarios: cria a pessoa (ainda sem login) e põe o convite na fila. */
+export function pedirConvite(banco: BancoGestao, m: NovoUsuario): ConvitePedido {
+  const email = m.email.trim().toLowerCase();
+  const admin = m.perfil === ADMIN;
+  if (!EMAIL.test(email)) throw new ApiErro(422, MSG.email);
+  if (!perfilDe(m.perfil)) throw new ApiErro(422, MSG.perfil);
+  if (admin && !email.endsWith(DOMINIO_ADMIN)) throw new ApiErro(422, MSG.adminEmail);
+  if (m.sessaoMinutos != null) conferirSessao(m.sessaoMinutos, m.perfil);
+  const slugs = admin ? [] : [...new Set(m.clientes)];
+  if (banco.usuarios.some((u) => u.email.toLowerCase() === email)) throw new ApiErro(422, MSG.jaTem);
+  const faltam = slugs.filter((s) => !banco.clientes.some((c) => c.slug === s));
+  if (faltam.length > 0) throw new ApiErro(422, `Empresa não encontrada: ${faltam.join(', ')}.`);
+
+  const id = `0d000000-0000-4000-8000-${String(banco.usuarios.length + 1).padStart(12, 'f')}`;
+  banco.usuarios.push({
+    id,
+    nome: m.nome.trim(),
+    email,
+    perfil: m.perfil,
+    clientes: slugs,
+    // igual ao padrão do perfil = sem valor próprio
+    sessaoMinutos: m.sessaoMinutos === sessaoPadrao(m.perfil) ? null : m.sessaoMinutos,
+    ativo: true,
+    convite: 'fila',
+    quando: `pedido ${agora()}`,
+    saiEm: Date.now() + TEMPO_NA_FILA_MS,
+    entradas30d: 0,
+    ultimo: null,
+  });
+  return { id, mensagem: MSG.conviteNaFila };
+}
+
+/** Como POST /api/admin/usuarios/{id}/convite: mais um convite na fila, para quem ainda não entrou. */
+export function repedirConvite(banco: BancoGestao, id: string): ConvitePedido {
+  const u = pessoaDoId(banco, id);
+  if (!u.ativo) throw new ApiErro(422, MSG.desativado);
+  if (u.ultimo) throw new ApiErro(422, MSG.jaEntrou);
+  if (u.convite === 'fila') throw new ApiErro(422, MSG.naFila);
+  u.convite = 'fila';
+  u.quando = `pedido ${agora()}`;
+  u.saiEm = Date.now() + TEMPO_NA_FILA_MS;
+  return { id, mensagem: MSG.conviteNaFila };
 }
 
 export function mudarSessaoDoUsuario(banco: BancoGestao, id: string, minutos: number) {

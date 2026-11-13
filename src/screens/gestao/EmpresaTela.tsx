@@ -11,6 +11,8 @@ import { AbaImplantacao } from './AbaImplantacao';
 import { AbaPaineis } from './AbaPaineis';
 import { AbaPreferencias } from './AbaPreferencias';
 import { useTituloDaGestao } from './apoio';
+import { ConvidarUsuario } from './ConvidarUsuario';
+import { EditarEmpresa } from './EditarEmpresa';
 import './EmpresaTela.css';
 
 // Rótulos das abas, como no mockup Gestão M2.1.0. A última é "Horas e cargas" no mockup; ficou
@@ -54,11 +56,17 @@ export function EmpresaTela() {
       <header className="gst-topo">
         <div>
           <h1>{dados.cliente.nome}</h1>
-          <p>
-            <Link className="link" to={`/${dados.cliente.slug}`}>
+          {dados.cliente.segmento && <p>{dados.cliente.segmento}</p>}
+          <div className="gst-acoes">
+            <Link className="btn gst-botao" to={`/${dados.cliente.slug}`}>
               Abrir os painéis desta empresa
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </Link>
-          </p>
+            <ConvidarUsuario empresa={dados.cliente.slug} secundario />
+            <EditarEmpresa cliente={dados.cliente} />
+          </div>
         </div>
         <div className="gst-chips">
           {dados.resumo.map((c) => (

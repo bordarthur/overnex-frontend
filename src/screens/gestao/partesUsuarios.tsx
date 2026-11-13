@@ -1,7 +1,13 @@
 import { useGravarGestao } from '../../api/useGestao';
 import { Pill } from '../../components/Pill';
 import { Selecao } from '../../components/Selecao';
-import type { ItemCliente, OpcaoSessao, Situacao, UsuarioGestao } from '../../contracts/gestao';
+import type {
+  ConvitePedido,
+  ItemCliente,
+  OpcaoSessao,
+  Situacao,
+  UsuarioGestao,
+} from '../../contracts/gestao';
 import { erroDaGravacao, sessoesDoPerfil } from './apoio';
 import './partesUsuarios.css';
 
@@ -21,7 +27,38 @@ export function CelulaSituacao({ situacao }: { situacao: Situacao }) {
     <div className="gst-situacao">
       <Pill status={situacao.status} rotulo={situacao.rotulo} />
       {situacao.quando && <span>{situacao.quando}</span>}
+      {/* por que o convite não saiu */}
+      {situacao.detalhe && <span>{situacao.detalhe}</span>}
     </div>
+  );
+}
+
+/**
+ * O botão de mandar o convite de novo, na linha da pessoa: só quando a API manda `convite`, com o
+ * rótulo dela ("Reenviar convite", "Tentar de novo"). Depois do pedido, a lista volta com o convite
+ * na fila e sem o botão; a recusa da API aparece embaixo.
+ */
+export function BotaoConvite({ usuario }: { usuario: UsuarioGestao }) {
+  const reenviar = useGravarGestao<void, ConvitePedido>((gestao) => gestao.reenviarConvite(usuario.id));
+  if (!usuario.convite) return null;
+
+  return (
+    <>
+      <button
+        type="button"
+        className="link"
+        aria-label={`${usuario.convite.rotulo}: ${usuario.nome}`}
+        disabled={reenviar.isPending}
+        onClick={() => reenviar.mutate()}
+      >
+        {usuario.convite.rotulo}
+      </button>
+      {reenviar.isError && (
+        <span className="gst-sessao-erro" role="alert">
+          {erroDaGravacao(reenviar.error)}
+        </span>
+      )}
+    </>
   );
 }
 

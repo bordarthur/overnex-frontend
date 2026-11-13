@@ -1,8 +1,13 @@
 import { createContext, useContext } from 'react';
 import type {
   ClienteGestaoPayload,
+  ConvitePedido,
+  EmpresaCriada,
+  MudancaEmpresa,
   GestaoPayload,
   MudancaUsuario,
+  NovaEmpresa,
+  NovoUsuario,
   UsuariosPayload,
 } from '../contracts/gestao';
 import type {
@@ -87,6 +92,14 @@ export interface GestaoApi {
   salvarSessaoDoUsuario(id: string, minutos: number): Promise<void>;
   /** Desativa ou reativa o acesso da pessoa. */
   salvarAcessoDoUsuario(id: string, ativo: boolean): Promise<void>;
+  /** Cria a empresa (201), com todas as camadas desligadas e sem pessoas. */
+  criarCliente(nova: NovaEmpresa): Promise<EmpresaCriada>;
+  /** Troca o nome e o setor da empresa. O slug não muda. */
+  salvarCliente(slug: string, mudanca: MudancaEmpresa): Promise<void>;
+  /** Cria a pessoa e põe o convite na fila (202); o e-mail sai depois, por um job do back. */
+  convidarUsuario(novo: NovoUsuario): Promise<ConvitePedido>;
+  /** Manda o convite de novo a quem ainda não entrou (só quando a pessoa vem com `convite`). */
+  reenviarConvite(id: string): Promise<ConvitePedido>;
 }
 
 /**

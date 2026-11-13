@@ -101,6 +101,34 @@
   font-size: 14px;
   font-weight: 600;
 }
+.gst-item small {
+  font-size: 11.5px;
+  color: #a8a8a8;
+  margin-top: -4px;
+}
+/* "Nova empresa", na coluna escura */
+.gst-nova {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px dashed #5c5c5c;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e6e6;
+}
+.gst-nova:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.gst-nova:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 1px;
+}
 .gst-item-linha {
   flex-direction: row;
   justify-content: space-between;
@@ -260,11 +288,23 @@
   gap: 12px 24px;
   flex-wrap: wrap;
 }
-/* fica no lugar do botão "Convidar" do mockup: o cadastro é por comando da BORD */
-.gst-convite {
-  font-size: 12.5px;
-  color: var(--ink-2);
-  max-width: 46ch;
+/* ações do cabeçalho da empresa: abrir os painéis e convidar */
+.gst-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+/* botão com ícone */
+.btn.gst-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.gst-botao svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
 }
 
 /* tabelas da Gestão: texto à esquerda, como no mockup */

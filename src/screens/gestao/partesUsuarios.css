@@ -6,6 +6,16 @@
   font-size: 12px;
   color: var(--ink-3);
 }
+/* ações da linha: mandar o convite de novo e editar */
+.gst-acoes-linha {
+  white-space: nowrap;
+}
+.gst-acoes-linha .link + .link {
+  margin-left: 14px;
+}
+.gst-acoes-linha .gst-sessao-erro {
+  display: block;
+}
 .gst-situacao {
   display: flex;
   flex-direction: column;

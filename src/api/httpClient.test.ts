@@ -239,6 +239,30 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
     expect(fetch.mock.calls[4]![1]?.headers).not.toHaveProperty('Content-Type');
   });
 
+  it('convida e reenvia o convite com POST e devolve o texto do passo final', async () => {
+    const pedido = { id: 'u9', mensagem: 'Convite na fila: sai em instantes.' };
+    const { api, fetch } = criarComVarias(() => json(pedido, 202));
+    const novo = {
+      email: 'ana@cliente.com.br',
+      nome: 'Ana Souza',
+      perfil: 'cliente_usuario',
+      clientes: ['pj-cortes'],
+      sessaoMinutos: null,
+    };
+
+    await expect(api.gestao.convidarUsuario(novo)).resolves.toEqual(pedido);
+    await expect(api.gestao.reenviarConvite('u9')).resolves.toEqual(pedido);
+    await api.gestao.criarCliente({ nome: 'Padaria', segmento: null, slug: null });
+    await api.gestao.salvarCliente('pj-cortes', { nome: 'PJ Cortes', segmento: 'Frigorífico' });
+
+    expect(fetch.mock.calls.map(([url, init]) => [init?.method, url, init?.body])).toEqual([
+      ['POST', '/api/admin/usuarios', JSON.stringify(novo)],
+      ['POST', '/api/admin/usuarios/u9/convite', undefined],
+      ['POST', '/api/admin/clientes', '{"nome":"Padaria","segmento":null,"slug":null}'],
+      ['PUT', '/api/admin/clientes/pj-cortes', '{"nome":"PJ Cortes","segmento":"Frigorífico"}'],
+    ]);
+  });
+
   it('regra quebrada (422 com texto) aparece como veio; 422 de formato (lista) vira erro genérico', async () => {
     const regra = criar(json({ detail: 'Mais de 12 h, só Admin BORD.' }, 422));
     const erroDeRegra = await regra.api.gestao.salvarSessaoDoUsuario('u1', 1440).catch((e: unknown) => e);

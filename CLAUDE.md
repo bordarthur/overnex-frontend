@@ -56,7 +56,7 @@ O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens.
   - ao entrar (`Inicio`, em `src/app/Guardas.tsx`), a sessão sem empresa decide: Admin BORD vai para `/gestao`, quem tem uma empresa vai direto, quem tem mais de uma escolhe, e quem não tem nenhuma vê o `aviso` da API;
   - o menu só mostra as telas de `telas` da sessão, e tela fora da lista mostra "sem acesso";
   - nos rótulos da tela é "empresa"; no código e nos tipos, "cliente". O chip "Empresa" dos filtros é outra coisa (os CNPJs dentro do cliente).
-- **Gestão (Interno BORD):** rota `/gestao`, só com `gestao: true` na sessão, em arquivo separado do resto do app (`src/screens/gestao/`). Contrato em `src/contracts/gestao.ts`. Convite de usuário não é pela tela: o cadastro de login é por comando da BORD.
+- **Gestão (Interno BORD):** rota `/gestao`, só com `gestao: true` na sessão, em arquivo separado do resto do app (`src/screens/gestao/`). Contrato em `src/contracts/gestao.ts`. Convite de usuário é pela tela (decisão de 13/11/2026, no lugar de "só por comando da BORD"): o botão "Convidar usuário" abre a gaveta de convite, a API põe o pedido numa fila e um job do back manda o e-mail. O comando da BORD continua valendo. Empresa nova também é pela tela ("Nova empresa", na barra lateral): nome e setor, que depois se trocam pelo "Editar" do cabeçalho da empresa (o slug não muda).
 - **Inatividade por pessoa:** o tempo vem de `inatividadeSegundos` (entrar, renovar e definir senha); sem ele, 30 min. `VITE_INATIVIDADE_MIN` passa por cima, para teste.
 - **Pedidos adiantados** (`src/api/adiantar.ts`):
   - a Visão geral padrão da empresa é pedida assim que a sessão dela diz que está liberada, seja qual for a tela aberta (em "/" não dá para pedir antes: falta o slug);
