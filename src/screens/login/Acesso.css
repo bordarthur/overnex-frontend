@@ -1,0 +1,436 @@
+/* Telas de acesso, do mockup Login M2.0.0, com os tokens do projeto.
+   O botão principal é grafite no claro e quase branco no escuro (como no mockup). */
+.acesso {
+  --acesso-btn: var(--grafite);
+  --acesso-btn-hover: #1f1f1f;
+  --acesso-btn-texto: #fff;
+  display: grid;
+  grid-template-columns: minmax(380px, 46%) minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+  font-size: 15px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .acesso {
+    --acesso-btn: #f2f2f2;
+    --acesso-btn-hover: #fff;
+    --acesso-btn-texto: #1b1b1b;
+  }
+}
+:root[data-theme='dark'] .acesso {
+  --acesso-btn: #f2f2f2;
+  --acesso-btn-hover: #fff;
+  --acesso-btn-texto: #1b1b1b;
+}
+
+/* coluna da marca */
+.acesso-marca {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 44px 56px;
+  background: var(--grafite);
+  color: #f2f2f2;
+}
+.acesso-logo {
+  display: block;
+  width: 148px;
+  height: 24px;
+  color: #f2f2f2;
+}
+.acesso-claim,
+.acesso-rodape {
+  position: relative;
+  z-index: 1;
+}
+.acesso-claim {
+  max-width: 420px;
+}
+.acesso-claim-titulo {
+  font-family: 'Saira', sans-serif;
+  font-weight: 700;
+  font-size: clamp(40px, 4.4vw, 60px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+}
+.acesso-claim-texto {
+  margin-top: 16px;
+  max-width: 34ch;
+  font-size: 15px;
+  color: #bfbfbf;
+}
+.acesso-rodape {
+  display: flex;
+  gap: 24px;
+  font-size: 12.5px;
+  color: #9a9a9a;
+}
+
+/* ilustração */
+.feixe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 120px;
+  height: 300px;
+  pointer-events: none;
+}
+.feixe svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.feixe-grade {
+  stroke: #3b3b3b;
+  stroke-width: 1;
+}
+.feixe-degraus {
+  fill: none;
+  stroke: #8a8a8a;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+  stroke-dasharray: 1400;
+  stroke-dashoffset: 1400;
+  animation: feixe-desenhar 2.6s cubic-bezier(0.5, 0, 0.2, 1) 0.25s forwards;
+}
+.feixe-ponto {
+  fill: var(--neon);
+  opacity: 0;
+  animation: feixe-aparecer 0.3s ease 2.8s forwards;
+}
+.feixe-halo {
+  fill: var(--neon);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: feixe-halo 2.8s ease-out 3.1s infinite;
+}
+@keyframes feixe-desenhar {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes feixe-aparecer {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes feixe-halo {
+  0% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
+
+/* lado da tela */
+.acesso-lado {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.acesso-lado:focus {
+  outline: none;
+}
+.acesso-palco {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+}
+.acesso-tela {
+  width: 100%;
+  max-width: 372px;
+  animation: entrar 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.acesso-tela h1 {
+  font-weight: 700;
+  font-size: 32px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.acesso-lead {
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.acesso-lead b {
+  font-weight: 500;
+  color: var(--ink);
+}
+.acesso-abaixo {
+  margin-top: 28px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.acesso .link {
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.acesso .link:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 3px;
+}
+
+/* formulário */
+.acesso-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 32px;
+}
+.acesso-msg {
+  font-size: 13.5px;
+  line-height: 1.45;
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--crit);
+  background: var(--crit-bg);
+}
+.acesso-msg.solta {
+  margin-top: 24px;
+}
+.acesso-caps {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+/* botões */
+.acesso-btn {
+  all: unset;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  border-radius: 12px;
+  background: var(--acesso-btn);
+  color: var(--acesso-btn-texto);
+  font-size: 15.5px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    transform 0.08s,
+    background 0.15s;
+}
+.acesso-btn:hover {
+  background: var(--acesso-btn-hover);
+}
+.acesso-btn:active {
+  transform: scale(0.99);
+}
+.acesso-btn:focus-visible {
+  outline: 3px solid var(--link);
+  outline-offset: 3px;
+}
+.acesso-btn[aria-busy='true'] {
+  pointer-events: none;
+  color: transparent;
+}
+.acesso-btn[aria-busy='true']::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid color-mix(in srgb, var(--acesso-btn-texto) 35%, transparent);
+  border-top-color: var(--acesso-btn-texto);
+  animation: acesso-girar 0.7s linear infinite;
+}
+.acesso-btn.secundario {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid color-mix(in srgb, var(--line) 60%, var(--ink-3));
+}
+.acesso-btn.secundario:hover {
+  background: color-mix(in srgb, var(--line) 40%, transparent);
+}
+@keyframes acesso-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ícone acima do título */
+.acesso-icone {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+}
+.acesso-icone svg {
+  width: 26px;
+  height: 26px;
+}
+.acesso-icone.aviso {
+  color: var(--crit);
+  background: var(--crit-bg);
+}
+.acesso-icone.neutro {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--line) 55%, transparent);
+}
+.acesso-contagem {
+  font-family: 'Saira', sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* quem estava logado (sessão encerrada) */
+.acesso-quem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 24px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  min-width: 0;
+}
+.acesso-quem > div {
+  min-width: 0;
+}
+.acesso-quem b,
+.acesso-quem span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.acesso-quem b {
+  font-size: 14px;
+  font-weight: 500;
+}
+.acesso-quem span {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.acesso-avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--grafite);
+  color: #fff;
+  font-family: 'Saira', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+/* requisitos da senha: o "certo" é desenhado em CSS (a CSP não aceita data: URI) */
+.acesso-requisitos {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.acesso-requisitos li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color 0.15s;
+}
+.acesso-requisitos li::before {
+  content: '';
+  flex: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--line) 60%, var(--ink-3));
+  box-sizing: border-box;
+  transition: all 0.15s;
+}
+.acesso-requisitos li.atende {
+  color: var(--ok);
+}
+.acesso-requisitos li.atende::before {
+  border-color: var(--ok);
+  background: var(--ok);
+}
+.acesso-requisitos li.atende::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 4px;
+  height: 8px;
+  border: solid var(--surface);
+  border-width: 0 2px 2px 0;
+  transform: translateY(-60%) rotate(45deg);
+}
+
+/* erro no envio */
+.tremer {
+  animation: acesso-tremer 0.32s ease;
+}
+@keyframes acesso-tremer {
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@media (max-width: 960px) {
+  .acesso {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+  }
+  .acesso-marca {
+    min-height: 0;
+    padding: 22px 24px 20px;
+  }
+  .acesso-claim-titulo {
+    margin-top: 20px;
+    max-width: 16ch;
+    font-size: 25px;
+  }
+  .acesso-claim-texto,
+  .acesso-rodape,
+  .feixe {
+    display: none;
+  }
+  .acesso-palco {
+    align-items: flex-start;
+    padding: 32px 22px 48px;
+  }
+  .acesso-tela h1 {
+    font-size: 28px;
+  }
+}
+
+/* base.css desliga as animações: a ilustração fica no quadro final, sem o halo. */
+@media (prefers-reduced-motion: reduce) {
+  .feixe-degraus {
+    stroke-dashoffset: 0;
+  }
+  .feixe-ponto {
+    opacity: 1;
+  }
+  .feixe-halo {
+    display: none;
+  }
+}

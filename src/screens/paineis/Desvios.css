@@ -1,0 +1,41 @@
+.dv-h {
+  font-size: 12px;
+  font-weight: 600;
+  margin: 6px 0;
+}
+.dv-grupo + .dv-grupo .dv-h {
+  margin-top: 12px;
+}
+.dv-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dv {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+}
+.dv-ok {
+  background: color-mix(in srgb, var(--ok) 10%, var(--surface));
+}
+.dv-warn {
+  background: color-mix(in srgb, var(--warn-mark) 14%, var(--surface));
+}
+.dv-crit {
+  background: color-mix(in srgb, var(--crit) 10%, var(--surface));
+}
+.dv-nome {
+  font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dv-nome .r-sub {
+  display: block;
+  font-weight: 400;
+}

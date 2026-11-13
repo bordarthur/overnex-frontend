@@ -1,0 +1,30 @@
+.banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.banner svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  margin-top: 2px;
+}
+.banner.warn {
+  background: var(--warn-bg);
+  color: var(--ink);
+}
+.banner.warn svg {
+  color: var(--warn);
+}
+.banner.info {
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.banner b {
+  font-weight: 600;
+}

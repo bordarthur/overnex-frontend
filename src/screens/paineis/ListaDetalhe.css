@@ -1,0 +1,56 @@
+.duo {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.duo-detalhe {
+  min-width: 0;
+}
+.duo-detalhe h3 {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+/* o nome da linha é um th (cabeçalho da linha), mas com a cara de célula */
+.tbl.lista-detalhe tbody th {
+  font-size: inherit;
+  font-weight: inherit;
+  color: inherit;
+  text-align: left;
+  padding: 9px 8px;
+  border-top: 1px solid var(--line-soft);
+}
+/* recuo para a marca da linha escolhida não encostar no texto */
+.tbl.lista-detalhe th:first-child {
+  padding-left: 10px;
+}
+.lista-detalhe .prow {
+  cursor: pointer;
+}
+.lista-detalhe .prow:hover > * {
+  background: var(--surface-2);
+}
+/* linha escolhida: como no mockup (.prow.cur) */
+.lista-detalhe .prow.cur > * {
+  background: color-mix(in srgb, var(--ok) 10%, var(--surface));
+}
+.lista-detalhe .prow.cur > th {
+  box-shadow: inset 3px 0 0 var(--ok);
+}
+.prow-btn {
+  all: unset;
+  cursor: pointer;
+  font-weight: 600;
+}
+.prow-btn:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (max-width: 1240px) {
+  .duo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

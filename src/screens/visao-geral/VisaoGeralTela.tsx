@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router';
+import { useAdiantarMeses } from '../../api/adiantar';
 import { semPermissao } from '../../api/client';
+import { useClienteSlug } from '../../api/useClienteSlug';
 import { useSessao } from '../../api/useSessao';
 import { useVisaoGeral } from '../../api/useVisaoGeral';
+import { useAuth } from '../../auth/auth';
 import { Assinatura } from '../../components/Assinatura';
 import { BarraFiltros } from '../../components/BarraFiltros';
 import { Cabecalho } from '../../components/Cabecalho';
 import { EstadoTela } from '../../components/EstadoTela';
-import { Segmentado } from '../../components/Segmentado';
-import type { PeriodoId } from '../../contracts/visaoGeral';
+import { Simbolo } from '../../components/Marca';
 import { formatarAtualizacao } from '../../format';
 import { montarFiltros } from './filtros';
 import { SecaoVisaoGeral } from './SecaoVisaoGeral';
@@ -18,26 +19,33 @@ const TITULO = 'Visão geral';
 const PERGUNTA = 'Como está a empresa hoje, área por área, contra o orçado e a meta?';
 
 export function VisaoGeralTela() {
-  const { clienteSlug = '' } = useParams();
+  const { sair } = useAuth();
+  const cliente = useClienteSlug();
   const sessao = useSessao();
   const filtros = useMemo(() => montarFiltros(sessao.data), [sessao.data]);
   // Só os chips que o usuário trocou; os outros ficam no padrão do FiltroDef.
   const [valores, setValores] = useState<Record<string, string>>({});
-  const consulta = useVisaoGeral(clienteSlug, filtros.consulta(valores));
-  const [periodoEscolhido, setPeriodo] = useState<PeriodoId | null>(null);
+  // Na visão padrão não vai `mes`: é a mesma consulta adiantada ao entrar (adiantar.ts).
+  const consultaFiltros = filtros.consulta(valores);
+  const consulta = useVisaoGeral(consultaFiltros);
+  useAdiantarMeses(
+    cliente,
+    consultaFiltros,
+    sessao.data?.periodos ?? [],
+    consulta.isSuccess && !consulta.isPlaceholderData && !consulta.isFetching,
+  );
 
   useEffect(() => {
     document.title = `Overnex · ${TITULO}`;
   }, []);
 
   const dados = consulta.data;
-  const periodo = periodoEscolhido ?? dados?.periodos[0]?.id ?? 'mes';
 
   let conteudo;
   if (consulta.isPending) conteudo = <EstadoTela tipo="carregando" />;
   else if (consulta.isError)
     conteudo = semPermissao(consulta.error) ? (
-      <EstadoTela tipo="sem-permissao" />
+      <EstadoTela tipo="sem-permissao" onSair={() => void sair()} />
     ) : (
       <EstadoTela tipo="erro" onTentarDeNovo={() => void consulta.refetch()} />
     );
@@ -46,15 +54,23 @@ export function VisaoGeralTela() {
     conteudo = (
       <>
         <div className="vg-top">
-          <Segmentado
-            rotulo="Período da visão geral"
-            opcoes={consulta.data.periodos}
-            valor={periodo}
-            onMudar={setPeriodo}
-          />
+          {consulta.data.nota && <span className="vg-note">{consulta.data.nota}</span>}
+          {consulta.isPlaceholderData && (
+            <span className="vg-carregando" role="status">
+              <Simbolo className="vg-carregando-sym" />
+              Carregando o período escolhido…
+            </span>
+          )}
         </div>
         {consulta.data.secoes.map((s) => (
-          <SecaoVisaoGeral key={s.id} secao={s} periodo={periodo} />
+          <SecaoVisaoGeral
+            key={s.id}
+            secao={s}
+            periodos={consulta.data.periodos}
+            empresa={consultaFiltros.empresa}
+            // o "leitor" vê a escolha mas não muda (a API responderia 403)
+            soLeitura={sessao.data?.papel === 'leitor'}
+          />
         ))}
       </>
     );

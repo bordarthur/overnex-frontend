@@ -13,9 +13,9 @@ export function Kpi({ kpi }: { kpi: KpiDados }) {
   );
 }
 
-/** Linha de KPIs. Até 4 por linha; 5 e 6 usam as grades .five e .six do mockup. */
+/** Linha de KPIs. Até 4 por linha; 3, 5 e 6 usam as grades .three, .five e .six (sem buraco no fim). */
 export function LinhaKpis({ kpis }: { kpis: KpiDados[] }) {
-  const extra = kpis.length === 5 ? ' five' : kpis.length >= 6 ? ' six' : '';
+  const extra = kpis.length === 3 ? ' three' : kpis.length === 5 ? ' five' : kpis.length >= 6 ? ' six' : '';
   return (
     <div className={`kpis${extra}`}>
       {kpis.map((k, i) => (

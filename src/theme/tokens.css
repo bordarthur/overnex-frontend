@@ -1,5 +1,7 @@
 /* Tokens do mockup overnex-mockup-parcial-G1-m1.6, com os mesmos nomes e valores.
-   Status usa só --ok, --warn e --crit (e variações); as cores da marca (--neon, --verde) nunca indicam status. */
+   Status usa só --ok, --warn e --crit (e variações); as cores da marca (--neon, --verde) nunca indicam status.
+   Fora de status, as cores seguem o mockup (decisão de 09/11/2026): séries em --c4 (azul) e --c6 (laranja),
+   chave ligada em --verde, a receber e a pagar em --fluxo-entra e --fluxo-sai. */
 
 :root {
   color-scheme: light;
@@ -28,6 +30,9 @@
   --warn-mark: #d98a00;
   --crit: #b3342a;
   --crit-bg: #f8e3e0;
+  /* segundo grupo de camadas da Gestão (roxo do mockup Gestão M2.1.0): categoria, não status */
+  --dir: #5b3fa8;
+  --dir-bg: #ece6fa;
   /* séries */
   --series: #2f2f2f;
   --series-2: #9a9a9a;
@@ -39,6 +44,12 @@
   --c4: #2a6fb0;
   --c5: #8db6dd;
   --c6: #d98a00;
+  /* entra e sai do caixa ("Próximos 7, 15 e 30 dias"): tons próprios, não são o --ok e o --crit do status */
+  --fluxo-entra: #4c86bc;
+  --fluxo-sai: #bf544b;
+  /* títulos e fundos dos lados do "Contas a receber e a pagar": o mesmo tom do mockup, sem ser o status */
+  --fluxo-entra-texto: #2a6fb0;
+  --fluxo-sai-texto: #b3342a;
   /* faixas */
   --band: rgba(42, 111, 176, 0.08);
   --negfill: rgba(179, 52, 42, 0.14);
@@ -69,6 +80,8 @@
     --warn-mark: #f0ae4a;
     --crit: #f48a7e;
     --crit-bg: #3d2420;
+    --dir: #c9b8f5;
+    --dir-bg: #3a2f59;
     --series: #ededed;
     --series-2: #8e8e8e;
     --series-3: #5a5a5a;
@@ -79,6 +92,8 @@
     --c4: #7ab3ea;
     --c5: #3f6f9c;
     --c6: #f0ae4a;
+    --fluxo-entra-texto: #7ab3ea;
+    --fluxo-sai-texto: #f48a7e;
     --band: rgba(122, 179, 234, 0.1);
     --negfill: rgba(244, 138, 126, 0.18);
     --areafill: rgba(237, 237, 237, 0.05);
@@ -107,6 +122,8 @@
   --warn-mark: #f0ae4a;
   --crit: #f48a7e;
   --crit-bg: #3d2420;
+  --dir: #c9b8f5;
+  --dir-bg: #3a2f59;
   --series: #ededed;
   --series-2: #8e8e8e;
   --series-3: #5a5a5a;
@@ -117,6 +134,8 @@
   --c4: #7ab3ea;
   --c5: #3f6f9c;
   --c6: #f0ae4a;
+  --fluxo-entra-texto: #7ab3ea;
+  --fluxo-sai-texto: #f48a7e;
   --band: rgba(122, 179, 234, 0.1);
   --negfill: rgba(244, 138, 126, 0.18);
   --areafill: rgba(237, 237, 237, 0.05);

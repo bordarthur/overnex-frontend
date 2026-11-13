@@ -1,0 +1,377 @@
+/* Gestão (Interno BORD), como no mockup Gestão M2.1.0. A coluna lateral é grafite nos dois temas. */
+.gst {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  min-height: 100vh;
+}
+.gst-lado {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 22px 16px 18px;
+  background: var(--grafite);
+  color: #e6e6e6;
+}
+.gst-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.gst-logo {
+  width: 120px;
+  height: 20px;
+  color: #f2f2f2;
+  flex: none;
+}
+/* o selo da área interna usa a cor da marca: não é status */
+.gst-selo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--grafite);
+  background: var(--neon);
+  border-radius: 6px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
+/* Empresas | Usuários */
+.gst-modos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  padding: 3px;
+  background: #262626;
+  border-radius: 10px;
+}
+.gst-modos a {
+  text-align: center;
+  padding: 7px 6px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #bdbdbd;
+  text-decoration: none;
+}
+.gst-modos a[aria-current='page'] {
+  background: #424242;
+  color: #fff;
+  font-weight: 600;
+}
+.gst-modos em {
+  font-style: normal;
+  font-weight: 500;
+  color: #8a8a8a;
+  margin-left: 4px;
+}
+.gst-modos a[aria-current='page'] em {
+  color: #bdbdbd;
+}
+
+.gst-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gst-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.gst-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: #fff;
+  text-decoration: none;
+}
+.gst-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.gst-item[aria-current] {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 3px 0 0 var(--neon);
+}
+.gst-item b {
+  font-size: 14px;
+  font-weight: 600;
+}
+.gst-item small {
+  font-size: 11.5px;
+  color: #a8a8a8;
+  margin-top: -4px;
+}
+/* "Nova empresa", na coluna escura */
+.gst-nova {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px dashed #5c5c5c;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #e6e6e6;
+}
+.gst-nova:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.gst-nova:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 1px;
+}
+.gst-item-linha {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.gst-item em {
+  font-style: normal;
+  font-size: 12px;
+  color: #a8a8a8;
+}
+.gst-modos a:focus-visible,
+.gst-item:focus-visible,
+.gst-tema:focus-visible,
+.gst-sair:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 1px;
+}
+
+/* uma barrinha por camada; as cores são as do status no tema escuro, porque a coluna é sempre escura */
+.gst-pontos {
+  display: flex;
+  gap: 4px;
+}
+.gst-ponto {
+  width: 22px;
+  height: 6px;
+  border-radius: 3px;
+  background: #444;
+}
+.gst-ponto.p-saudavel {
+  background: #7ab3ea;
+}
+.gst-ponto.p-atencao {
+  background: #f0ae4a;
+}
+.gst-ponto.p-critico {
+  background: #f48a7e;
+}
+.gst-ponto.p-neutro {
+  background: #333;
+  border: 1px dashed #5c5c5c;
+}
+
+.gst-nota-lado {
+  font-size: 11.5px;
+  color: #9a9a9a;
+  padding: 0 4px;
+}
+.gst-atencao {
+  margin-top: 10px;
+  padding: 0 12px;
+}
+
+.gst-pe {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid #3d3d3d;
+  font-size: 11.5px;
+  color: #a9a9a9;
+}
+.gst-tema {
+  all: unset;
+  cursor: pointer;
+  align-self: flex-start;
+  color: #d6d6d6;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.gst-conta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.gst-quem {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 13px;
+  color: #e6e6e6;
+  line-height: 1.35;
+}
+.gst-quem span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gst-email {
+  font-size: 11.5px;
+  color: #9a9a9a;
+}
+.gst .gst-sair {
+  color: #d6d6d6;
+}
+
+.gst-main {
+  min-width: 0;
+  padding: 26px 32px 48px;
+}
+.gst-main:focus {
+  outline: none;
+}
+
+/* cabeçalho das telas da Gestão */
+.gst-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.gst-topo h1 {
+  font-size: 32px;
+  line-height: 1.1;
+}
+.gst-topo p {
+  color: var(--ink-2);
+  font-size: 13.5px;
+  margin-top: 6px;
+  max-width: 70ch;
+}
+.gst-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* cartão da Gestão: como o .card, sem o espaço da marca d'água */
+.gst-cartao {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  min-width: 0;
+}
+.gst-cartao + .gst-cartao {
+  margin-top: 16px;
+}
+.gst-cartao h2 {
+  font-size: 15px;
+  font-weight: 600;
+}
+.gst-cartao .sub {
+  font-size: 12.5px;
+  margin: 2px 0 12px;
+}
+.gst-cartao-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px 24px;
+  flex-wrap: wrap;
+}
+/* ações do cabeçalho da empresa: abrir os painéis e convidar */
+.gst-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+/* botão com ícone */
+.btn.gst-botao {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.gst-botao svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+/* tabelas da Gestão: texto à esquerda, como no mockup */
+.gst-tbl td,
+.gst-tbl th {
+  vertical-align: top;
+}
+.gst-tbl th,
+.gst-tbl td.gst-inteira {
+  white-space: nowrap;
+}
+.gst-tbl th {
+  padding-top: 7px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--line);
+}
+.gst-tbl tbody tr:first-child td {
+  border-top: 0;
+}
+.gst-vazio {
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+/* recusa de uma gravação, com o texto da API */
+.gst-erro {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--crit);
+  background: var(--crit-bg);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+.gst-ok {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ok);
+  background: var(--ok-bg);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+@media (max-width: 1100px) {
+  .gst {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gst-lado {
+    position: static;
+    height: auto;
+  }
+  .gst-pe {
+    margin-top: 6px;
+  }
+}
+@media (max-width: 640px) {
+  .gst-main {
+    padding: 18px 14px 40px;
+  }
+}
+@media print {
+  .gst-lado {
+    display: none;
+  }
+}
+
+/* o texto só para leitor de tela (position: absolute) fica dentro da área que rola, sem alargar a página */
+.gst .scroll-x {
+  position: relative;
+}

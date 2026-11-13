@@ -1,0 +1,31 @@
+.busca {
+  font: inherit;
+  font-size: 13px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 7px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  min-width: min(280px, 100%);
+}
+.busca::placeholder {
+  color: var(--ink-3);
+}
+.busca:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 1px;
+}
+/* na coluna grafite, que é escura nos dois temas */
+.busca-escura {
+  width: 100%;
+  min-width: 0;
+  border-color: #444;
+  background: #262626;
+  color: #eee;
+}
+.busca-escura::placeholder {
+  color: #9a9a9a;
+}
+.busca-escura:focus-visible {
+  outline-color: var(--neon);
+}

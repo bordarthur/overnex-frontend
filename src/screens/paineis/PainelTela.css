@@ -1,0 +1,23 @@
+/* Filtro trocado: números anteriores esmaecidos enquanto a nova consulta chega. */
+.panel[aria-busy='true'] {
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+.painel-carregando {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 12px;
+}
+.painel-carregando-sym {
+  width: 26px;
+  height: 12px;
+  /* pulsar: EstadoTela.css */
+  animation: pulsar 1.2s ease-in-out infinite;
+}
+/* sem números de apoio, o espaço entre o topo e os cartões */
+.painel-espaco {
+  height: 12px;
+}

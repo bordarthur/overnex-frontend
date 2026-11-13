@@ -1,0 +1,247 @@
+/* faixa de explicação no topo da empresa */
+.gst-faixa {
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.gst-faixa b {
+  color: var(--ink);
+}
+
+/* Implantação: um cartão por camada. A borda de cima marca o grupo, pela ordem em que ele aparece:
+   azul de série e roxo (os do mockup), que não são cor de status. */
+.gst-camadas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+.gst-camada {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--ink-3);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.gst-camada.grupo-0 {
+  border-top-color: var(--c4);
+}
+.gst-camada.grupo-1 {
+  border-top-color: var(--dir);
+}
+.gst-camada h2 {
+  align-self: stretch;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.gst-etiqueta {
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 0 6px;
+  white-space: nowrap;
+  color: var(--ink-2);
+  background: var(--surface-2);
+}
+.grupo-0 .gst-etiqueta {
+  color: var(--c4);
+  background: color-mix(in srgb, var(--c4) 12%, var(--surface));
+}
+.grupo-1 .gst-etiqueta {
+  color: var(--dir);
+  background: var(--dir-bg);
+}
+.gst-pendencias {
+  font-size: 12px;
+  color: var(--ink-2);
+  padding-left: 16px;
+}
+
+/* Painéis: a lista com as chaves e, ao lado, a prévia do menu */
+.gst-paineis {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+.gst-grupo {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin: 14px 0 6px;
+}
+.gst-grupo:first-child,
+.gst-erro + .gst-grupo {
+  margin-top: 0;
+}
+.gst-painel {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.gst-painel b {
+  font-size: 14px;
+  font-weight: 600;
+}
+/* sem dado: a chave fica travada, e a nota diz por quê */
+.gst-painel.travado b {
+  color: var(--ink-2);
+}
+.gst-painel-nota {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 3px;
+}
+.gst-previa {
+  position: sticky;
+  top: 20px;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--grafite);
+  color: #e6e6e6;
+}
+.gst-previa h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: #bdbdbd;
+  margin-bottom: 10px;
+}
+.gst-previa-grupo {
+  font-size: 11px;
+  color: #a0a0a0;
+  margin: 10px 0 4px;
+}
+.gst-previa ul {
+  list-style: none;
+}
+.gst-previa li {
+  padding: 7px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.gst-previa li:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.04);
+}
+.gst-previa-vazio {
+  font-size: 12px;
+  color: #a0a0a0;
+  padding: 6px 10px;
+}
+.gst-previa-nota {
+  font-size: 12px;
+  color: #a0a0a0;
+  margin-top: 10px;
+}
+
+/* Preferências */
+.gst-prefs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.gst-prefs .gst-cartao + .gst-cartao {
+  margin-top: 0;
+}
+.gst-pref .seg {
+  flex-wrap: wrap;
+}
+.gst-pref .gst-erro {
+  margin: 10px 0 0;
+}
+.gst-feriados {
+  list-style: none;
+  margin-bottom: 14px;
+}
+.gst-feriados li {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 13.5px;
+}
+.gst-feriado-novo {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.gst-feriado-novo label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.gst-feriado-nome {
+  flex: 1 1 220px;
+}
+.gst-feriado-novo input {
+  font: inherit;
+  font-size: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.gst-feriado-novo input:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 1px;
+}
+
+/* matriz: o que cada perfil vê */
+.gst-matriz th[scope='row'] {
+  font-size: 13.5px;
+  color: var(--ink);
+  padding: 9px 10px 9px 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 0;
+}
+.gst-matriz tbody tr:first-child th {
+  border-top: 0;
+}
+.gst-matriz td {
+  vertical-align: middle;
+}
+
+@media (max-width: 1100px) {
+  .gst-paineis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .gst-previa {
+    position: static;
+  }
+  .gst-prefs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .gst-painel {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+  .gst-painel .pill {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

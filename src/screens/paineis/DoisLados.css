@@ -1,0 +1,157 @@
+/* Sem o cabeçalho do cartão na tela, as duas metades ocupam o cartão inteiro (tirando o padding dele),
+   cada uma com o fundo no tom do título: a primeira é o que entra (a receber), a segunda o que sai
+   (a pagar), como no contrato. */
+.lados {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: -20px -22px -30px;
+}
+.lado {
+  min-width: 0;
+  padding: 20px 22px 26px;
+}
+.lado:first-child {
+  border-right: 1px solid var(--line);
+  border-radius: 13px 0 0 13px;
+  background: color-mix(in srgb, var(--fluxo-entra-texto) 5%, var(--surface));
+}
+.lado:last-child {
+  border-radius: 0 13px 13px 0;
+  background: color-mix(in srgb, var(--fluxo-sai-texto) 4%, var(--surface));
+}
+/* com chamada ou nota embaixo, as metades param antes delas, sem chegar ao fundo do cartão */
+.lados:has(~ .callout, ~ .note) {
+  margin-bottom: 0;
+}
+.lados:has(~ .callout, ~ .note) .lado:first-child {
+  border-bottom-left-radius: 0;
+}
+.lados:has(~ .callout, ~ .note) .lado:last-child {
+  border-bottom-right-radius: 0;
+}
+.lado:first-child .lado-h h3 {
+  color: var(--fluxo-entra-texto);
+}
+.lado:last-child .lado-h h3 {
+  color: var(--fluxo-sai-texto);
+}
+.lado-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-bottom: 10px;
+}
+.lado-h h3 {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 19px;
+}
+.lado-total {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.lado-k {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.lado-k .kpi {
+  border-left-width: 3px;
+  padding: 8px 10px;
+}
+.lado-k .k-v {
+  font-size: 18px;
+}
+.lado-l {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-3);
+  margin: 14px 0 6px;
+}
+/* metade da largura: fitas mais curtas e quadros mais baixos que na Visão geral */
+.lado .barra-idade {
+  --bi-vao: 48px;
+}
+.lado .at2 {
+  min-height: 84px;
+  padding: 10px 10px;
+}
+.lado .at2 b {
+  font-size: 15px;
+}
+.lado-obs {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  margin-top: 10px;
+}
+.lado-obs b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.lado-maiores {
+  list-style: none;
+}
+.lado-maiores li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px 48px;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13.5px;
+}
+.lado-maiores li:first-child {
+  border-top: 0;
+}
+.lado-maiores .num {
+  text-align: right;
+}
+.lado-nome {
+  font-weight: 500;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--crit);
+  background: var(--crit-bg);
+  border-radius: 6px;
+  padding: 0 6px;
+  margin-left: 6px;
+  vertical-align: 1px;
+}
+
+/* uma metade embaixo da outra: o traço passa para baixo da primeira, e a última fecha o cartão */
+@media (max-width: 1240px) {
+  .lados {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .lado:first-child {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 13px 13px 0 0;
+  }
+  .lado:last-child {
+    border-radius: 0 0 13px 13px;
+  }
+}
+/* no celular o cartão tem 16px de padding nos lados e em cima */
+@media (max-width: 760px) {
+  .lados {
+    margin: -16px -16px -30px;
+  }
+  .lado {
+    padding: 16px 16px 24px;
+  }
+  .lado-k {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

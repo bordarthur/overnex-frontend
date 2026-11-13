@@ -1,0 +1,85 @@
+.heroes {
+  display: grid;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.hero {
+  padding: 20px 24px 22px 0;
+  min-width: 0;
+}
+.hero + .hero {
+  padding-left: 24px;
+  border-left: 1px solid var(--line);
+}
+.h-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.h-label {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.h-num {
+  display: block;
+  font-family: 'Saira', sans-serif;
+  font-weight: 900;
+  font-size: 46px;
+  line-height: 1.05;
+  margin: 8px 0 6px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.h-ctx {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.apoios {
+  display: flex;
+  gap: 10px 36px;
+  flex-wrap: wrap;
+  padding: 14px 0 24px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.apoio b {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--ink);
+  margin-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.apoio b.t-ok {
+  color: var(--ok);
+}
+.apoio b.t-warn {
+  color: var(--warn);
+}
+.apoio b.t-crit {
+  color: var(--crit);
+}
+
+@media (max-width: 1240px) {
+  .h-num {
+    font-size: 38px;
+  }
+}
+@media (max-width: 760px) {
+  .heroes {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .hero {
+    padding: 16px 0;
+  }
+  .hero + .hero {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .h-num {
+    font-size: 30px;
+  }
+}

@@ -1,0 +1,79 @@
+/* Campo do mockup Login M2.0.0. --link é o verde de foco nos dois temas. */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.campo-rotulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.campo-rotulo label {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+.campo-caixa {
+  position: relative;
+}
+.campo input {
+  width: 100%;
+  font: inherit;
+  /* 16px: o iOS não dá zoom no campo */
+  font-size: 16px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 13px 14px;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.campo input::placeholder {
+  color: var(--ink-3);
+}
+.campo input:hover {
+  border-color: color-mix(in srgb, var(--line) 60%, var(--ink-3));
+}
+.campo input:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--link) 18%, transparent);
+}
+.campo-caixa:has(.campo-olho) input {
+  padding-right: 50px;
+}
+.campo-caixa.invalido input {
+  border-color: var(--crit);
+}
+.campo-olho {
+  all: unset;
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+.campo-olho:hover {
+  color: var(--ink);
+}
+.campo-olho:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: -2px;
+}
+.campo-olho svg {
+  width: 20px;
+  height: 20px;
+}
+.campo-dica {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}

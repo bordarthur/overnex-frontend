@@ -1,0 +1,739 @@
+// Contrato dos painéis por cartões: Vendas, Equipe comercial, Clientes e atendimentos, Resultado,
+// Receber e pagar, Fluxo de caixa e Pessoas.
+// Hoje escrito à mão; no futuro estes tipos serão gerados do OpenAPI da API.
+// Como na Visão geral, o front só desenha: todo número, status, texto, rótulo, média, projeção
+// e diferença vem pronto. O front formata os números pela unidade e calcula só geometria
+// (largura de barra, escala dos eixos), nunca regra de negócio.
+
+import type { Kpi, Status, Trecho, Unidade, Valor } from './visaoGeral';
+
+export type { Kpi, Status, Trecho, Unidade, Valor };
+
+/** Telas deste contrato. É também o caminho da rota: GET /api/telas/{tela}. */
+export type TelaPainel =
+  'vendas' | 'equipe-comercial' | 'clientes' | 'resultado' | 'receber-pagar' | 'fluxo-caixa' | 'pessoas';
+
+/** Número a formatar pela unidade, ou texto já pronto quando não é um número só ("2 de 6"). */
+export type Exibicao = Valor | string;
+
+/** Número com rótulo: destaques do topo, apoios, estatísticas do mês, colunas dos fatores. */
+export interface ItemValor {
+  rotulo: string;
+  valor: Exibicao;
+  contexto?: string;
+  status?: Status;
+  // "+2,1%" em vez de "2,1%"
+  comSinal?: boolean;
+  // valores lado a lado ("R$ 1,21 mi · R$ 20 mil"), cada um inteiro; quando vem, a tela mostra estes no
+  // lugar de `valor` (por enquanto só nas estatísticas do andamento do mês)
+  partes?: Exibicao[] | null;
+}
+
+/** Filtro próprio da tela (Canal, Supervisor...). O valor escolhido vai na consulta: ?{id}={opcao.id}. */
+export interface FiltroPainel {
+  id: string;
+  rotulo: string;
+  opcoes: { id: string; rotulo: string }[];
+  // id da opção padrão ("todos"); com ela escolhida, o parâmetro não vai na consulta
+  padrao: string;
+  // id do cartão que mostra este filtro como chave no cabeçalho ("Só lançados" e "Lançados +
+  // provisões", no saldo projetado); sem ele, o chip fica na barra de filtros. Trocar refaz a
+  // consulta da tela inteira, como qualquer filtro.
+  cartao?: string | null;
+}
+
+export interface Aviso {
+  tom: 'info' | 'atencao';
+  texto: Trecho[];
+}
+
+// ---------- gráficos ----------
+
+/** Unidade dos números de um gráfico (eixo, rótulos e dica). */
+export interface Escala {
+  unidade: Unidade;
+  casas?: number;
+  // reais em milhares com casas, na dica (R$ 54,7 mil)
+  casasMil?: number;
+  // depois do número: "t", "clientes"
+  sufixo?: string;
+}
+
+/**
+ * Estilo de uma barra. Status (saudavel, atencao, critico) só quando a cor quer dizer status;
+ * as séries neutras vão do mais escuro ao mais claro; `fantasma` é contorno tracejado (o que falta
+ * fazer) e `projecao`, o mês ainda em curso.
+ */
+export type EstiloBarra =
+  | Status
+  | 'serie'
+  | 'serie-media'
+  | 'serie-clara'
+  | 'fantasma'
+  | 'projecao'
+  // cores de série do mockup, fora de status (financiamentos, admissões, desligamentos)
+  | 'serie-azul'
+  | 'serie-laranja';
+
+export interface GraficoBarras extends Escala {
+  tipo: 'barras';
+  grupos: {
+    rotulo: string;
+    // título da dica; sem ele, o rótulo
+    titulo?: string;
+    barras: { nome: string; valor: number; estilo: EstiloBarra }[];
+  }[];
+  // linhas horizontais: `media` cinza tracejada, `minimo` laranja (o necessário)
+  referencias?: { nome: string; valor: number; estilo: 'media' | 'minimo' }[];
+  // valor escrito em cima de cada barra
+  rotulosNasBarras?: boolean;
+}
+
+/** Barras contra uma referência (traço sobre a barra) e uma linha percentual em cima. */
+export interface GraficoCombo extends Escala {
+  tipo: 'combo';
+  nomes: { valor: string; referencia?: string; linha?: string };
+  pontos: {
+    rotulo: string;
+    titulo?: string;
+    valor: number;
+    referencia?: number;
+    // crítico pinta a barra de vermelho (mês pior que a referência)
+    status?: Status;
+    linha?: number;
+  }[];
+  escalaLinha?: Escala;
+}
+
+export type EstiloLinha = 'principal' | 'secundaria' | 'pontilhada';
+
+export interface GraficoLinhas extends Escala {
+  tipo: 'linhas';
+  rotulos: string[];
+  // título da dica de cada ponto; sem ele, o rótulo
+  titulos?: string[];
+  series: {
+    nome: string;
+    // null: sem valor naquele ponto (vendedor que ainda não tinha entrado)
+    valores: (number | null)[];
+    estilo: EstiloLinha;
+    area?: boolean;
+    // rótulo no fim da linha
+    rotuloFim?: string;
+  }[];
+  // linha tracejada horizontal: `media` cinza, com o rótulo à direita (padrão); `minimo` laranja,
+  // com o rótulo à esquerda (o caixa mínimo)
+  referencia?: { valor: number; rotulo: string; estilo?: 'media' | 'minimo' | null };
+  // pontos marcados, com o texto pronto
+  marcadores?: { serie: number; i: number; rotulo: string }[];
+  // inclui este valor na escala (ex.: 0)
+  piso?: number;
+}
+
+/**
+ * Barras empilhadas; as cores seguem a ordem das séries (até 7). A paleta `atraso` vai do amarelo
+ * ao vermelho (faixas de atraso, da mais nova para a mais velha; até 5 séries).
+ */
+export interface GraficoEmpilhado extends Escala {
+  tipo: 'empilhado';
+  paleta?: 'series' | 'atraso';
+  rotulos: string[];
+  series: { nome: string; valores: number[] }[];
+  // valor escrito dentro de cada parte (quando cabe)
+  rotulosNasBarras?: boolean;
+  // total escrito em cima de cada pilha, um por rótulo
+  totais?: number[];
+}
+
+/**
+ * Cascata (da receita ao lucro, do orçado ao realizado). Cada barra vai de `de` a `ate`, já
+ * calculados: o front não soma nada. `total` é a barra cheia; `positivo` ajudou, `negativo` atrapalhou.
+ */
+export interface GraficoCascata extends Escala {
+  tipo: 'cascata';
+  passos: {
+    rotulo: string;
+    de: number;
+    ate: number;
+    valor: number;
+    estilo: 'total' | 'positivo' | 'negativo';
+  }[];
+  // início da escala, para mostrar diferenças pequenas (a ponte do EBITDA começa em 480 mil)
+  piso?: number;
+}
+
+export interface GraficoDispersao {
+  tipo: 'dispersao';
+  eixoX: Escala & { rotulo: string };
+  eixoY: Escala & { rotulo: string };
+  // linhas de corte (medianas), já calculadas
+  corteX?: number;
+  corteY?: number;
+  quadrantes?: {
+    posicao: 'superior-esquerdo' | 'superior-direito' | 'inferior-esquerdo' | 'inferior-direito';
+    rotulo: string;
+  }[];
+  pontos: {
+    nome: string;
+    x: number;
+    y: number;
+    // área da bolha proporcional a este valor
+    tamanho: number;
+    status?: Status;
+    // escreve o nome ao lado da bolha
+    rotular?: boolean;
+    dica: ItemValor[];
+  }[];
+}
+
+/** Acumulado do mês dia a dia, em degraus: plano nos dias sem venda. */
+export interface GraficoDegraus extends Escala {
+  tipo: 'degraus';
+  dias: {
+    rotulo: string;
+    // "13/10 · ter"
+    titulo: string;
+    util: boolean;
+    // rótulo aparece no eixo (e no celular, só os `eixoCurto`)
+    eixo?: boolean;
+    eixoCurto?: boolean;
+  }[];
+  series: {
+    nome: string;
+    estilo: 'realizado' | 'projecao' | 'meta' | 'supermeta';
+    valores: (number | null)[];
+    rotuloFim?: string;
+    rotuloFimCurto?: string;
+  }[];
+  hoje?: { indice: number; rotulo: string };
+  // traço vermelho no fim: da projeção até a meta
+  falta?: { de: number; ate: number };
+}
+
+export type Grafico =
+  | GraficoBarras
+  | GraficoCombo
+  | GraficoLinhas
+  | GraficoEmpilhado
+  | GraficoDispersao
+  | GraficoDegraus
+  | GraficoCascata;
+
+export type MarcaLegenda =
+  | 'linha'
+  | 'linha-clara'
+  | 'pontilhada'
+  | 'media'
+  | 'minimo'
+  | 'quadrado-escuro'
+  // o tom da barra `serie-media`
+  | 'quadrado-medio'
+  | 'quadrado-claro'
+  // os tons das barras `serie-azul` e `serie-laranja` (ou `atencao`: o "Lançado" do pago contra lançado)
+  | 'quadrado-azul'
+  | 'quadrado-laranja';
+
+// ---------- cartões ----------
+
+interface CartaoBase {
+  id: string;
+  // colunas da grade de 12
+  largura: 4 | 5 | 6 | 7 | 8 | 12;
+  titulo: string;
+  subtitulo?: string;
+  // pílula de status ao lado do título
+  status?: Status;
+  legenda?: { nome: string; marca: MarcaLegenda }[];
+  // caixa de destaque no fim do cartão
+  chamada?: { status: Status; texto: Trecho[] };
+  nota?: string;
+  // o que o gráfico mostra e como ler, em linguagem simples; com ele, o título ganha o botão "i"
+  explicacao?: string;
+}
+
+/** Régua do mês, estatísticas do mês e o acumulado dia a dia (com uma visão por unidade: valor, volume). */
+export interface CartaoAndamentoMes extends CartaoBase {
+  tipo: 'andamento-mes';
+  regua: {
+    trechos: {
+      estilo: 'realizado' | 'projecao' | 'falta';
+      rotulo: string;
+      de: number;
+      ate: number;
+      // o número da legenda ("+R$ 4,36 mi")
+      valor: Valor;
+      comSinal?: boolean;
+    }[];
+    marcas: { rotulo: string; valor: number; secundaria?: boolean }[];
+  };
+  estatisticas: ItemValor[];
+  visoes: { id: string; rotulo: string; grafico: GraficoDegraus }[];
+}
+
+/** Decomposição de um total em fatores (clientes × pedidos × ticket), com o fator que mais pesa marcado. */
+export interface CartaoFatores extends CartaoBase {
+  tipo: 'fatores';
+  total: ItemValor;
+  fatores: { nome: string; operador?: string; colunas: ItemValor[]; causa?: boolean }[];
+  conclusao?: Trecho[];
+}
+
+export interface ItemContraMeta {
+  nome: string;
+  // "Varejo · novo, 3º mês"
+  detalhe?: string;
+  status: Status;
+  atingimento: Valor;
+  realizado: Valor;
+  meta: Valor;
+  diferenca?: Valor;
+  diferencaRuim?: boolean;
+  // linha de rodapé do item ("Vendido até hoje R$ 948 mil", "2 vendedores")
+  detalhes?: string[];
+}
+
+/** Lista de barras contra a meta de cada item: blocos (canais) ou ranking (vendedores). */
+export interface CartaoContraMeta extends CartaoBase {
+  tipo: 'contra-meta';
+  layout: 'blocos' | 'ranking';
+  // "Projeção"
+  rotuloRealizado: string;
+  // "meta", escrito no traço
+  rotuloMeta: string;
+  itens: ItemContraMeta[];
+}
+
+export interface Celula {
+  valor?: Exibicao;
+  // segunda linha, menor
+  sub?: string;
+  comSinal?: boolean;
+  // ▲ ou ▼ antes do número, pelo sinal
+  seta?: boolean;
+  // cor do texto
+  tom?: Status | 'apagado';
+  // fundo de farol
+  fundo?: Status;
+  // pílula de status; com rótulo, o texto é o da API ("Alta", "Média", "Baixa")
+  pill?: Status | { status: Status; rotulo: string };
+  negrito?: boolean;
+  // etiqueta pequena depois do texto ("rampa")
+  etiqueta?: string;
+  // cor da etiqueta: azul (padrão, "rampa") ou vermelha ("vencido", "parou de comprar"), como no mockup
+  tomEtiqueta?: 'azul' | 'vermelho' | null;
+  // pílula escura antes do texto (o mês, na semana a semana)
+  marca?: string | null;
+}
+
+export interface CartaoTabela extends CartaoBase {
+  tipo: 'tabela';
+  // calor: células coloridas e centralizadas (atingimento mês a mês). tendencia: para ler a tendência,
+  // não número a número: números curtos (6,64 mi, 26 d) e farol claro, sem negrito (tabela financeira).
+  // listrada: linhas alternadas em cinza (semana a semana)
+  variante?: 'padrao' | 'compacta' | 'calor' | 'tendencia' | 'listrada';
+  colunas: { rotulo: string; alinhar?: 'esquerda' | 'direita' | 'centro'; ocultarNoCelular?: boolean }[];
+  // status da linha pinta o fundo dela; separar: traço grosso em cima (outro mês começa)
+  linhas: { status?: Status; separar?: boolean | null; celulas: Celula[] }[];
+  vazio?: string;
+  // Chave "Mostrar nomes": a API só manda para quem pode ver dado nominal (perfil de RH). Ligada, o
+  // front pede a tabela de uma linha por pessoa em GET /api/telas/{tela}/cartoes/{id}/nomes.
+  nomes?: { rotulo: string } | null;
+}
+
+/** Resposta de GET /api/telas/{tela}/cartoes/{id}/nomes: a tabela de uma linha por pessoa. */
+export interface TabelaNomes {
+  // no lugar do subtítulo do cartão ("Uma linha por pessoa.")
+  subtitulo?: string | null;
+  colunas: CartaoTabela['colunas'];
+  linhas: CartaoTabela['linhas'];
+  vazio?: string | null;
+}
+
+/** Cartões de destaque lado a lado ("Mais vendas", "Precisa de apoio"). */
+export interface CartaoDestaques extends CartaoBase {
+  tipo: 'destaques';
+  itens: { categoria: string; titulo: string; texto: string; status: Status }[];
+}
+
+export interface GraficoNoCartao {
+  titulo?: string;
+  nota?: string;
+  grafico: Grafico;
+  // índice da paleta das séries (0 a 6, a mesma do empilhado): pinta as barras e o quadradinho do
+  // título, como no mockup (cada setor na cor dele, em "Cada setor, mês a mês")
+  cor?: number | null;
+  // gráfico mais alto que o padrão (o saldo projetado, sozinho num cartão de 12 colunas)
+  alto?: boolean | null;
+}
+
+/**
+ * Um ou mais gráficos lado a lado, cada um com título e nota opcionais. Com `visoes`, o cartão ganha
+ * uma chave (Todos, Logística...) e desenha só os gráficos da visão escolhida; aí `graficos` vem vazio.
+ */
+export interface CartaoGraficos extends CartaoBase {
+  tipo: 'graficos';
+  // gráficos por linha quando há mais de um (padrão 2)
+  colunas?: 2 | 3;
+  graficos: GraficoNoCartao[];
+  // nome da chave, para leitor de tela ("Setor")
+  rotuloVisoes?: string;
+  // a primeira é a padrão; a nota fica embaixo dos gráficos
+  visoes?: { id: string; rotulo: string; graficos: GraficoNoCartao[]; nota?: Trecho[] }[];
+  // quadros lado a lado embaixo dos gráficos ("Próximos 30 dias: 58% da média paga"); sem status, cinza
+  quadros?: QuadroCartao[];
+  // texto com destaques no fim do cartão, antes da nota
+  rodape?: Trecho[];
+}
+
+export interface QuadroCartao {
+  // linha pequena de cima ("Próximos 30 dias")
+  rotulo: string;
+  // o número em texto, em negrito ("58% da média paga")
+  titulo: string;
+  texto: string;
+  status?: Status | null;
+}
+
+/** Pares de barras por faixa (participação nos atendimentos e na receita). */
+export interface CartaoFaixas extends CartaoBase {
+  tipo: 'faixas';
+  // as duas séries, na ordem das barras (a primeira clara, a segunda escura)
+  series: [string, string];
+  linhas: { rotulo: string; valores: [number, number] }[];
+  escala: Escala;
+}
+
+export interface CartaoCurvaAbc extends CartaoBase {
+  tipo: 'curva-abc';
+  classes: {
+    rotulo: string;
+    acao: string;
+    quantidade: Exibicao;
+    textos: Trecho[][];
+    // sem status: borda neutra
+    status?: Status;
+  }[];
+  grafico: GraficoLinhas;
+  notaGrafico?: string;
+}
+
+/** Matriz de contagens (curva de receita × curva de margem). */
+export interface CartaoMatriz extends CartaoBase {
+  tipo: 'matriz';
+  linhas: string[];
+  colunas: string[];
+  // status pinta a célula; sem ele, cinza na intensidade do valor
+  valores: { valor: number; status?: Status }[][];
+}
+
+export interface LinhaDre {
+  id: string;
+  // código da conta no plano ("100.01"); subtotais não têm. Não aparece na tela (decisão de 30/10/2026)
+  codigo?: string;
+  nome: string;
+  // 0 = subtotal (Receita líquida, Lucro bruto...); 1 a 3 = níveis do plano de contas
+  nivel: 0 | 1 | 2 | 3;
+  // id da linha de cima na árvore
+  pai?: string;
+  // a última linha (Lucro líquido final), em destaque escuro
+  final?: boolean;
+  realizado: number;
+  percentualReceitaBruta: number;
+  comparacao: number;
+  diferenca: number;
+  diferencaPercentual: number | null;
+  // cor do texto da diferença (melhor ou pior que a comparação)
+  tomDiferenca?: Status;
+  // fundo de farol na diferença (desvio grande)
+  destacarDiferenca?: boolean;
+  status: Status;
+  // esta linha ou alguma abaixo dela fora de "saudavel": é o que fica com "Só desvios"
+  comDesvio: boolean;
+  // últimos 6 meses, em reais (brl) ou em % da receita bruta (pct), como a API escolher para a conta;
+  // a unidade aparece ao lado da faísca ("$" ou "%")
+  tendencia: { realizado: number[]; comparacao: number[]; unidade?: 'brl' | 'pct' };
+}
+
+/** DRE em árvore: abre por nível, filtra os desvios e mostra a tendência de cada conta. */
+export interface CartaoDre extends CartaoBase {
+  tipo: 'dre';
+  // cabeçalho da primeira coluna ("Conta (R$ mil)") e da comparação ("Orçado", "Agosto")
+  rotuloConta: string;
+  rotuloComparacao: string;
+  escala: Escala;
+  nivelInicial: 1 | 2 | 3;
+  // níveis que a chave oferece
+  niveis: (1 | 2 | 3)[];
+  // na ordem de exibição, com os subtotais
+  linhas: LinhaDre[];
+  rodape?: string[];
+}
+
+export interface LinhaArvoreMensal {
+  id: string;
+  nome: string;
+  // 0 = subtotal (Saldo inicial, geração de cada seção, Saldo final); 1 a 4 = níveis da árvore
+  // (no fluxo de caixa: 1 = Entradas e Saídas da seção; 2 a 4 = os níveis do plano de contas)
+  nivel: 0 | 1 | 2 | 3 | 4;
+  // id da linha de cima na árvore
+  pai?: string;
+  // a última linha (Saldo final), em destaque escuro
+  final?: boolean;
+  // um por coluna, na ordem de `colunas`; null: mês sem movimento (célula vazia)
+  valores: (number | null)[];
+  // fundo de farol de cada célula, na ordem de `colunas`
+  fundos?: (Status | null)[];
+}
+
+/** Árvore de contas com uma coluna por mês (fluxo de caixa realizado): abre por nível. */
+export interface CartaoArvoreMensal extends CartaoBase {
+  tipo: 'arvore-mensal';
+  // cabeçalho da primeira coluna ("Conta (R$)")
+  rotuloConta: string;
+  // `total`: a coluna do período inteiro (acumulado), separada dos meses
+  colunas: { rotulo: string; titulo?: string; total?: boolean }[];
+  escala: Escala;
+  nivelInicial: 1 | 2 | 3 | 4;
+  // níveis que a chave oferece
+  niveis: (1 | 2 | 3 | 4)[];
+  // na ordem de exibição, com os subtotais
+  linhas: LinhaArvoreMensal[];
+  rodape?: string[];
+}
+
+/** Uma barra dividida em partes (ponto de equilíbrio e folga), com a escala e um texto. */
+export interface CartaoBarraPartes extends CartaoBase {
+  tipo: 'barra-partes';
+  // proporções somam 1
+  partes: { rotulo: string; proporcao: number; estilo: 'serie-clara' | Status }[];
+  escala: { inicio: string; fim: string };
+  texto?: Trecho[];
+}
+
+/** Grupos de contas com o desvio de cada uma (pioram e melhoram o resultado). */
+export interface CartaoDesvios extends CartaoBase {
+  tipo: 'desvios';
+  escala: Escala;
+  grupos: { titulo: string; status: Status; itens: { nome: string; detalhe?: string; valor: number }[] }[];
+}
+
+/** Janelas de dias lado a lado (próximos 7, 15 e 30 dias), com um alerta opcional ao fim. */
+export interface CartaoJanelas extends CartaoBase {
+  tipo: 'janelas';
+  janelas: {
+    titulo: string;
+    status?: Status;
+    linhas: {
+      rotulo: string;
+      valor: Valor;
+      tom?: Status;
+      // cor do número fora de status, como no mockup: azul o que entra, vermelho o que sai
+      cor?: 'entra' | 'sai' | null;
+      comSinal?: boolean;
+      // total: com linha em cima; saldo: com o fundo do status da janela
+      tipo?: 'total' | 'saldo';
+    }[];
+  }[];
+  alerta?: { etiqueta: string; texto: Trecho[]; rodape?: string };
+}
+
+/** Os dois lados de uma visão (contas a receber × contas a pagar). */
+export interface CartaoDoisLados extends CartaoBase {
+  tipo: 'dois-lados';
+  lados: {
+    titulo: string;
+    // "em aberto: R$ 7,13 mi"
+    total: string;
+    // etiqueta de qualidade do dado ao lado do total
+    alerta?: string;
+    kpis: Kpi[];
+    // faixas de idade dos títulos, na barra com fitas até os quadros; participacao em % do total do lado.
+    // soNaBarra: a faixa fica só na barra, com o rótulo dentro, sem quadro embaixo (o a vencer)
+    idade: {
+      rotulo: string;
+      valor: Valor;
+      participacao: number;
+      status?: Status;
+      soNaBarra?: boolean | null;
+    }[];
+    // depois do percentual de cada faixa ("da carteira", "do total"); sem ele, só o número
+    rotuloParticipacao?: string | null;
+    observacao?: Trecho[];
+    maiores: { nome: string; valor: Valor; participacao: number; etiqueta?: string }[];
+  }[];
+}
+
+/** Lista de barras horizontais (a pagar por semana); a maior ocupa a largura toda. */
+export interface CartaoBarrasHorizontais extends CartaoBase {
+  tipo: 'barras-horizontais';
+  escala: Escala;
+  itens: { rotulo: string; sub?: string; valor: number; status?: Status }[];
+}
+
+/** Um número grande com o texto que o explica, ao lado de um gráfico (faturamento por colaborador). */
+export interface CartaoNumeroGrafico extends CartaoBase {
+  tipo: 'numero-grafico';
+  numero: {
+    valor: Valor;
+    texto: Trecho[];
+    // "▲ 3% em 12 meses": a seta segue o sinal do valor; o tom diz se é bom ou ruim
+    variacao?: { valor: Valor; texto: string; tom: Status };
+    nota?: string;
+  };
+  grafico: Grafico;
+}
+
+/**
+ * Lista em que cada linha abre o próprio gráfico ao lado (produtividade por setor). A primeira linha
+ * começa escolhida. A última coluna é a tendência da linha (realizado cheio, comparação tracejada).
+ */
+export interface CartaoListaDetalhe extends CartaoBase {
+  tipo: 'lista-detalhe';
+  colunas: { rotulo: string; alinhar?: 'esquerda' | 'direita' | 'centro'; ocultarNoCelular?: boolean }[];
+  itens: {
+    id: string;
+    // uma a menos que as colunas: a última é a tendência
+    celulas: Celula[];
+    tendencia: { realizado: number[]; comparacao: number[] };
+    detalhe: { titulo: string; grafico: GraficoLinhas };
+  }[];
+}
+
+/**
+ * Ciclo de caixa em réguas de dias: compra → venda → recebe, compra → paga e o dinheiro preso.
+ * Cada trecho vai de `de` a `ate` (em dias), já calculados; a régua vai até o maior `ate`.
+ */
+export interface CartaoCicloCaixa extends CartaoBase {
+  tipo: 'ciclo-caixa';
+  linhas: {
+    rotulo: string;
+    trechos: {
+      // texto dentro do trecho ("Estoque 15 d")
+      rotulo: string;
+      de: number;
+      ate: number;
+      estilo: 'estoque' | 'recebimento' | 'pagamento' | 'preso';
+    }[];
+  }[];
+  // frases do rodapé, lado a lado ("Eram 17 dias em março; hoje 22")
+  rodape?: Trecho[][];
+  // os prazos mês a mês, embaixo
+  grafico?: GraficoLinhas;
+}
+
+/**
+ * De onde vem a projeção de caixa: a barra do que já está lançado contra o que falta lançar e uma
+ * linha por origem (títulos lançados e cada provisão), em entradas e saídas. Na visão "Só lançados",
+ * o que não entra no saldo vem `riscado`.
+ */
+export interface CartaoOrigemProjecao extends CartaoBase {
+  tipo: 'origem-projecao';
+  // proporções somam 1; `lancado` grafite, `nao-lancado` bege
+  barra: { rotulo: string; proporcao: number; estilo: 'lancado' | 'nao-lancado' }[];
+  // embaixo da barra ("Ainda não lançado: −R$ 1,96 mi de efeito líquido…")
+  texto?: Trecho[];
+  grupos: {
+    titulo: string;
+    itens: {
+      nome: string;
+      // com sinal: saída negativa
+      valor: Valor;
+      // `lancado` cinza; `nao-lancado` e `futuro` (V2) em bege
+      etiqueta: { rotulo: string; estilo: 'lancado' | 'nao-lancado' | 'futuro' };
+      // fora do saldo da visão escolhida: linha apagada e número riscado
+      riscado?: boolean | null;
+    }[];
+  }[];
+}
+
+/** Um grupo das provisões pelo histórico. Valores em reais. */
+export interface LinhaProvisao {
+  id: string;
+  nome: string;
+  // segunda linha, menor ("não recorrente: desligado")
+  detalhe?: string | null;
+  // desligado: a provisão não entra na projeção (linha apagada)
+  ligado: boolean;
+  // média por mês no período escolhido
+  media: number;
+  // lançado nos próximos 30 dias; null: nada lançado ("–")
+  lancado: number | null;
+  // média − lançado, nunca abaixo de zero
+  sugerida: number;
+  // o que a projeção usa nos próximos 30 dias: o valor digitado ou, sem ele, o sugerido
+  usado: number;
+  // texto de quem mudou o valor ("personalizado por Ana em 05/11"); null: usa o sugerido
+  personalizado?: string | null;
+}
+
+/**
+ * Provisões pelo histórico: completa o que ainda não foi lançado com a média do período. Quem vê o
+ * painel muda o período, liga e desliga cada grupo e digita um valor; cada mudança vai para a API
+ * (PUT), que grava para o cliente e recalcula a tela. O campo mostra e recebe o valor em milhares
+ * de reais (sufixo "mil"); o PUT vai em reais.
+ */
+export interface CartaoProvisoes extends CartaoBase {
+  tipo: 'provisoes';
+  // chave do período da média (Último mês, 3, 6 e 12 meses)
+  periodos: { id: string; rotulo: string }[];
+  periodo: string;
+  // cabeçalhos das colunas
+  colunas: { usar: string; grupo: string; media: string; lancado: string; sugerida: string; usado: string };
+  grupos: LinhaProvisao[];
+  // false: só leitura (chaves, período e campos desligados)
+  editavel: boolean;
+}
+
+export type Cartao =
+  | CartaoAndamentoMes
+  | CartaoFatores
+  | CartaoContraMeta
+  | CartaoTabela
+  | CartaoDestaques
+  | CartaoGraficos
+  | CartaoFaixas
+  | CartaoCurvaAbc
+  | CartaoMatriz
+  | CartaoDre
+  | CartaoArvoreMensal
+  | CartaoBarraPartes
+  | CartaoDesvios
+  | CartaoJanelas
+  | CartaoDoisLados
+  | CartaoBarrasHorizontais
+  | CartaoNumeroGrafico
+  | CartaoListaDetalhe
+  | CartaoCicloCaixa
+  | CartaoOrigemProjecao
+  | CartaoProvisoes;
+
+/** Corpo de PUT /api/telas/{tela}/cartoes/{cartao}/periodo (cartão de provisões). */
+export interface MudancaPeriodoProvisoes {
+  periodo: string;
+}
+
+/**
+ * Corpo de PUT /api/telas/{tela}/cartoes/{cartao}/grupos/{grupo} (cartão de provisões). `valor` em
+ * reais; null volta ao sugerido.
+ */
+export interface MudancaGrupoProvisao {
+  ligado: boolean;
+  valor: number | null;
+}
+
+export interface PainelPayload {
+  tela: TelaPainel;
+  versaoContrato: '1.0';
+  cliente: { nome: string; sigla: string; logoUrl: string | null };
+  // ISO 8601. null até a primeira carga do cliente terminar (nesse caso não vem cartão)
+  dadosAte: string | null;
+  atualizadoEm: string | null;
+  filtros: FiltroPainel[];
+  aviso?: Aviso;
+  // números grandes do topo (até 3)
+  destaques: ItemValor[];
+  // linha de KPIs (no lugar dos destaques, em Clientes)
+  kpis: Kpi[];
+  apoios: ItemValor[];
+  cartoes: Cartao[];
+}

@@ -1,0 +1,43 @@
+.cx-g {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 5px;
+  margin-bottom: 6px;
+  table-layout: fixed;
+}
+.cx-g th {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--ink-3);
+  text-align: center;
+}
+.cx-g th[scope='row'] {
+  text-align: left;
+  width: 86px;
+}
+.cx-g td {
+  border-radius: 8px;
+  height: 52px;
+  text-align: center;
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.cx-g td.cx-crit {
+  background: color-mix(in srgb, var(--crit) 75%, var(--surface));
+  color: #fff;
+}
+.cx-g td.cx-ok {
+  background: color-mix(in srgb, var(--ok) 75%, var(--surface));
+  color: #fff;
+}
+.cx-g td.cx-warn {
+  background: color-mix(in srgb, var(--warn-mark) 60%, var(--surface));
+}
+
+@media (max-width: 760px) {
+  .cx-g th[scope='row'] {
+    width: 62px;
+  }
+}

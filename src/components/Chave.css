@@ -1,0 +1,54 @@
+.chave {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.chave-trilho {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--series-3);
+  transition: background-color 0.2s;
+}
+.chave-bola {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s;
+}
+/* ligada: trilho no verde da marca, como no mockup (provisões) */
+.chave[aria-checked='true'] {
+  color: var(--ink);
+}
+.chave[aria-checked='true'] .chave-trilho {
+  background: var(--verde);
+}
+.chave[aria-checked='true'] .chave-bola {
+  transform: translateX(14px);
+}
+.chave:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.chave:focus-visible .chave-trilho {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chave-trilho,
+  .chave-bola {
+    transition: none;
+  }
+}

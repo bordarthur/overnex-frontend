@@ -28,3 +28,6 @@ window.matchMedia ??= ((consulta: string) => ({
   removeListener: () => {},
   dispatchEvent: () => false,
 })) as typeof window.matchMedia;
+
+// jsdom não rola a página (window.scrollTo só avisa "not implemented"); os testes espionam esta.
+window.scrollTo = (() => {}) as typeof window.scrollTo;

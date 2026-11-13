@@ -1,0 +1,58 @@
+.escolha {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 10vh 16px 40px;
+}
+.escolha-logo {
+  display: block;
+  width: 168px;
+  height: 28px;
+  margin-bottom: 36px;
+  color: var(--ink);
+}
+.escolha h1 {
+  font-size: 32px;
+}
+.escolha-sub {
+  color: var(--ink-2);
+  font-size: 14px;
+  margin: 8px 0 22px;
+}
+.escolha-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.escolha-lista a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.escolha-lista a:hover {
+  border-color: var(--ink);
+}
+.escolha-lista a:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+}
+.escolha-nome {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 500;
+}
+.escolha-lista svg {
+  width: 14px;
+  height: 14px;
+  color: var(--ink-3);
+  flex: none;
+}

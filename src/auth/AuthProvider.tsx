@@ -1,0 +1,157 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import type { SessaoAuth, UsuarioAuth } from '../contracts/auth';
+import { AuthContext, type Auth, type EstadoAuth } from './auth';
+import type { AuthClient } from './authClient';
+import { useInatividade } from './useInatividade';
+
+// Renova o token quando falta menos que isto para vencer.
+const MARGEM_RENOVACAO_MS = 60_000;
+// Sem uso por este tempo, a sessão cai; o aviso aparece um pouco antes. O tempo é de cada pessoa e
+// vem da API (`inatividadeSegundos`); este é só o padrão de quando ela não manda.
+const LIMITE_INATIVIDADE_MS = 30 * 60_000;
+const AVISO_INATIVIDADE_MS = 2 * 60_000;
+
+interface Encerrada {
+  usuario: UsuarioAuth;
+  porInatividade: boolean;
+}
+
+interface PropsAuthProvider {
+  client: AuthClient;
+  /** Para testes e desenvolvimento: tempo sem uso até a sessão cair, no lugar do que a API manda. */
+  limiteInatividadeMs?: number;
+  children: ReactNode;
+}
+
+/**
+ * Sessão do usuário. O access token fica só na memória (num ref); ao recarregar a página,
+ * a sessão volta pelo cookie httpOnly de refresh, que só a API lê.
+ * Depois do tempo de sessão parada da pessoa sem uso, a sessão cai (ver useInatividade).
+ * Precisa estar dentro do QueryClientProvider: ao sair, o cache é apagado.
+ */
+export function AuthProvider({ client, limiteInatividadeMs, children }: PropsAuthProvider) {
+  const queryClient = useQueryClient();
+  const [estado, setEstado] = useState<EstadoAuth>('verificando');
+  const [usuario, setUsuario] = useState<UsuarioAuth | null>(null);
+  const [saiu, setSaiu] = useState(false);
+  const [encerrada, setEncerrada] = useState<Encerrada | null>(null);
+  // tempo de sessão parada da pessoa logada, como veio de entrar, renovar ou definir a senha
+  const [limiteDaPessoaMs, setLimiteDaPessoaMs] = useState(LIMITE_INATIVIDADE_MS);
+  const sessao = useRef<SessaoAuth | null>(null);
+  const renovando = useRef<Promise<string | null> | null>(null);
+
+  const aplicar = useCallback(
+    (nova: SessaoAuth | null) => {
+      sessao.current = nova;
+      setUsuario(nova?.usuario ?? null);
+      setEstado(nova ? 'autenticado' : 'anonimo');
+      setEncerrada(null);
+      if (nova) setLimiteDaPessoaMs(limiteDaSessao(nova));
+      // Nada de um usuário pode sobrar no cache para o próximo.
+      if (!nova) queryClient.clear();
+    },
+    [queryClient],
+  );
+
+  // Várias chamadas ao mesmo tempo dividem uma renovação só.
+  const renovarToken = useCallback(() => {
+    renovando.current ??= client
+      .renovar()
+      .then((nova) => {
+        const antes = sessao.current?.usuario ?? null;
+        aplicar(nova);
+        // Caiu no meio do uso (não ao abrir o site): o login oferece continuar com a mesma conta.
+        if (!nova && antes) setEncerrada({ usuario: antes, porInatividade: false });
+        return nova?.accessToken ?? null;
+      })
+      .finally(() => {
+        renovando.current = null;
+      });
+    return renovando.current;
+  }, [client, aplicar]);
+
+  const getToken = useCallback(async () => {
+    const atual = sessao.current;
+    if (!atual) return null;
+    if (Date.parse(atual.expiraEm) - Date.now() > MARGEM_RENOVACAO_MS) return atual.accessToken;
+    return renovarToken();
+  }, [renovarToken]);
+
+  useEffect(() => {
+    // Falha de rede ao abrir o site: segue como anônimo; o erro aparece se a pessoa tentar entrar.
+    renovarToken().catch(() => aplicar(null));
+  }, [renovarToken, aplicar]);
+
+  // Como na renovação recusada, o login oferece continuar com a mesma conta e volta para a tela em que estava.
+  const encerrarPorInatividade = useCallback(() => {
+    const atual = sessao.current;
+    if (!atual) return;
+    // A API revoga o refresh; se falhar, a sessão some deste navegador do mesmo jeito.
+    client.sair(atual.accessToken).catch(() => {});
+    aplicar(null);
+    setEncerrada({ usuario: atual.usuario, porInatividade: true });
+  }, [client, aplicar]);
+
+  const limiteMs = limiteInatividadeMs ?? limiteDaPessoaMs;
+  const { restanteS: avisoInatividade, continuar: continuarConectado } = useInatividade({
+    ativo: estado === 'autenticado',
+    limiteMs,
+    avisoMs: Math.min(AVISO_INATIVIDADE_MS, limiteMs / 2),
+    onVencer: encerrarPorInatividade,
+  });
+
+  const auth = useMemo<Auth>(
+    () => ({
+      estado,
+      usuario,
+      saiu,
+      sessaoEncerrada: encerrada?.usuario ?? null,
+      encerradaPorInatividade: encerrada?.porInatividade ?? false,
+      avisoInatividade,
+      continuarConectado,
+      getToken,
+      renovarToken,
+      async entrar(email, senha) {
+        aplicar(await client.entrar(email, senha));
+        setSaiu(false);
+      },
+      async esqueciSenha(email) {
+        await client.esqueciSenha(email);
+      },
+      async definirSenha(pedido) {
+        aplicar(await client.definirSenha(pedido));
+        setSaiu(false);
+      },
+      async sair() {
+        try {
+          await client.sair(sessao.current?.accessToken ?? null);
+        } finally {
+          // Mesmo se a API falhar, a sessão some deste navegador.
+          setSaiu(true);
+          aplicar(null);
+        }
+      },
+    }),
+    [
+      estado,
+      usuario,
+      saiu,
+      encerrada,
+      avisoInatividade,
+      continuarConectado,
+      getToken,
+      renovarToken,
+      client,
+      aplicar,
+    ],
+  );
+
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+}
+
+// API que ainda não manda o campo (ou manda zero): vale o padrão.
+function limiteDaSessao(sessao: SessaoAuth): number {
+  const segundos = Number(sessao.inatividadeSegundos);
+  return segundos > 0 ? segundos * 1000 : LIMITE_INATIVIDADE_MS;
+}

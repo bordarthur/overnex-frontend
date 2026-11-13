@@ -1,0 +1,88 @@
+/* barra: lançado em grafite, o que falta lançar no bege do mockup */
+.origem-barra {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+  margin-top: 4px;
+}
+.origem-parte.lancado {
+  background: var(--ink);
+}
+.origem-parte.nao-lancado {
+  background: var(--warn-bg);
+}
+.origem-texto {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  margin-top: 6px;
+}
+.origem-texto b {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.origem-grupo h3 {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-2);
+  margin: 18px 0 6px;
+}
+.origem-grupo ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.origem-grupo li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 86px;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 14px;
+}
+.origem-nome {
+  line-height: 1.35;
+}
+.origem-valor {
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.origem-tag {
+  justify-self: end;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 6px;
+  padding: 1px 7px;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+/* o que não foi lançado (e a V2): o bege e o laranja do mockup */
+.origem-tag.nao-lancado,
+.origem-tag.futuro {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+/* fora do saldo da visão: apagado, com o número riscado */
+.origem-grupo li.riscado {
+  opacity: 0.55;
+}
+.origem-grupo li.riscado .origem-nome {
+  color: var(--ink-2);
+}
+
+@media (max-width: 760px) {
+  .origem-grupo li {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .origem-tag {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
