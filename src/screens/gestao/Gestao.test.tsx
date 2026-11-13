@@ -37,7 +37,54 @@ describe('Gestão: empresa', () => {
     expect(within(lista).getByRole('link', { name: /^PJ/ })).toHaveTextContent('Pessoas: Desligada');
     // o que o mockup tem e não entra agora
     expect(screen.queryByText(/% concluído/)).toBeNull();
-    expect(screen.queryByRole('button', { name: /Convidar/ })).toBeNull();
+    // o atalho para os painéis é um botão (link) no cabeçalho
+    expect(screen.getByRole('link', { name: 'Abrir os painéis desta empresa' })).toHaveAttribute(
+      'href',
+      '/pj',
+    );
+  });
+
+  it('convidar pelo cabeçalho da empresa: ela já vem marcada, e o passo final mostra o texto da API', async () => {
+    const { api, user } = abrir('/gestao/empresas/pj');
+    const convidar = vi.spyOn(api.gestao, 'convidarUsuario');
+    await screen.findByRole('heading', { level: 1, name: 'PJ' });
+
+    await user.click(screen.getByRole('button', { name: 'Convidar usuário' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Convidar usuário' });
+    expect(within(gaveta).getByLabelText('E-mail')).toHaveFocus();
+    expect(within(gaveta).getByRole('checkbox', { name: 'PJ' })).toBeChecked();
+    expect(within(gaveta).getByText('Abre direto em PJ.')).toBeInTheDocument();
+    expect(await within(gaveta).findByText(/A pessoa recebe o convite por e-mail/)).toBeInTheDocument();
+    // o tempo de sessão só aparece com o perfil escolhido
+    expect(within(gaveta).queryByRole('group', { name: 'A sessão cai após' })).toBeNull();
+
+    // nada escolhido: não chama a API e diz o que falta
+    await user.click(within(gaveta).getByRole('button', { name: 'Enviar convite' }));
+    expect(convidar).not.toHaveBeenCalled();
+    expect(within(gaveta).getByText('Informe o e-mail.')).toBeInTheDocument();
+    expect(within(gaveta).getByText('Informe o nome.')).toBeInTheDocument();
+    expect(within(gaveta).getByText('Escolha o perfil.')).toBeInTheDocument();
+
+    await user.type(within(gaveta).getByLabelText('E-mail'), 'ana@pj.com.br');
+    await user.type(within(gaveta).getByLabelText('Nome'), 'Ana Souza');
+    await user.click(within(gaveta).getByRole('radio', { name: /^Cliente usuário/ }));
+    await user.click(within(gaveta).getByRole('button', { name: 'Enviar convite' }));
+    expect(convidar).toHaveBeenCalledTimes(1);
+    expect(convidar.mock.calls[0]![0]).toMatchObject({
+      email: 'ana@pj.com.br',
+      nome: 'Ana Souza',
+      perfil: 'cliente_usuario',
+      clientes: ['pj'],
+    });
+    expect(await within(gaveta).findByText('Convite na fila: sai em instantes.')).toBeInTheDocument();
+    expect(within(gaveta).getByText('ana@pj.com.br')).toBeInTheDocument();
+
+    await user.click(within(gaveta).getByRole('button', { name: 'Concluir' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // a pessoa nova entra na lista da empresa, com o convite na fila
+    await user.click(screen.getByRole('tab', { name: 'Usuários e acesso' }));
+    const linha = (await screen.findByText('ana@pj.com.br')).closest('tr')!;
+    expect(within(linha).getByText('Convite na fila')).toBeInTheDocument();
   });
 
   it('as abas trocam pelo clique e pelas setas, e a busca filtra as empresas', async () => {
@@ -91,9 +138,10 @@ describe('Gestão: empresa', () => {
     await user.click(chave('Cliente usuário vê Pessoas'));
     expect(gravar).toHaveBeenCalledWith('demo', 'cliente_usuario', 'PES-01', true);
     await waitFor(() => expect(chave('Cliente usuário vê Pessoas')).toBeChecked());
-    // quem acessa: o Admin BORD não aparece, e no lugar do convite fica a nota da API
+    // quem acessa: o Admin BORD não aparece; o convite fica no cabeçalho da empresa e no cartão
     expect(screen.queryByText('dora@bord.com.br')).toBeNull();
-    expect(await screen.findByText(/Novos acessos são criados pela equipe BORD/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Convidar usuário' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Convidar para Cliente Demo' })).toBeInTheDocument();
   });
 
   it('preferências: a escolha e os feriados gravam; a recusa da API aparece como veio', async () => {
@@ -123,6 +171,77 @@ describe('Gestão: empresa', () => {
     await waitFor(() => expect(screen.queryByText('24/12/2026')).toBeNull());
   });
 
+  it('nova empresa: cria, mostra o texto da API e abre a empresa; a recusa aparece como veio', async () => {
+    const { api, user } = abrir('/gestao/empresas/pj');
+    const criar = vi.spyOn(api.gestao, 'criarCliente');
+    await screen.findByRole('heading', { level: 1, name: 'PJ' });
+    // o setor aparece na barra lateral, quando há
+    const lista = screen.getByRole('navigation', { name: 'Empresas' });
+    expect(within(lista).getByRole('link', { name: /^Agência Aurora/ })).toHaveTextContent('Publicidade');
+
+    await user.click(screen.getByRole('button', { name: 'Nova empresa' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Nova empresa' });
+    await user.click(within(gaveta).getByRole('button', { name: 'Criar empresa' }));
+    expect(criar).not.toHaveBeenCalled();
+    expect(within(gaveta).getByText('Informe o nome da empresa.')).toBeInTheDocument();
+
+    // identificador que já existe (o da PJ)
+    await user.type(within(gaveta).getByLabelText('Nome'), 'PJ');
+    await user.click(within(gaveta).getByRole('button', { name: 'Criar empresa' }));
+    expect(await within(gaveta).findByRole('alert')).toHaveTextContent(
+      'Já existe uma empresa com o identificador pj.',
+    );
+
+    await user.clear(within(gaveta).getByLabelText('Nome'));
+    await user.type(within(gaveta).getByLabelText('Nome'), 'Padaria São João');
+    await user.type(within(gaveta).getByLabelText('Setor'), 'Alimentação');
+    await user.click(within(gaveta).getByRole('button', { name: 'Criar empresa' }));
+    expect(criar).toHaveBeenLastCalledWith({ nome: 'Padaria São João', segmento: 'Alimentação', slug: null });
+    expect(await within(gaveta).findByText(/^Empresa criada\./)).toBeInTheDocument();
+
+    await user.click(within(gaveta).getByRole('button', { name: 'Concluir' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Padaria São João' })).toBeInTheDocument();
+    expect(screen.getByText('0 de 4 camadas ativas')).toBeInTheDocument();
+    expect(within(lista).getByRole('link', { name: /^Padaria São João/ })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    // o convite já funciona na empresa nova
+    await user.click(screen.getByRole('tab', { name: 'Usuários e acesso' }));
+    expect(screen.getByRole('button', { name: 'Convidar para Padaria São João' })).toBeInTheDocument();
+  });
+
+  it('editar empresa: troca o nome e o setor, sem campo de identificador; a recusa da API aparece', async () => {
+    const { api, user } = abrir('/gestao/empresas/pj');
+    const salvar = vi.spyOn(api.gestao, 'salvarCliente');
+    await screen.findByRole('heading', { level: 1, name: 'PJ' });
+
+    await user.click(screen.getByRole('button', { name: 'Editar empresa' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Editar empresa' });
+    expect(within(gaveta).getByLabelText('Nome')).toHaveValue('PJ');
+    // empresa sem setor: campo vazio, e nada no cabeçalho
+    expect(within(gaveta).getByLabelText('Setor')).toHaveValue('');
+    expect(within(gaveta).getAllByRole('textbox')).toHaveLength(2);
+
+    await user.clear(within(gaveta).getByLabelText('Nome'));
+    await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
+    expect(salvar).not.toHaveBeenCalled();
+    expect(within(gaveta).getByText('Informe o nome da empresa.')).toBeInTheDocument();
+
+    await user.type(within(gaveta).getByLabelText('Nome'), 'PJ Cortes');
+    await user.type(within(gaveta).getByLabelText('Setor'), 'Frigorífico');
+    salvar.mockRejectedValueOnce(new ApiErro(404, 'Empresa não encontrada.'));
+    await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
+    expect(await within(gaveta).findByRole('alert')).toHaveTextContent('Empresa não encontrada.');
+
+    await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
+    expect(salvar).toHaveBeenLastCalledWith('pj', { nome: 'PJ Cortes', segmento: 'Frigorífico' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await screen.findByRole('heading', { level: 1, name: 'PJ Cortes' })).toBeInTheDocument();
+    // o setor aparece no cabeçalho e na barra lateral
+    expect(screen.getAllByText('Frigorífico')).toHaveLength(2);
+  });
+
   it('empresa que não existe mostra o texto da API', async () => {
     abrir('/gestao/empresas/nao-existe');
     expect(await screen.findByText('Empresa não encontrada.')).toBeInTheDocument();
@@ -135,25 +254,25 @@ describe('Gestão: usuários', () => {
   it('lista as pessoas e filtra pela coluna lateral, pelo cartão do perfil e pela busca', async () => {
     const { user } = abrir('/gestao/usuarios');
     expect(await screen.findByRole('heading', { level: 1, name: 'Usuários' })).toBeInTheDocument();
-    expect(await screen.findByText('12 de 12 pessoas')).toBeInTheDocument();
-    expect(screen.getByText(/Novos acessos são criados pela equipe BORD/)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Convidar/ })).toBeNull();
+    expect(await screen.findByText('13 de 13 pessoas')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Convidar usuário' })).toBeInTheDocument();
 
     const filtros = screen.getByRole('navigation', { name: 'Filtros de pessoas' });
     await user.click(within(filtros).getByRole('link', { name: /Convites pendentes/ }));
     expect(linhas().map((l) => within(l).getAllByRole('cell')[0]!.textContent)).toEqual([
       'Financeiro PJfinanceiro@pj.com.br',
       'Gerente da lojaloja@sabordomar.com.br',
+      'Sócio da Aurorasocio@agenciaaurora.com.br',
     ]);
 
     await user.click(screen.getByRole('button', { name: /^Consultor por carteira/ }));
-    expect(screen.getByText('2 de 12 pessoas')).toBeInTheDocument();
+    expect(screen.getByText('2 de 13 pessoas')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Consultor por carteira/ })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
     await user.click(screen.getByRole('button', { name: /^Consultor por carteira/ }));
-    expect(screen.getByText('12 de 12 pessoas')).toBeInTheDocument();
+    expect(screen.getByText('13 de 13 pessoas')).toBeInTheDocument();
 
     await user.type(screen.getByRole('searchbox', { name: 'Buscar por nome ou e-mail' }), 'joana');
     expect(linhas()).toHaveLength(1);
@@ -226,6 +345,78 @@ describe('Gestão: usuários', () => {
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByRole('button', { name: 'Editar Joana Ribeiro' })).toHaveFocus();
+  });
+
+  it('convidar: a recusa da API aparece como veio; depois do convite, dá para convidar outra pessoa', async () => {
+    const { api, user } = abrir('/gestao/usuarios');
+    const convidar = vi.spyOn(api.gestao, 'convidarUsuario');
+    await user.click(await screen.findByRole('button', { name: 'Convidar usuário' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Convidar usuário' });
+    expect(within(gaveta).queryByRole('checkbox', { checked: true })).toBeNull();
+
+    // e-mail que já existe
+    await user.type(within(gaveta).getByLabelText('E-mail'), 'Caio@bord.com.br');
+    await user.type(within(gaveta).getByLabelText('Nome'), 'Outro Caio');
+    await user.click(within(gaveta).getByRole('radio', { name: /^Admin BORD/ }));
+    expect(within(gaveta).queryByRole('checkbox')).toBeNull();
+    await user.click(within(gaveta).getByRole('button', { name: 'Enviar convite' }));
+    expect(await within(gaveta).findByRole('alert')).toHaveTextContent(
+      'Este e-mail já tem cadastro no Overnex.',
+    );
+
+    await user.clear(within(gaveta).getByLabelText('E-mail'));
+    await user.type(within(gaveta).getByLabelText('E-mail'), 'bia@bord.com.br');
+    await user.click(within(gaveta).getByRole('button', { name: 'Enviar convite' }));
+    expect(convidar).toHaveBeenLastCalledWith({
+      email: 'bia@bord.com.br',
+      nome: 'Outro Caio',
+      perfil: 'admin',
+      clientes: [],
+      sessaoMinutos: 1440,
+    });
+    expect(await within(gaveta).findByText('Convite na fila: sai em instantes.')).toBeInTheDocument();
+
+    // volta ao formulário, sem o nome e o e-mail e com o perfil mantido
+    await user.click(within(gaveta).getByRole('button', { name: 'Convidar outra pessoa' }));
+    expect(within(gaveta).getByLabelText('E-mail')).toHaveValue('');
+    expect(within(gaveta).getByLabelText('Nome')).toHaveValue('');
+    expect(within(gaveta).getByRole('radio', { name: /^Admin BORD/ })).toBeChecked();
+    await user.keyboard('{Escape}');
+    expect(await screen.findByText('14 de 14 pessoas')).toBeInTheDocument();
+  });
+
+  it('gaveta: quem ainda não entrou tem o botão de mandar o convite de novo, com o rótulo da API', async () => {
+    const { api, user } = abrir('/gestao/usuarios');
+    const reenviar = vi.spyOn(api.gestao, 'reenviarConvite');
+    await user.click(await screen.findByRole('button', { name: 'Editar Gerente da loja' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Gerente da loja' });
+
+    await user.click(within(gaveta).getByRole('button', { name: 'Reenviar convite' }));
+    expect(reenviar).toHaveBeenCalledWith('0d000000-0000-4000-8000-0000000001d1');
+    expect(await within(gaveta).findByText('Convite na fila: sai em instantes.')).toBeInTheDocument();
+    // com o convite na fila, a API não oferece mais o botão
+    await waitFor(() =>
+      expect(within(gaveta).queryByRole('button', { name: 'Reenviar convite' })).toBeNull(),
+    );
+    await user.keyboard('{Escape}');
+    const linha = screen.getByText('loja@sabordomar.com.br').closest('tr')!;
+    expect(within(linha).getByText('Convite na fila')).toBeInTheDocument();
+  });
+
+  it('convite que não saiu: a linha mostra o motivo e o botão "Tentar de novo", que pede de novo', async () => {
+    const { api, user } = abrir('/gestao/usuarios');
+    const reenviar = vi.spyOn(api.gestao, 'reenviarConvite');
+    const linha = (await screen.findByText('socio@agenciaaurora.com.br')).closest('tr')!;
+    expect(within(linha).getByText('Convite não enviado')).toBeInTheDocument();
+    expect(within(linha).getByText('O serviço de e-mail recusou o endereço.')).toBeInTheDocument();
+    // quem já entrou não tem o botão
+    expect(screen.queryByRole('button', { name: /: Caio$/ })).toBeNull();
+
+    await user.click(within(linha).getByRole('button', { name: 'Tentar de novo: Sócio da Aurora' }));
+    expect(reenviar).toHaveBeenCalledWith('0d000000-0000-4000-8000-0000000001c2');
+    await waitFor(() => expect(within(linha).getByText('Convite na fila')).toBeInTheDocument());
+    expect(within(linha).queryByRole('button', { name: /Tentar de novo/ })).toBeNull();
+    expect(within(linha).queryByText('O serviço de e-mail recusou o endereço.')).toBeNull();
   });
 
   it('gaveta: salvar grava e fecha, com a lista atualizada', async () => {

@@ -6,8 +6,9 @@ import { CampoBusca } from '../../components/CampoBusca';
 import { EstadoTela } from '../../components/EstadoTela';
 import { semAcento } from '../../format';
 import { FILTRO_TODOS, noFiltro, useTituloDaGestao } from './apoio';
+import { ConvidarUsuario } from './ConvidarUsuario';
 import { GavetaUsuario } from './GavetaUsuario';
-import { CelulaPessoa, CelulaSituacao, Empresas, SessaoDaPessoa } from './partesUsuarios';
+import { BotaoConvite, CelulaPessoa, CelulaSituacao, Empresas, SessaoDaPessoa } from './partesUsuarios';
 import './UsuariosTela.css';
 
 /**
@@ -37,7 +38,7 @@ export function UsuariosTela() {
       />
     );
 
-  const { usuarios, notaConvite } = consulta.data;
+  const { usuarios } = consulta.data;
   const { perfis, sessoes } = gestao.data;
   const termo = semAcento(busca.trim());
   const lista = usuarios.filter(
@@ -55,7 +56,7 @@ export function UsuariosTela() {
             Quem entra no Overnex, com qual perfil, em quais empresas e por quanto tempo a sessão fica aberta.
           </p>
         </div>
-        <p className="gst-convite">{notaConvite}</p>
+        <ConvidarUsuario />
       </header>
 
       <div className="gst-perfis">
@@ -142,7 +143,8 @@ export function UsuariosTela() {
                   <td className="l">
                     <CelulaSituacao situacao={u.situacao} />
                   </td>
-                  <td>
+                  <td className="gst-acoes-linha">
+                    <BotaoConvite usuario={u} />
                     <button
                       type="button"
                       className="link"

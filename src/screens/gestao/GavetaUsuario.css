@@ -30,6 +30,7 @@
   background: var(--surface-2);
   color: var(--ink-2);
 }
+.gst-campo input[type='email']:focus-visible,
 .gst-campo input[type='text']:focus-visible {
   outline: 2px solid var(--ok);
   outline-offset: 1px;
@@ -73,6 +74,28 @@
 }
 .gst-acessos b {
   color: var(--ink);
+}
+
+/* convite pendente: a situação e o botão de mandar de novo */
+.gst-reenvio {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.gst-reenvio b {
+  color: var(--ink);
+}
+.gst-reenvio em {
+  display: block;
+  font-style: normal;
+  font-size: 12px;
 }
 
 /* rodapé: a recusa da API em cima, o acesso à esquerda e os botões à direita */

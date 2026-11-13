@@ -14,6 +14,7 @@ import { semAcento } from '../../format';
 import { ROTULO_TEMA } from '../../theme/tema';
 import { useTema } from '../../theme/useTema';
 import { FILTRO_TODOS } from './apoio';
+import { NovaEmpresa } from './NovaEmpresa';
 // as tabelas da Gestão usam as classes .tbl e .scroll-x dos painéis
 import '../paineis/TabelaCartao.css';
 import './GestaoMoldura.css';
@@ -155,6 +156,7 @@ function ListaEmpresas({ clientes, aberta }: { clientes?: ClienteDaLista[]; aber
             aria-current={c.slug === aberta ? 'page' : undefined}
           >
             <b>{c.nome}</b>
+            {c.segmento && <small>{c.segmento}</small>}
             {/* uma barrinha por camada; o texto fica na dica e para o leitor de tela */}
             <span className="gst-pontos" aria-hidden="true">
               {c.camadas.map((k) => (
@@ -172,7 +174,7 @@ function ListaEmpresas({ clientes, aberta }: { clientes?: ClienteDaLista[]; aber
         ))}
         {lista?.length === 0 && <p className="gst-nota-lado">Nenhuma empresa com esse nome.</p>}
       </nav>
-      <p className="gst-nota-lado">As empresas vêm do DW. Aqui não se cadastra empresa.</p>
+      <NovaEmpresa />
     </div>
   );
 }

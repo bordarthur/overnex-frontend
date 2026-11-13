@@ -9,6 +9,12 @@ export const CHAVE_GESTAO = 'gestao';
 
 const tentarDeNovo = (falhas: number, erro: unknown) => !semPermissao(erro) && falhas < 2;
 
+// Convite na fila vira "enviado" ou "não enviado" sozinho, em cerca de um minuto (o job do back):
+// enquanto houver alguém na fila, a lista é pedida de novo de tempos em tempos.
+const INTERVALO_DA_FILA_MS = 25_000;
+const enquantoHouverFila = (pessoas?: { situacao: { id: string } }[]) =>
+  pessoas?.some((u) => u.situacao.id === 'fila') ? INTERVALO_DA_FILA_MS : false;
+
 const opcoesGestao = (api: ApiClient) =>
   queryOptions({
     queryKey: [CHAVE_GESTAO, 'moldura'],
@@ -21,6 +27,7 @@ const opcoesClienteGestao = (api: ApiClient, slug: string) =>
     queryKey: [CHAVE_GESTAO, 'cliente', slug],
     queryFn: ({ signal }) => api.gestao.obterCliente(slug, { signal }),
     retry: tentarDeNovo,
+    refetchInterval: (consulta) => enquantoHouverFila(consulta.state.data?.usuarios),
   });
 
 const opcoesUsuariosGestao = (api: ApiClient) =>
@@ -28,6 +35,7 @@ const opcoesUsuariosGestao = (api: ApiClient) =>
     queryKey: [CHAVE_GESTAO, 'usuarios'],
     queryFn: ({ signal }) => api.gestao.obterUsuarios({ signal }),
     retry: tentarDeNovo,
+    refetchInterval: (consulta) => enquantoHouverFila(consulta.state.data?.usuarios),
   });
 
 /** As empresas (com o estado das camadas), os perfis e as opções de sessão. */
@@ -62,8 +70,9 @@ const TAMBEM: Record<AlcanceDaGravacao, QueryKey[]> = {
  * é pedida de novo (e, conforme o `alcance`, também a sessão ou as telas). A gravação só termina
  * quando a Gestão nova chega; até lá, `variables` diz o que está sendo gravado.
  */
-export function useGravarGestao<T>(
-  gravar: (gestao: GestaoApi, mudanca: T) => Promise<void>,
+export function useGravarGestao<T, R = void>(
+  // os convites devolvem o texto do passo final, que fica em `data`
+  gravar: (gestao: GestaoApi, mudanca: T) => Promise<R>,
   alcance: AlcanceDaGravacao = 'gestao',
 ) {
   const api = useApiClient();
