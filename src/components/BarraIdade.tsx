@@ -3,6 +3,7 @@ import { useLargura } from '../charts/useLargura';
 import type { Status, Valor } from '../contracts/visaoGeral';
 import { formatarPct, formatarValor } from '../format';
 import { STATUS } from '../theme/status';
+import { caber } from './caber';
 import './BarraIdade.css';
 
 export interface FaixaIdade {
@@ -132,10 +133,15 @@ export function BarraIdade({ faixas, sufixo, aria }: Props) {
         {comQuadro.map((i) => {
           const x = faixas[i];
           if (!x) return null;
+          const valor = formatarValor(x.valor);
           return (
             <div key={x.rotulo} data-i={i} className={`at2 ${x.valor.valor > 0 ? classes[i] : 'zero'}`}>
               <span>{x.rotulo}</span>
-              <b>{formatarValor(x.valor)}</b>
+              <div className="at2-v">
+                <b className="cabe" style={caber(valor)}>
+                  {valor}
+                </b>
+              </div>
               <em>{comPct(x)}</em>
             </div>
           );

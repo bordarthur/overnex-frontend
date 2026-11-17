@@ -14,6 +14,13 @@ const ALINHAR = { esquerda: 'l', direita: '', centro: 'c' } as const;
 
 type Tabela = Pick<CartaoTabela, 'colunas' | 'linhas' | 'variante'>;
 
+/**
+ * Tabela comprida (mais linhas que isto) num cartão que divide a linha com outro: rola por dentro,
+ * com o cabeçalho fixo, para o cartão não ficar bem mais alto que o vizinho ("Quem cobrar hoje", com
+ * até 20 clientes). No cartão de largura inteira, a tabela aparece toda.
+ */
+const LINHAS_SEM_ROLAR = 12;
+
 /** Tabela com farol por célula e por linha (relatórios, atingimento mês a mês, linhas de produto). */
 export function TabelaCartao({ cartao }: { cartao: CartaoTabela }) {
   const consulta = useConsultaPainel();
@@ -22,7 +29,7 @@ export function TabelaCartao({ cartao }: { cartao: CartaoTabela }) {
     return <TabelaComNomes cartao={cartao} rotulo={cartao.nomes.rotulo} {...consulta} />;
   return (
     <CaixaCartao cartao={cartao}>
-      <Grade tabela={cartao} aviso={cartao.vazio ?? 'Nada para mostrar com esses filtros.'} />
+      <Grade tabela={cartao} cartao={cartao} aviso={cartao.vazio ?? 'Nada para mostrar com esses filtros.'} />
     </CaixaCartao>
   );
 }
@@ -54,7 +61,7 @@ function TabelaComNomes({ cartao, rotulo, tela, filtros }: PropsComNomes) {
         : 'Carregando os nomes…';
     return (
       <CaixaCartao cartao={cartao} controle={chave}>
-        <Grade tabela={cartao} aviso={aviso} soAviso={ligada} />
+        <Grade tabela={cartao} cartao={cartao} aviso={aviso} soAviso={ligada} />
       </CaixaCartao>
     );
   }
@@ -63,6 +70,7 @@ function TabelaComNomes({ cartao, rotulo, tela, filtros }: PropsComNomes) {
     <CaixaCartao cartao={{ ...cartao, subtitulo: nomes.subtitulo ?? cartao.subtitulo }} controle={chave}>
       <Grade
         tabela={{ ...nomes, variante: cartao.variante }}
+        cartao={cartao}
         aviso={nomes.vazio ?? 'Nada para mostrar com esses filtros.'}
       />
     </CaixaCartao>
@@ -71,13 +79,16 @@ function TabelaComNomes({ cartao, rotulo, tela, filtros }: PropsComNomes) {
 
 interface PropsGrade {
   tabela: Tabela;
+  // o cartão da tabela: a largura decide se ela rola, e o título dá nome à área de rolagem
+  cartao: Pick<CartaoTabela, 'largura' | 'titulo'>;
   // texto da linha única quando não há linhas (ou, com soAviso, no lugar delas)
   aviso: string;
   soAviso?: boolean;
 }
 
-function Grade({ tabela, aviso, soAviso = false }: PropsGrade) {
+function Grade({ tabela, cartao, aviso, soAviso = false }: PropsGrade) {
   const { colunas, linhas, variante = 'padrao' } = tabela;
+  const rola = !soAviso && cartao.largura < 12 && linhas.length > LINHAS_SEM_ROLAR;
   // primeira coluna à esquerda; as outras, números à direita (ou o que a API pedir)
   const classeColuna = (i: number) => {
     const c = colunas[i];
@@ -89,7 +100,11 @@ function Grade({ tabela, aviso, soAviso = false }: PropsGrade) {
       .filter(Boolean)
       .join(' ') || undefined;
   return (
-    <div className="scroll-x">
+    <div
+      className={`scroll-x${rola ? ' tbl-rola' : ''}`}
+      // área de rolagem alcançável pelo teclado
+      {...(rola && { tabIndex: 0, role: 'group', 'aria-label': `${cartao.titulo}: todas as linhas` })}
+    >
       <table className={`tbl tbl-${variante}`}>
         <thead>
           <tr>

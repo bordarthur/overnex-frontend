@@ -80,11 +80,13 @@
   gap: 10px;
   margin-top: 2px;
   flex-wrap: wrap;
+  /* o valor encolhe para caber na largura do cartão (.cabe, em base.css); o delta desce se precisar */
+  container-type: inline-size;
 }
 .ft-val {
   font-family: 'Saira', sans-serif;
   font-weight: 800;
-  font-size: 24px;
+  --cabe-max: 24px;
   line-height: 1.15;
   font-variant-numeric: tabular-nums;
 }

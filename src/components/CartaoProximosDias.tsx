@@ -4,6 +4,7 @@ import { useLargura } from '../charts/useLargura';
 import type { CartaoProximosDias as Dados } from '../contracts/visaoGeral';
 import { formatarRotulo, formatarValor } from '../format';
 import { STATUS } from '../theme/status';
+import { caber } from './caber';
 import { CabecalhoCartao } from './CabecalhoCartao';
 import { MarcaDagua } from './MarcaDagua';
 import { Segmentado } from './Segmentado';
@@ -129,6 +130,7 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
             const topo = receberAte + novas;
             const fimLancado = topo - j.pagar.valor;
             const fim = j.fim[atual?.id ?? ''];
+            const valorFim = fim && formatarValor(fim.valor);
             const classe = fim?.status ? ` s-${STATUS[fim.status].classe}` : '';
             const partes = [
               cartao.saldo && legenda.saldo ? `${legenda.saldo} ${formatarValor(cartao.saldo)}` : null,
@@ -191,14 +193,16 @@ export function CartaoProximosDias({ cartao, modo, onModo }: Props) {
                         style={{ left: `${x(fim.valor.valor)}%` }}
                         aria-hidden="true"
                       >
-                        {formatarValor(fim.valor)}
+                        {valorFim}
                       </span>
                     </>
                   )}
                 </div>
                 {fim && (
                   <div className={`pj-end${classe}`}>
-                    <b>{formatarValor(fim.valor)}</b>
+                    <b className="cabe" style={caber(valorFim ?? '')}>
+                      {valorFim}
+                    </b>
                     <span>{fim.texto}</span>
                   </div>
                 )}

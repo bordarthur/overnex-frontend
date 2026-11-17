@@ -117,13 +117,14 @@
   flex-direction: column;
   justify-content: center;
   line-height: 1.2;
+  /* o valor encolhe para caber na coluna do fim (.cabe, em base.css) */
+  container-type: inline-size;
 }
 .pj-end b {
   font-family: 'Saira', sans-serif;
   font-weight: 800;
-  font-size: 22px;
+  --cabe-max: 22px;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
   transition: color 0.3s;
 }
 .pj-end span {
@@ -329,13 +330,14 @@
     grid-column: 2;
     grid-row: 2;
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: flex-end;
     align-items: baseline;
-    gap: 8px;
+    gap: 0 8px;
     margin-bottom: 16px;
   }
   .pj-end b {
-    font-size: 18px;
+    --cabe-max: 18px;
   }
   .pj-ml {
     display: none;

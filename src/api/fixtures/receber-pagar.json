@@ -76,7 +76,7 @@
         "valor": 5260000,
         "unidade": "brl"
       },
-      "contexto": "títulos emitidos"
+      "contexto": "títulos emitidos, vencimento de 12/10 a 11/11"
     },
     {
       "rotulo": "A pagar em 30 dias",
@@ -84,7 +84,7 @@
         "valor": 3660000,
         "unidade": "brl"
       },
-      "contexto": "só o que está lançado",
+      "contexto": "de 12/10 a 11/11, só o que está lançado: 58% da média paga",
       "status": "atencao"
     },
     {
@@ -108,7 +108,7 @@
       "subtitulo": "O que vence a receber e a pagar em cada janela, e quanto sobra",
       "janelas": [
         {
-          "titulo": "Próximos 7 dias",
+          "titulo": "Próximos 7 dias (12/10 a 19/10)",
           "linhas": [
             {
               "rotulo": "A receber",
@@ -138,7 +138,7 @@
           ]
         },
         {
-          "titulo": "Próximos 15 dias",
+          "titulo": "Próximos 15 dias (12/10 a 27/10)",
           "linhas": [
             {
               "rotulo": "A receber",
@@ -168,7 +168,7 @@
           ]
         },
         {
-          "titulo": "Próximos 30 dias",
+          "titulo": "Próximos 30 dias (12/10 a 11/11)",
           "linhas": [
             {
               "rotulo": "A receber",
@@ -259,12 +259,21 @@
             {
               "rotulo": "A vencer",
               "valor": {
-                "valor": 6602000,
+                "valor": 6402000,
                 "unidade": "brl"
               },
-              "participacao": 92.6,
+              "participacao": 89.8,
               "status": "saudavel",
               "soNaBarra": true
+            },
+            {
+              "rotulo": "Em compensação",
+              "valor": {
+                "valor": 200000,
+                "unidade": "brl"
+              },
+              "participacao": 2.8,
+              "status": "saudavel"
             },
             {
               "rotulo": "1 a 30 dias",
@@ -752,6 +761,356 @@
             },
             {
               "valor": "Diego"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Empório Santa Luzia"
+            },
+            {
+              "valor": {
+                "valor": 9100,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 22,
+                "unidade": "dias"
+              },
+              "fundo": "saudavel"
+            },
+            {
+              "pill": {
+                "status": "saudavel",
+                "rotulo": "Alta"
+              }
+            },
+            {
+              "valor": "Ana"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Churrascaria Fogo Alto"
+            },
+            {
+              "valor": {
+                "valor": 8700,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 51,
+                "unidade": "dias"
+              },
+              "fundo": "atencao"
+            },
+            {
+              "pill": {
+                "status": "atencao",
+                "rotulo": "Média"
+              }
+            },
+            {
+              "valor": "Carla"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Mercearia do Porto"
+            },
+            {
+              "valor": {
+                "valor": 8200,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 9,
+                "unidade": "dias"
+              },
+              "fundo": "saudavel"
+            },
+            {
+              "pill": {
+                "status": "saudavel",
+                "rotulo": "Alta"
+              }
+            },
+            {
+              "valor": "Elisa"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Supermercado Avenida",
+              "etiqueta": "parou de comprar",
+              "tomEtiqueta": "vermelho"
+            },
+            {
+              "valor": {
+                "valor": 7600,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 38,
+                "unidade": "dias"
+              },
+              "fundo": "atencao"
+            },
+            {
+              "pill": {
+                "status": "atencao",
+                "rotulo": "Média"
+              }
+            },
+            {
+              "valor": "Bruno"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Lanchonete Ponto Certo"
+            },
+            {
+              "valor": {
+                "valor": 7100,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 74,
+                "unidade": "dias"
+              },
+              "fundo": "critico"
+            },
+            {
+              "pill": {
+                "status": "critico",
+                "rotulo": "Baixa"
+              }
+            },
+            {
+              "valor": "Diego"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Hotel Serra Azul"
+            },
+            {
+              "valor": {
+                "valor": 6500,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 16,
+                "unidade": "dias"
+              },
+              "fundo": "saudavel"
+            },
+            {
+              "pill": {
+                "status": "saudavel",
+                "rotulo": "Alta"
+              }
+            },
+            {
+              "valor": "Fábio"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Cantina Bella Massa"
+            },
+            {
+              "valor": {
+                "valor": 5900,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 45,
+                "unidade": "dias"
+              },
+              "fundo": "atencao"
+            },
+            {
+              "pill": {
+                "status": "atencao",
+                "rotulo": "Média"
+              }
+            },
+            {
+              "valor": "Ana"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Mercado Dois Irmãos",
+              "etiqueta": "parou de comprar",
+              "tomEtiqueta": "vermelho"
+            },
+            {
+              "valor": {
+                "valor": 5400,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 88,
+                "unidade": "dias"
+              },
+              "fundo": "critico"
+            },
+            {
+              "pill": {
+                "status": "critico",
+                "rotulo": "Baixa"
+              }
+            },
+            {
+              "valor": "Carla"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Açougue Boi Nobre"
+            },
+            {
+              "valor": {
+                "valor": 4800,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 29,
+                "unidade": "dias"
+              },
+              "fundo": "saudavel"
+            },
+            {
+              "pill": {
+                "status": "saudavel",
+                "rotulo": "Alta"
+              }
+            },
+            {
+              "valor": "Elisa"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Restaurante Sabor da Serra"
+            },
+            {
+              "valor": {
+                "valor": 4300,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 33,
+                "unidade": "dias"
+              },
+              "fundo": "atencao"
+            },
+            {
+              "pill": {
+                "status": "atencao",
+                "rotulo": "Média"
+              }
+            },
+            {
+              "valor": "Bruno"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Padaria Pão Dourado"
+            },
+            {
+              "valor": {
+                "valor": 3700,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 112,
+                "unidade": "dias"
+              },
+              "fundo": "critico"
+            },
+            {
+              "valor": "sem histórico",
+              "tom": "apagado"
+            },
+            {
+              "valor": "Diego"
+            }
+          ]
+        },
+        {
+          "celulas": [
+            {
+              "valor": "Minimercado Estrela"
+            },
+            {
+              "valor": {
+                "valor": 3100,
+                "unidade": "brl"
+              }
+            },
+            {
+              "valor": {
+                "valor": 19,
+                "unidade": "dias"
+              },
+              "fundo": "saudavel"
+            },
+            {
+              "pill": {
+                "status": "saudavel",
+                "rotulo": "Alta"
+              }
+            },
+            {
+              "valor": "Fábio"
             }
           ]
         }

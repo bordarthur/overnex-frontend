@@ -5,12 +5,12 @@ import { CartaoInadimplencia } from '../../components/CartaoInadimplencia';
 import { CartaoPagarLancado } from '../../components/CartaoPagarLancado';
 import { CartaoProximosDias } from '../../components/CartaoProximosDias';
 import { FaixaSecao } from '../../components/FaixaSecao';
+import { colunasDaGrade } from '../../components/grade';
 import { IndicadorGauge } from '../../components/IndicadorGauge';
 import { LinhaKpis } from '../../components/Kpi';
 import type { CartaoSecao, PeriodoId, Secao, Status } from '../../contracts/visaoGeral';
 import { TELAS_PAINEL } from '../paineis/telas';
 import { contarPorStatus } from './contagem';
-import { colunasDaGrade } from './grade';
 import { SeletorDaSecao } from './SeletorDaSecao';
 
 interface Props {

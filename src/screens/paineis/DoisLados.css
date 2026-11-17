@@ -66,7 +66,7 @@
   padding: 8px 10px;
 }
 .lado-k .k-v {
-  font-size: 18px;
+  --cabe-max: 18px;
 }
 .lado-l {
   font-size: 12px;
@@ -74,16 +74,18 @@
   color: var(--ink-3);
   margin: 14px 0 6px;
 }
-/* metade da largura: fitas mais curtas e quadros mais baixos que na Visão geral */
+/* metade da largura: fitas mais curtas que na Visão geral */
 .lado .barra-idade {
   --bi-vao: 48px;
 }
+/* A altura mínima (a do quadro da Visão geral) já conta com o rótulo e a participação em duas linhas
+   cada ("Em compensação", "2,8% da carteira" no quadro estreito): com 5 quadros de um lado e 4 do
+   outro, as duas fileiras ficam da mesma altura e o resto do cartão segue alinhado. */
 .lado .at2 {
-  min-height: 84px;
   padding: 10px 10px;
 }
 .lado .at2 b {
-  font-size: 15px;
+  --cabe-max: 15px;
 }
 .lado-obs {
   font-size: 12.5px;
@@ -129,8 +131,27 @@
   vertical-align: 1px;
 }
 
-/* uma metade embaixo da outra: o traço passa para baixo da primeira, e a última fecha o cartão */
-@media (max-width: 1240px) {
+/* Lado a lado em tela de notebook: quadros mais justos, para 5 deles ("Em compensação" e as 4 faixas
+   vencidas) caberem numa fileira só em meia largura. Vale para os dois lados, que ficam iguais. */
+@media (min-width: 1366px) and (max-width: 1720px) {
+  .lado {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+  .lado .ic2-tiles {
+    gap: 6px;
+  }
+  .lado .at2 {
+    padding: 10px 6px;
+    font-size: 11px;
+  }
+  .lado .at2 b {
+    --cabe-max: 14px;
+  }
+}
+/* Uma metade embaixo da outra: o traço passa para baixo da primeira, e a última fecha o cartão.
+   Abaixo de 1366 px, meia largura não comporta os 5 quadros. */
+@media (max-width: 1365px) {
   .lados {
     grid-template-columns: minmax(0, 1fr);
   }
