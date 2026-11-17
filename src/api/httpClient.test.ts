@@ -254,12 +254,14 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
     await expect(api.gestao.reenviarConvite('u9')).resolves.toEqual(pedido);
     await api.gestao.criarCliente({ nome: 'Padaria', segmento: null, slug: null });
     await api.gestao.salvarCliente('pj-cortes', { nome: 'PJ Cortes', segmento: 'Frigorífico' });
+    await api.gestao.apagarUsuario('u9');
 
     expect(fetch.mock.calls.map(([url, init]) => [init?.method, url, init?.body])).toEqual([
       ['POST', '/api/admin/usuarios', JSON.stringify(novo)],
       ['POST', '/api/admin/usuarios/u9/convite', undefined],
       ['POST', '/api/admin/clientes', '{"nome":"Padaria","segmento":null,"slug":null}'],
       ['PUT', '/api/admin/clientes/pj-cortes', '{"nome":"PJ Cortes","segmento":"Frigorífico"}'],
+      ['DELETE', '/api/admin/usuarios/u9', undefined],
     ]);
   });
 

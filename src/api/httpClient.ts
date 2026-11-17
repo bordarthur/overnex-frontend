@@ -141,6 +141,9 @@ export function criarHttpClient({
       salvarAcessoDoUsuario(id, ativo) {
         return gravar(`${caminhoUsuario(id)}/acesso`, { ativo });
       },
+      async apagarUsuario(id) {
+        await pedir(caminhoUsuario(id), { metodo: 'DELETE' });
+      },
       criarCliente(nova) {
         return enviar<EmpresaCriada>('/admin/clientes', nova);
       },

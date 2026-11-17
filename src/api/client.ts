@@ -92,6 +92,8 @@ export interface GestaoApi {
   salvarSessaoDoUsuario(id: string, minutos: number): Promise<void>;
   /** Desativa ou reativa o acesso da pessoa. */
   salvarAcessoDoUsuario(id: string, ativo: boolean): Promise<void>;
+  /** Apaga de vez quem já está desativado (só com `podeApagar`). O e-mail fica livre para um convite novo. */
+  apagarUsuario(id: string): Promise<void>;
   /** Cria a empresa (201), com todas as camadas desligadas e sem pessoas. */
   criarCliente(nova: NovaEmpresa): Promise<EmpresaCriada>;
   /** Troca o nome e o setor da empresa. O slug não muda. */

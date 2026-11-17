@@ -15,7 +15,8 @@ interface Props {
 
 /**
  * Gaveta de edição de quem já tem acesso: nome, perfil, empresas e sessão, desativar ou reativar o
- * acesso e mandar o convite de novo a quem ainda não entrou (quando a API manda `convite` na pessoa).
+ * acesso, mandar o convite de novo a quem ainda não entrou (quando a API manda `convite` na pessoa) e
+ * apagar de vez quem já está desativado (`podeApagar`), com confirmação.
  * O convite de gente nova é na GavetaConvite. As regras são da API, que devolve o texto pronto quando recusa.
  * Use com `key={usuario.id}`.
  */
@@ -29,6 +30,8 @@ export function GavetaUsuario({ usuario, gestao, onFechar }: Props) {
   });
   const [semNome, setSemNome] = useState(false);
   const [reativado, setReativado] = useState(false);
+  // apagar não tem volta: o primeiro clique só pede a confirmação
+  const [confirmandoApagar, setConfirmandoApagar] = useState(false);
 
   const salvar = useGravarGestao((api, m: MudancaUsuario) => api.salvarUsuario(usuario.id, m), 'acesso');
   const acesso = useGravarGestao(
@@ -37,8 +40,9 @@ export function GavetaUsuario({ usuario, gestao, onFechar }: Props) {
   );
   // o texto do passo final vem da API ("Convite na fila: sai em instantes.")
   const convite = useGravarGestao<void, ConvitePedido>((api) => api.reenviarConvite(usuario.id));
-  const gravando = salvar.isPending || acesso.isPending || convite.isPending;
-  const erro = [salvar, acesso, convite].find((m) => m.isError)?.error ?? null;
+  const apagar = useGravarGestao<void>((api) => api.apagarUsuario(usuario.id), 'acesso');
+  const gravando = salvar.isPending || acesso.isPending || convite.isPending || apagar.isPending;
+  const erro = [salvar, acesso, convite, apagar].find((m) => m.isError)?.error ?? null;
 
   const inativo = usuario.situacao.id === 'inativo';
 
@@ -76,10 +80,50 @@ export function GavetaUsuario({ usuario, gestao, onFechar }: Props) {
             </p>
           )}
           <span className="gst-gaveta-acesso">
-            {inativo ? (
-              <button type="button" className="link" disabled={gravando} onClick={() => mudarAcesso(true)}>
-                Reativar acesso
-              </button>
+            {confirmandoApagar ? (
+              <>
+                <span role="status">Apagar de vez? Não tem volta.</span>
+                <button
+                  type="button"
+                  className="link perigo"
+                  disabled={gravando}
+                  onClick={() => {
+                    salvar.reset();
+                    acesso.reset();
+                    convite.reset();
+                    apagar.mutate(undefined, { onSuccess: onFechar });
+                  }}
+                >
+                  Sim, apagar
+                </button>
+                <button
+                  type="button"
+                  className="link"
+                  disabled={gravando}
+                  onClick={() => {
+                    apagar.reset();
+                    setConfirmandoApagar(false);
+                  }}
+                >
+                  Não
+                </button>
+              </>
+            ) : inativo ? (
+              <>
+                <button type="button" className="link" disabled={gravando} onClick={() => mudarAcesso(true)}>
+                  Reativar acesso
+                </button>
+                {usuario.podeApagar && (
+                  <button
+                    type="button"
+                    className="link perigo"
+                    disabled={gravando}
+                    onClick={() => setConfirmandoApagar(true)}
+                  >
+                    Apagar usuário
+                  </button>
+                )}
+              </>
             ) : (
               usuario.podeDesativar && (
                 <button

@@ -419,6 +419,42 @@ describe('Gestão: usuários', () => {
     expect(within(linha).queryByText('O serviço de e-mail recusou o endereço.')).toBeNull();
   });
 
+  it('gaveta: só quem está desativado pode ser apagado, e apagar pede confirmação', async () => {
+    const { api, user } = abrir('/gestao/usuarios');
+    const apagar = vi.spyOn(api.gestao, 'apagarUsuario');
+
+    await user.click(await screen.findByRole('button', { name: 'Editar Caio' }));
+    expect(within(screen.getByRole('dialog')).queryByRole('button', { name: 'Apagar usuário' })).toBeNull();
+    await user.keyboard('{Escape}');
+
+    await user.click(screen.getByRole('button', { name: 'Editar Antigo financeiro' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Antigo financeiro' });
+    await user.click(within(gaveta).getByRole('button', { name: 'Apagar usuário' }));
+    expect(apagar).not.toHaveBeenCalled();
+    expect(within(gaveta).getByText('Apagar de vez? Não tem volta.')).toBeInTheDocument();
+
+    // desistir volta aos botões de antes
+    await user.click(within(gaveta).getByRole('button', { name: 'Não' }));
+    expect(within(gaveta).getByRole('button', { name: 'Reativar acesso' })).toBeInTheDocument();
+
+    // a recusa da API aparece como veio, e a gaveta fica
+    apagar.mockRejectedValueOnce(
+      new ApiErro(
+        422,
+        'Esta pessoa tem registros que dependem dela e não pode ser apagada. Ela continua desativada.',
+      ),
+    );
+    await user.click(within(gaveta).getByRole('button', { name: 'Apagar usuário' }));
+    await user.click(within(gaveta).getByRole('button', { name: 'Sim, apagar' }));
+    expect(await within(gaveta).findByRole('alert')).toHaveTextContent(/não pode ser apagada/);
+
+    await user.click(within(gaveta).getByRole('button', { name: 'Sim, apagar' }));
+    expect(apagar).toHaveBeenLastCalledWith('0d000000-0000-4000-8000-0000000001a4');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await screen.findByText('12 de 12 pessoas')).toBeInTheDocument();
+    expect(screen.queryByText('financeiro.antigo@clientedemo.com.br')).toBeNull();
+  });
+
   it('gaveta: salvar grava e fecha, com a lista atualizada', async () => {
     const { api, user } = abrir('/gestao/usuarios');
     const salvar = vi.spyOn(api.gestao, 'salvarUsuario');

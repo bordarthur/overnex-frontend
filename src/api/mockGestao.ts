@@ -57,6 +57,7 @@ export const MSG = {
   desativado: 'O acesso desta pessoa está desativado. Reative antes de mandar o convite.',
   jaEntrou: 'Esta pessoa já entrou no Overnex. Para trocar a senha, ela usa "Esqueci a senha".',
   naFila: 'O convite desta pessoa já está na fila.',
+  apagarAtivo: 'Desative o acesso antes de apagar.',
   conviteNaFila: 'Convite na fila: sai em instantes.',
   notaConvite:
     'A pessoa recebe o convite por e-mail e cria a própria senha. O convite entra numa fila ' +
@@ -356,6 +357,7 @@ function usuario(banco: BancoGestao, u: UsuarioMock): UsuarioGestao {
     situacao: comoEsta,
     acessos: { entradas30d: u.entradas30d, ultimo: u.ultimo },
     podeDesativar: u.ativo && !(admin && adminsAtivos < 2),
+    podeApagar: !u.ativo,
     // ativo, ainda não entrou e sem pedido na fila
     convite:
       u.ativo && !u.ultimo && u.convite && u.convite !== 'fila'
@@ -622,6 +624,14 @@ export function criarEmpresa(banco: BancoGestao, m: NovaEmpresa): EmpresaCriada 
     preferencias: {},
   });
   return { slug, nome, mensagem: MSG.empresaCriada };
+}
+
+/** Como DELETE /api/admin/usuarios/{id}: apaga quem já está desativado; o e-mail fica livre. */
+export function apagarUsuario(banco: BancoGestao, autor: string, id: string) {
+  const u = pessoaDoId(banco, id);
+  if (id === autor) throw new ApiErro(422, MSG.proprio);
+  if (u.ativo) throw new ApiErro(422, MSG.apagarAtivo);
+  banco.usuarios = banco.usuarios.filter((x) => x.id !== id);
 }
 
 /** Como PUT /api/admin/clientes/{slug}: troca o nome e o setor; o slug fica. */

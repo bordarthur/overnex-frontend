@@ -161,6 +161,8 @@ export interface UsuarioGestao {
   acessos: { entradas30d: number; ultimo: string | null };
   // false: já desativado, ou o último Admin BORD ativo
   podeDesativar: boolean;
+  // true: oferecer "Apagar usuário" (DELETE /api/admin/usuarios/{id}); só quem já está desativado
+  podeApagar: boolean;
   // null: não oferecer (já entrou, está desativado ou o convite já está na fila)
   convite: AcaoConvite | null;
 }
