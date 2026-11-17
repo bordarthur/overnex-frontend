@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { colunasDaGrade } from './grade';
 
 describe('colunasDaGrade', () => {
-  it('até 4 velocímetros, uma linha só', () => {
+  it('até 4 cartões, uma linha só', () => {
     expect([1, 2, 3, 4].map(colunasDaGrade)).toEqual([1, 2, 3, 4]);
   });
 

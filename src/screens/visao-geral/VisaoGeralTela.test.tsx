@@ -116,8 +116,9 @@ describe('Visão geral', () => {
     const cartao = await screen.findByRole('article', { name: /^Próximos 7, 15 e 30 dias/ });
 
     expect(within(cartao).getAllByText('caixa no fim')).toHaveLength(3);
-    // o fim aparece ao lado do traço e na coluna da direita
-    expect(within(cartao).getAllByText('R$ 3,02 mi')).toHaveLength(2);
+    // o fim aparece ao lado do traço e na coluna da direita, com o valor cheio que a API manda
+    expect(within(cartao).getAllByText('R$ 3.020.000')).toHaveLength(2);
+    expect(cartao.querySelector('.pj-end b')).toHaveClass('cabe');
     expect(within(cartao).getByText('caixa mínimo R$ 500 mil')).toBeInTheDocument();
     expect(cartao.querySelectorAll('.b-saldo')).not.toHaveLength(0);
     expect(within(contagemDa('Financeiro')).getByText('1 crítico')).toBeInTheDocument();
@@ -126,11 +127,11 @@ describe('Visão geral', () => {
 
     await user.click(within(cartao).getByRole('button', { name: 'Com a projeção' }));
 
-    expect(within(cartao).getAllByText('R$ 1,21 mi')).toHaveLength(2);
+    expect(within(cartao).getAllByText('R$ 1.210.000')).toHaveLength(2);
     expect(
       within(cartao).getByRole('img', {
         name:
-          '30 dias: Saldo hoje R$ 1,42 mi, A receber R$ 5,26 mi, Vendas novas, pela média recebida R$ 840 mil, ' +
+          '30 dias: Saldo hoje R$ 1.420.000, A receber R$ 5,26 mi, Vendas novas, pela média recebida R$ 840 mil, ' +
           'A pagar R$ 3,66 mi, Contas a lançar, pela média paga R$ 2,65 mi',
       }),
     ).toBeInTheDocument();
@@ -195,7 +196,14 @@ describe('Visão geral', () => {
     renderizarApp('/demo/visao-geral');
     const cartao = await screen.findByRole('article', { name: /^Inadimplência corrente/ });
 
-    expect(within(cartao).getByText('A vencer: R$ 6,60 mi, 92,6% da carteira')).toBeInTheDocument();
+    expect(within(cartao).getByText('A vencer: R$ 6.602.000, 92,6% da carteira')).toBeInTheDocument();
+    // os quadros por idade vêm com o valor cheio
+    expect([...cartao.querySelectorAll('.at2 b')].map((q) => q.textContent)).toEqual([
+      'R$ 320.000',
+      'R$ 98.000',
+      'R$ 52.000',
+      'R$ 58.000',
+    ]);
     expect([...cartao.querySelectorAll('.at2 span')].map((q) => q.textContent)).toEqual([
       '1 a 30 dias',
       '31 a 60 dias',

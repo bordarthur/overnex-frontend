@@ -30,7 +30,8 @@
           "rotulo": "Meta do mês",
           "valor": {
             "valor": 6900000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "supermeta R$ 7,59 mi"
         },
@@ -38,7 +39,8 @@
           "rotulo": "Faturado até 12/10",
           "valor": {
             "valor": 2180000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "meta até a data: R$ 2,30 mi",
           "status": "atencao"
@@ -47,7 +49,8 @@
           "rotulo": "Projeção de fechamento",
           "valor": {
             "valor": 6540000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "R$ 360 mil abaixo da meta",
           "status": "atencao"
@@ -56,7 +59,8 @@
           "rotulo": "A realizar por dia útil",
           "valor": {
             "valor": 337000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "hoje vende R$ 311 mil por dia",
           "status": "atencao"
@@ -365,7 +369,8 @@
           "rotulo": "Lucro bruto até agora",
           "valor": {
             "valor": 715000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "sobre R$ 2,15 mi de receita líquida"
         },
@@ -373,7 +378,8 @@
           "rotulo": "Efeito no lucro do mês",
           "valor": {
             "valor": -51000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "CMV acima do orçado, na projeção",
           "status": "critico"
@@ -859,7 +865,8 @@
           "rotulo": "EBITDA projetado",
           "valor": {
             "valor": 500000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "orçado R$ 679 mil",
           "status": "atencao"
@@ -868,7 +875,8 @@
           "rotulo": "Lucro líquido de setembro",
           "valor": {
             "valor": 421000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "orçado R$ 475 mil",
           "status": "atencao"
@@ -877,7 +885,8 @@
           "rotulo": "Ponto de equilíbrio",
           "valor": {
             "valor": 4720000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "de receita líquida por mês"
         },
@@ -1190,7 +1199,8 @@
           "rotulo": "Saldo em conta hoje",
           "valor": {
             "valor": 1420000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "todas as contas"
         },
@@ -1198,7 +1208,8 @@
           "rotulo": "A receber, 30 dias",
           "valor": {
             "valor": 5260000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "a vencer no total: R$ 6,60 mi; carteira: R$ 7,13 mi"
         },
@@ -1206,7 +1217,8 @@
           "rotulo": "A pagar, 30 dias",
           "valor": {
             "valor": 3660000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "só o que está lançado: 58% da média paga",
           "status": "atencao"
@@ -1215,7 +1227,8 @@
           "rotulo": "A pagar vencido",
           "valor": {
             "valor": 46000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "contexto": "R$ 31 mil de fornecedores"
         }
@@ -1252,7 +1265,8 @@
           },
           "saldo": {
             "valor": 1420000,
-            "unidade": "brl"
+            "unidade": "brl",
+            "compacto": false
           },
           "minimo": {
             "valor": 500000,
@@ -1282,7 +1296,8 @@
                 "lancado": {
                   "valor": {
                     "valor": 2120000,
-                    "unidade": "brl"
+                    "unidade": "brl",
+                    "compacto": false
                   },
                   "status": "saudavel",
                   "texto": "caixa no fim"
@@ -1290,7 +1305,8 @@
                 "projecao": {
                   "valor": {
                     "valor": 1371000,
-                    "unidade": "brl"
+                    "unidade": "brl",
+                    "compacto": false
                   },
                   "status": "saudavel",
                   "texto": "caixa no fim"
@@ -1320,7 +1336,8 @@
                 "lancado": {
                   "valor": {
                     "valor": 3090000,
-                    "unidade": "brl"
+                    "unidade": "brl",
+                    "compacto": false
                   },
                   "status": "saudavel",
                   "texto": "caixa no fim"
@@ -1328,7 +1345,8 @@
                 "projecao": {
                   "valor": {
                     "valor": 1315000,
-                    "unidade": "brl"
+                    "unidade": "brl",
+                    "compacto": false
                   },
                   "status": "saudavel",
                   "texto": "caixa no fim"
@@ -1358,7 +1376,8 @@
                 "lancado": {
                   "valor": {
                     "valor": 3020000,
-                    "unidade": "brl"
+                    "unidade": "brl",
+                    "compacto": false
                   },
                   "status": "saudavel",
                   "texto": "caixa no fim"
@@ -1366,7 +1385,8 @@
                 "projecao": {
                   "valor": {
                     "valor": 1210000,
-                    "unidade": "brl"
+                    "unidade": "brl",
+                    "compacto": false
                   },
                   "status": "saudavel",
                   "texto": "caixa no fim"
@@ -1798,7 +1818,8 @@
               "rotulo": "A vencer",
               "valor": {
                 "valor": 6602000,
-                "unidade": "brl"
+                "unidade": "brl",
+                "compacto": false
               },
               "percentual": 92.6,
               "status": "saudavel",
@@ -1808,7 +1829,8 @@
               "rotulo": "1 a 30 dias",
               "valor": {
                 "valor": 320000,
-                "unidade": "brl"
+                "unidade": "brl",
+                "compacto": false
               },
               "percentual": 4.5,
               "status": "atencao"
@@ -1817,7 +1839,8 @@
               "rotulo": "31 a 60 dias",
               "valor": {
                 "valor": 98000,
-                "unidade": "brl"
+                "unidade": "brl",
+                "compacto": false
               },
               "percentual": 1.4,
               "status": "critico"
@@ -1826,7 +1849,8 @@
               "rotulo": "61 a 90 dias",
               "valor": {
                 "valor": 52000,
-                "unidade": "brl"
+                "unidade": "brl",
+                "compacto": false
               },
               "percentual": 0.7,
               "status": "critico"
@@ -1835,7 +1859,8 @@
               "rotulo": "Mais de 90 dias",
               "valor": {
                 "valor": 58000,
-                "unidade": "brl"
+                "unidade": "brl",
+                "compacto": false
               },
               "percentual": 0.8,
               "status": "critico"

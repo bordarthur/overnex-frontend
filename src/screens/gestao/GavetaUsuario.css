@@ -105,6 +105,12 @@
 }
 .gst-gaveta-acesso {
   margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--ink-2);
 }
 
 /* prévia de "Ao entrar, a pessoa vê": uma miniatura da tela e o texto ao lado */

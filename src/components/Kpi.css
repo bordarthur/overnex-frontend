@@ -1,17 +1,27 @@
+/*
+ * Linha de KPIs em flex com quebra, como a grade dos velocímetros (IndicadorGauge.css): cada KPI tem
+ * a largura de uma coluna (--colunas por linha, de grade.ts) e pode crescer, então a última linha,
+ * quando tem menos KPIs, divide a largura toda (5 = 3 + 2).
+ */
 .kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  --colunas: 4;
+  --vao: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vao);
   margin-bottom: 12px;
 }
-.kpis.three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.kpis > * {
+  flex: 1 1 calc((100% - (var(--colunas) - 1) * var(--vao)) / var(--colunas) - 0.5px);
 }
-.kpis.five {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+.kpis.n-1 {
+  --colunas: 1;
 }
-.kpis.six {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+.kpis.n-2 {
+  --colunas: 2;
+}
+.kpis.n-3 {
+  --colunas: 3;
 }
 .kpi {
   background: var(--surface);
@@ -23,6 +33,8 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  /* o valor encolhe para caber na largura do KPI (.cabe, em base.css) */
+  container-type: inline-size;
 }
 .k-l {
   font-size: 12.5px;
@@ -31,7 +43,7 @@
 .k-v {
   font-family: 'Saira', sans-serif;
   font-weight: 800;
-  font-size: 22px;
+  --cabe-max: 22px;
   line-height: 1.2;
   font-variant-numeric: tabular-nums;
 }
@@ -59,19 +71,18 @@
   color: var(--crit);
 }
 
-@media (max-width: 1240px) {
-  .kpis.five,
-  .kpis.six {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+/* abaixo desta largura, 4 valores cheios ("R$ 13.876.873") não cabem numa linha: 4 vira 2 + 2 */
+@media (max-width: 1000px) {
+  .kpis {
+    --colunas: 2;
   }
 }
 @media (max-width: 760px) {
-  .kpis.three {
-    grid-template-columns: minmax(0, 1fr);
+  .kpis.n-3 {
+    --colunas: 2;
   }
-  .kpis,
-  .kpis.five,
-  .kpis.six {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* só 3 KPIs: um por linha, para o contexto não se espremer em meia tela */
+  .kpis:has(> :nth-child(3):last-child) {
+    --colunas: 1;
   }
 }

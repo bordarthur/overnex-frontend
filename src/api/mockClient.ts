@@ -15,6 +15,7 @@ import {
   MSG,
   clienteDoBanco,
   criarBancoGestao,
+  apagarUsuario,
   criarEmpresa,
   gestaoDoBanco,
   mudarEmpresa,
@@ -350,6 +351,9 @@ export function criarMockClient({
       },
       async salvarAcessoDoUsuario(id, ativo) {
         mudarAcessoDoUsuario(banco, await admin(), id, ativo);
+      },
+      async apagarUsuario(id) {
+        apagarUsuario(banco, await admin(), id);
       },
       async criarCliente(nova) {
         await admin();

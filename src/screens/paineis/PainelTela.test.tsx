@@ -392,9 +392,22 @@ describe('Painéis financeiros', () => {
     expect(await screen.findByText('A receber em 30 dias')).toBeInTheDocument();
 
     // sem saldo bancário: três KPIs, sem "Saldo no fim" nem status nas janelas
-    expect(document.querySelector('.kpis')).toHaveClass('three');
+    expect(document.querySelector('.kpis')).toHaveClass('n-3');
+    expect(screen.getByText('títulos emitidos, vencimento de 12/10 a 11/11')).toBeInTheDocument();
+    expect(
+      screen.getByText('de 12/10 a 11/11, só o que está lançado: 58% da média paga'),
+    ).toBeInTheDocument();
     const janelas = cartao('Próximos dias');
-    expect(within(janelas).getAllByRole('region')).toHaveLength(3);
+    // o título de cada janela vem com as datas
+    expect(
+      within(janelas)
+        .getAllByRole('region')
+        .map((j) => j.getAttribute('aria-label')),
+    ).toEqual([
+      'Próximos 7 dias (12/10 a 19/10)',
+      'Próximos 15 dias (12/10 a 27/10)',
+      'Próximos 30 dias (12/10 a 11/11)',
+    ]);
     expect(within(janelas).queryByText('Saldo no fim')).toBeNull();
     expect(within(janelas).queryByText('Saudável')).toBeNull();
     expect(within(janelas).getByText('Dado incompleto')).toBeInTheDocument();
@@ -404,10 +417,16 @@ describe('Painéis financeiros', () => {
     expect(within(lados).getByRole('heading', { level: 2 }).closest('.visualmente-oculto')).not.toBeNull();
     const pagar = within(lados).getByRole('region', { name: 'Contas a pagar' });
     expect(within(pagar).getByText('lançado: 58% da média paga')).toBeInTheDocument();
-    // idade dos títulos: o a vencer só na barra, com o texto dentro; um quadro por faixa vencida
+    // idade dos títulos: o a vencer só na barra, com o texto dentro; um quadro por faixa vencida e,
+    // no a receber, o "Em compensação" na barra e também como quadro (5 quadros contra 4 do a pagar)
     const receber = within(lados).getByRole('region', { name: 'Contas a receber' });
-    expect(within(receber).getByText('A vencer: R$ 6,60 mi, 92,6% da carteira')).toBeInTheDocument();
+    expect(within(receber).getByText('A vencer: R$ 6,40 mi, 89,8% da carteira')).toBeInTheDocument();
+    expect(receber.querySelectorAll('.inad-bar > span')).toHaveLength(6);
+    expect(within(receber).getByText('Em compensação').closest('.at2')).toHaveClass('ok');
+    expect(within(receber).getByText('2,8% da carteira')).toBeInTheDocument();
+    expect(pagar.querySelectorAll('.at2')).toHaveLength(4);
     expect([...receber.querySelectorAll('.at2 span')].map((q) => q.textContent)).toEqual([
+      'Em compensação',
       '1 a 30 dias',
       '31 a 60',
       '61 a 90',
@@ -419,7 +438,14 @@ describe('Painéis financeiros', () => {
     expect(pagar.querySelectorAll('.inad-bar > span')).toHaveLength(4);
     expect(within(lados).getAllByText('vencido')).toHaveLength(4);
 
+    // 20 clientes ao lado de outro cartão: a tabela rola por dentro, e o cabeçalho fica
     const cobrar = cartao('Quem cobrar hoje');
+    expect(within(cobrar).getAllByRole('row')).toHaveLength(21);
+    expect(within(cobrar).getByRole('group', { name: 'Quem cobrar hoje: todas as linhas' })).toHaveClass(
+      'tbl-rola',
+    );
+    // tabela curta não rola
+    expect(cartao('Clientes acima do limite').querySelector('.tbl-rola')).toBeNull();
     const aurora = within(cobrar).getByText('Mercantil Aurora').closest('tr') as HTMLElement;
     expect(within(aurora).getByText('Média')).toBeInTheDocument();
     expect(within(aurora).getByText('12 dias').closest('td')).toHaveClass('cf-ok');
