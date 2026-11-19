@@ -144,6 +144,40 @@ describe('Gestão: empresa', () => {
     expect(screen.getByRole('button', { name: 'Convidar para Cliente Demo' })).toBeInTheDocument();
   });
 
+  it('matriz: "vê os nomes" só onde o perfil vê o painel; tirar o painel apaga a marca; a recusa aparece como veio', async () => {
+    const { api, user } = abrir('/gestao/empresas/demo?aba=acesso');
+    const nomes = vi.spyOn(api.gestao, 'salvarNomesDoPerfil');
+    await screen.findByRole('heading', { level: 2, name: 'Quem acessa Cliente Demo' });
+
+    // só Pessoas tem a chave; o Admin BORD vem marcado e travado
+    expect(screen.queryByRole('switch', { name: 'Admin BORD vê os nomes em Vendas' })).toBeNull();
+    expect(chave('Admin BORD vê os nomes em Pessoas')).toBeChecked();
+    expect(chave('Admin BORD vê os nomes em Pessoas')).toBeDisabled();
+    expect(chave('Cliente principal vê os nomes em Pessoas')).toBeChecked();
+    // quem não vê o painel não tem a chave
+    expect(
+      screen.queryByRole('switch', { name: 'Consultor por carteira vê os nomes em Pessoas' }),
+    ).toBeNull();
+
+    await user.click(chave('Cliente principal vê os nomes em Pessoas'));
+    expect(nomes).toHaveBeenCalledWith('demo', 'cliente_principal', 'PES-01', false);
+    await waitFor(() => expect(chave('Cliente principal vê os nomes em Pessoas')).not.toBeChecked());
+    await user.click(chave('Cliente principal vê os nomes em Pessoas'));
+    await waitFor(() => expect(chave('Cliente principal vê os nomes em Pessoas')).toBeChecked());
+
+    // tirar o painel do perfil apaga a marca: ao pôr de volta, volta sem nomes
+    await user.click(chave('Cliente principal vê Pessoas'));
+    await waitFor(() =>
+      expect(screen.queryByRole('switch', { name: 'Cliente principal vê os nomes em Pessoas' })).toBeNull(),
+    );
+    await user.click(chave('Cliente principal vê Pessoas'));
+    await waitFor(() => expect(chave('Cliente principal vê os nomes em Pessoas')).not.toBeChecked());
+
+    nomes.mockRejectedValueOnce(new ApiErro(422, 'Este perfil não vê o painel.'));
+    await user.click(chave('Cliente principal vê os nomes em Pessoas'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Este perfil não vê o painel.');
+  });
+
   it('preferências: a escolha e os feriados gravam; a recusa da API aparece como veio', async () => {
     const { api, user } = abrir('/gestao/empresas/demo?aba=preferencias');
     const preferencia = vi.spyOn(api.gestao, 'salvarPreferencia');
@@ -417,6 +451,42 @@ describe('Gestão: usuários', () => {
     await waitFor(() => expect(within(linha).getByText('Convite na fila')).toBeInTheDocument());
     expect(within(linha).queryByRole('button', { name: /Tentar de novo/ })).toBeNull();
     expect(within(linha).queryByText('O serviço de e-mail recusou o endereço.')).toBeNull();
+  });
+
+  it('gaveta: só quem está desativado pode ser apagado, e apagar pede confirmação', async () => {
+    const { api, user } = abrir('/gestao/usuarios');
+    const apagar = vi.spyOn(api.gestao, 'apagarUsuario');
+
+    await user.click(await screen.findByRole('button', { name: 'Editar Caio' }));
+    expect(within(screen.getByRole('dialog')).queryByRole('button', { name: 'Apagar usuário' })).toBeNull();
+    await user.keyboard('{Escape}');
+
+    await user.click(screen.getByRole('button', { name: 'Editar Antigo financeiro' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Antigo financeiro' });
+    await user.click(within(gaveta).getByRole('button', { name: 'Apagar usuário' }));
+    expect(apagar).not.toHaveBeenCalled();
+    expect(within(gaveta).getByText('Apagar de vez? Não tem volta.')).toBeInTheDocument();
+
+    // desistir volta aos botões de antes
+    await user.click(within(gaveta).getByRole('button', { name: 'Não' }));
+    expect(within(gaveta).getByRole('button', { name: 'Reativar acesso' })).toBeInTheDocument();
+
+    // a recusa da API aparece como veio, e a gaveta fica
+    apagar.mockRejectedValueOnce(
+      new ApiErro(
+        422,
+        'Esta pessoa tem registros que dependem dela e não pode ser apagada. Ela continua desativada.',
+      ),
+    );
+    await user.click(within(gaveta).getByRole('button', { name: 'Apagar usuário' }));
+    await user.click(within(gaveta).getByRole('button', { name: 'Sim, apagar' }));
+    expect(await within(gaveta).findByRole('alert')).toHaveTextContent(/não pode ser apagada/);
+
+    await user.click(within(gaveta).getByRole('button', { name: 'Sim, apagar' }));
+    expect(apagar).toHaveBeenLastCalledWith('0d000000-0000-4000-8000-0000000001a4');
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(await screen.findByText('12 de 12 pessoas')).toBeInTheDocument();
+    expect(screen.queryByText('financeiro.antigo@clientedemo.com.br')).toBeNull();
   });
 
   it('gaveta: salvar grava e fecha, com a lista atualizada', async () => {

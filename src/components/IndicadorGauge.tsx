@@ -4,6 +4,7 @@ import { MiniTendencia } from '../charts/MiniTendencia';
 import type { Indicador, PeriodoId, Valor } from '../contracts/visaoGeral';
 import { formatarDelta, formatarRotulo, formatarValor } from '../format';
 import { STATUS } from '../theme/status';
+import { caber } from './caber';
 import { Pill } from './Pill';
 import { Segmentado } from './Segmentado';
 import './IndicadorGauge.css';
@@ -68,7 +69,9 @@ export function IndicadorGauge({ indicador, periodos, periodo, onPeriodo, destin
       />
       <LegendaGauge faixas={gauge.faixas} unidade={gauge.unidade} />
       <div className="ft-main">
-        <span className="ft-val">{valor}</span>
+        <span className="ft-val cabe" style={caber(valor)}>
+          {valor}
+        </span>
         {p.delta != null && (
           <span className={`ft-delta ${p.deltaRuim ? 't-crit' : 't-ok'}`}>
             <span aria-hidden="true">{seta(p.delta)}</span>

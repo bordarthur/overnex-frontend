@@ -1,6 +1,39 @@
 .scroll-x {
   overflow-x: auto;
 }
+/*
+ * Tabela comprida ao lado de outro cartão: a área da tabela não conta na altura da linha da grade
+ * (base zero), só o mínimo de umas 8 linhas; o cartão estica até a altura do vizinho e a tabela rola
+ * por dentro, com o cabeçalho fixo.
+ */
+.card:has(> .tbl-rola) {
+  display: flex;
+  flex-direction: column;
+}
+.tbl-rola {
+  flex: 1 1 0;
+  min-height: 352px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* a barra de rolagem não encosta nos números */
+  padding-right: 10px;
+  margin-right: -10px;
+  scrollbar-width: thin;
+}
+.tbl-rola:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 4px;
+}
+.tbl-rola thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+  box-shadow: 0 1px 0 var(--line-soft);
+}
+.tbl-rola tbody tr:first-child td {
+  border-top-color: transparent;
+}
 .tbl {
   width: 100%;
   border-collapse: collapse;

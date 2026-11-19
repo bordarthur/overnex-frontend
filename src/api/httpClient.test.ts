@@ -219,6 +219,7 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
     });
     await api.gestao.salvarSessaoDoUsuario(id, 240);
     await api.gestao.salvarAcessoDoUsuario(id, false);
+    await api.gestao.salvarNomesDoPerfil('pj-cortes', 'cliente_principal', 'PES-01', true);
 
     const chamadas = fetch.mock.calls.map(([url, init]) => [init?.method, url, init?.body]);
     expect(chamadas).toEqual([
@@ -234,6 +235,11 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
       ],
       ['PUT', `/api/admin/usuarios/${id}/sessao`, '{"minutos":240}'],
       ['PUT', `/api/admin/usuarios/${id}/acesso`, '{"ativo":false}'],
+      [
+        'PUT',
+        '/api/admin/clientes/pj-cortes/perfis/cliente_principal/paineis/PES-01/nomes',
+        '{"veNomes":true}',
+      ],
     ]);
     // o DELETE não leva Content-Type
     expect(fetch.mock.calls[4]![1]?.headers).not.toHaveProperty('Content-Type');
@@ -254,12 +260,14 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
     await expect(api.gestao.reenviarConvite('u9')).resolves.toEqual(pedido);
     await api.gestao.criarCliente({ nome: 'Padaria', segmento: null, slug: null });
     await api.gestao.salvarCliente('pj-cortes', { nome: 'PJ Cortes', segmento: 'Frigorífico' });
+    await api.gestao.apagarUsuario('u9');
 
     expect(fetch.mock.calls.map(([url, init]) => [init?.method, url, init?.body])).toEqual([
       ['POST', '/api/admin/usuarios', JSON.stringify(novo)],
       ['POST', '/api/admin/usuarios/u9/convite', undefined],
       ['POST', '/api/admin/clientes', '{"nome":"Padaria","segmento":null,"slug":null}'],
       ['PUT', '/api/admin/clientes/pj-cortes', '{"nome":"PJ Cortes","segmento":"Frigorífico"}'],
+      ['DELETE', '/api/admin/usuarios/u9', undefined],
     ]);
   });
 

@@ -38,6 +38,17 @@ h1 {
 [hidden] {
   display: none !important;
 }
+/*
+ * Número numa linha só, que encolhe para caber: o tamanho normal vem de --cabe-max e o texto tem
+ * --car caracteres (caber.ts). 100cqi é a largura do contêiner (o cartão, com container-type:
+ * inline-size), e cada caractere da Saira 800 com algarismos tabulares ocupa até 0,56em. Sem
+ * suporte a contêiner, fica o tamanho normal.
+ */
+.cabe {
+  white-space: nowrap;
+  font-size: var(--cabe-max);
+  font-size: clamp(var(--cabe-min, 12px), calc(100cqi / (var(--car, 1) * 0.56)), var(--cabe-max));
+}
 /* só para leitor de tela */
 .visualmente-oculto {
   position: absolute;

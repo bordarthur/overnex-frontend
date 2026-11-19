@@ -15,6 +15,7 @@ import {
   MSG,
   clienteDoBanco,
   criarBancoGestao,
+  apagarUsuario,
   criarEmpresa,
   gestaoDoBanco,
   mudarEmpresa,
@@ -22,6 +23,7 @@ import {
   repedirConvite,
   gravarPreferenciaDoCliente,
   mudarAcessoDoPerfil,
+  mudarNomesDoPerfil,
   mudarAcessoDoUsuario,
   mudarPainel,
   mudarPreferencia,
@@ -329,6 +331,10 @@ export function criarMockClient({
         await admin();
         mudarAcessoDoPerfil(banco, slug, perfil, codigo, ve);
       },
+      async salvarNomesDoPerfil(slug, perfil, codigo, veNomes) {
+        await admin();
+        mudarNomesDoPerfil(banco, slug, perfil, codigo, veNomes);
+      },
       async salvarPreferencia(slug, id, valor) {
         await admin();
         mudarPreferencia(banco, slug, id, valor);
@@ -350,6 +356,9 @@ export function criarMockClient({
       },
       async salvarAcessoDoUsuario(id, ativo) {
         mudarAcessoDoUsuario(banco, await admin(), id, ativo);
+      },
+      async apagarUsuario(id) {
+        apagarUsuario(banco, await admin(), id);
       },
       async criarCliente(nova) {
         await admin();

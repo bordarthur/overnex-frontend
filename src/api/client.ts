@@ -83,6 +83,8 @@ export interface GestaoApi {
   salvarPainel(slug: string, codigo: string, ligado: boolean): Promise<void>;
   /** Define se o perfil vê o painel na empresa (a matriz de acesso). */
   salvarAcessoDoPerfil(slug: string, perfil: string, codigo: string, ve: boolean): Promise<void>;
+  /** Define se o perfil vê os nomes do painel na empresa (a chave "vê nomes" da matriz). */
+  salvarNomesDoPerfil(slug: string, perfil: string, codigo: string, veNomes: boolean): Promise<void>;
   salvarPreferencia(slug: string, id: string, valor: string): Promise<void>;
   /** Cadastra o feriado da empresa (ou troca o nome). `data`: AAAA-MM-DD. */
   salvarFeriado(slug: string, data: string, nome: string): Promise<void>;
@@ -92,6 +94,8 @@ export interface GestaoApi {
   salvarSessaoDoUsuario(id: string, minutos: number): Promise<void>;
   /** Desativa ou reativa o acesso da pessoa. */
   salvarAcessoDoUsuario(id: string, ativo: boolean): Promise<void>;
+  /** Apaga de vez quem já está desativado (só com `podeApagar`). O e-mail fica livre para um convite novo. */
+  apagarUsuario(id: string): Promise<void>;
   /** Cria a empresa (201), com todas as camadas desligadas e sem pessoas. */
   criarCliente(nova: NovaEmpresa): Promise<EmpresaCriada>;
   /** Troca o nome e o setor da empresa. O slug não muda. */

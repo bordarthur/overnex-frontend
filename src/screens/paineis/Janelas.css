@@ -23,6 +23,9 @@
   font-family: 'Saira', sans-serif;
   font-weight: 800;
   font-size: 16px;
+  line-height: 1.25;
+  /* título com as datas ("Próximos 30 dias (16/11 a 16/12)"): em duas linhas, quebra antes delas */
+  text-wrap: balance;
 }
 .jan-r {
   display: flex;

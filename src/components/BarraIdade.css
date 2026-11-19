@@ -68,7 +68,9 @@
 }
 .ic2-tiles {
   display: grid;
-  grid-template-columns: repeat(var(--n-quadros, 5), minmax(0, 1fr));
+  /* larguras iguais, mas nenhum quadro fica mais estreito que a maior palavra do seu rótulo
+     ("compensação"): com 5 quadros em meia largura, os outros cedem uns pixels */
+  grid-template-columns: repeat(var(--n-quadros, 5), minmax(min-content, 1fr));
   gap: 10px;
   margin-top: var(--bi-vao);
 }
@@ -88,12 +90,17 @@
 }
 .at2 span {
   color: var(--ink-2);
+  line-height: 1.3;
+}
+/* o valor encolhe para caber na largura do quadro (.cabe, em base.css) */
+.at2-v {
+  container-type: inline-size;
 }
 .at2 b {
   font-family: 'Saira', sans-serif;
   font-weight: 800;
-  font-size: 16.5px;
-  white-space: nowrap;
+  --cabe-max: 16.5px;
+  --cabe-min: 11px;
 }
 .at2 em {
   font-style: normal;
@@ -142,6 +149,10 @@
   .ic2-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     margin-top: 16px;
+  }
+  /* quantidade ímpar (5 quadros, com o "Em compensação"): o último ocupa a linha, sem buraco */
+  .at2:last-child:nth-child(odd) {
+    grid-column: span 2;
   }
   .ic2-rib {
     display: none;
