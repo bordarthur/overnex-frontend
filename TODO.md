@@ -2,7 +2,7 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 18/11/2026
+Última atualização: 19/11/2026
 
 ## Em andamento
 
@@ -48,6 +48,14 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 
 ## A fazer
 
+- [ ] **Back: sinal de menos, caixa mínimo e dias úteis** (decisões de 19/11/2026; prompt do back de 19/11/2026): "−" tipográfico em todos os textos prontos; `financeiro.caixa_minimo` por empresa, cadastrado pela LANN, com padrão de cerca de 15 dias de saídas médias; dias úteis com o sábado como preferência de cada empresa e os feriados nacionais mais os cadastrados na Gestão.
+- [ ] **Supabase: plano Pro antes de entrar cliente** (decisão de 19/11/2026). A tendência de 6 meses e a inadimplência de 12 não cabem nos 500 MB do plano grátis (as tabelas de movimento estão com janela de 1 mês).
+- [ ] **Supabase: projeto de homologação para testar** (decisão de 19/11/2026), no plano grátis, no lugar do banco de produção ou do Supabase local (que precisa de Docker).
+- [ ] **Filtros que só mudam o rótulo: conferir com a API no ar** e esconder o filtro que não filtra, no lugar do aviso do mockup (decisão de 19/11/2026).
+- [ ] **Site institucional: conferir no navegador de verdade.** Comparado com o mockup em 1440 px por prints do Edge sem janela, servido pelo `wrangler dev` com a CSP: igual seção por seção. Falta ver num navegador: abaixo de ~500 px (o Edge sem janela não desenha mais estreito; o menu do celular, o botão fixo de baixo e as abas roláveis só foram vistos nos testes), a revelação ao rolar, o farol arrastando e o foco pelo teclado. Ver [src/screens/site/](src/screens/site/).
+- [ ] **Back: reservar os slugs das rotas do front.** Empresa nova com slug `inicio`, `privacidade`, `gestao`, `entrar`, `esqueci-senha` ou `definir-senha` fica inalcançável (a rota fixa ganha de `/:clienteSlug`). Prompt do back de 19/11/2026.
+- [ ] **Publicar no Cloudflare (primeira vez).** O front está pronto (ver Concluído em 19/11/2026); falta: a API no Azure App Service, com `PROXY_SEGREDO` e a checagem do `X-Proxy-Segredo` (prompt do back de 19/11/2026); criar o Worker ligado ao GitHub, preencher `API_ORIGEM` e `PROXY_SEGREDO`, conferir os itens do passo 4 do [DEPLOY.md](DEPLOY.md) no endereço publicado ligar o domínio `overnex.app` (e o `www`) e acertar `FRONT_URL=https://overnex.app` e a Site URL do Supabase. O Worker nunca rodou no Cloudflare de verdade, só no `wrangler dev`.
+- [ ] **Mock e fixtures fora do pacote de produção.** O build com a API (`.env.production`) ainda leva as fixtures do mock (as pessoas fictícias da Gestão, a "Cliente Demo"), porque [Providers.tsx](src/app/Providers.tsx) importa o `mockClient` direto; o login fake já sai. Trocar por import dinâmico só no modo mock.
 - [ ] **Chave "vê nomes" na matriz da Gestão: testar com a API e conferir no navegador.** O front está pronto com o mock (ver Concluído em 18/11/2026); o back fez em 18/11/2026 e regenerou o `api/openapi.json`, conferido em 18/11/2026 sem rodar a API (a rota `PUT`, `nomes` obrigatório e anulável em `LinhaDaMatriz` e `veNomes` em `MudancaNomesPerfil` batem com [gestao.ts](src/contracts/gestao.ts)). Falta abrir com `VITE_API_MODO=api` e conferir: `nomes` na linha de Pessoas e `null` nas outras; a gravação (`PUT …/perfis/{perfil}/paineis/{codigo}/nomes`, 204 e a empresa pedida de novo); os 422 ("Este perfil não vê o painel.", "Este painel não tem nomes para liberar.", "Admin BORD vê tudo e não pode ser alterado."); tirar o painel do perfil apagando a marca; e a chave "Mostrar nomes" de Pessoas aparecendo só para quem tem a marca. Falta também olhar a sublinha no navegador (claro, escuro e 390 px). Ver [AbaAcesso.tsx](src/screens/gestao/AbaAcesso.tsx).
 - [ ] **Ajustes da demonstração (sprint S3, #18025 e #18028): testar com a API.** O front está pronto com o mock (ver Concluído em 16/11/2026); o back ainda não foi publicado com isso. Falta abrir com `VITE_API_MODO=api` e conferir, com dado real: os valores cheios da Visão geral (KPIs, velocímetros em reais, quadros da inadimplência, saldo e fim das janelas), a quantidade de KPIs por seção (a API tira o que não tem dado), os títulos das janelas e os contextos dos KPIs com as datas, o quadro "Em compensação" (só vem quando há valor) e "Quem cobrar hoje" com 20 clientes, com e sem o filtro de vendedor (largura 12, sem rolagem).
 - [ ] **Receber e pagar: cabeçalho dos dois lados desalinha entre 1366 e ~1400 px.** O aviso "lançado: 58% da média paga" do "Contas a pagar" desce para a linha de baixo nessa largura, e o lado fica 28 px mais alto que o "Contas a receber" (já era assim antes dos 5 quadros). Os quadros e as fitas dos dois lados têm a mesma altura. Ver [DoisLados.css](src/screens/paineis/DoisLados.css).
@@ -85,79 +93,28 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 
 ## A decidir
 
-- [ ] **Gestão: o que não encaixa nas regras ou mudou em relação ao mockup M2.1.0** (decidir com o usuário). Ver [src/screens/gestao/](src/screens/gestao/):
-  - a faixa "Configuração, não personalização" traz "Universal Básico" e "Universal Completo" em texto fixo (como no mockup), e os nomes dos grupos vêm do contrato: se o back renomear um grupo, a faixa fica velha. A nota embaixo da aba Implantação ficou de fora (repetia a faixa e falava das horas, que não entram);
-  - "Mais de 12 h, só Admin BORD" está em texto fixo em dois lugares (como no mockup); as opções em si vêm de `sessoes`;
-  - a aba "Horas e cargas" ficou "Cargas" (sem as horas, o nome enganava) e "Preferências do cliente" ficou "Preferências da empresa" (vocabulário da tela);
-  - cor da camada: o azul e o roxo do mockup vão pela ordem em que os grupos aparecem (primeiro grupo azul, segundo roxo), sem nome de grupo fixo. O roxo é token novo (`--dir`, em [tokens.css](src/theme/tokens.css));
-  - "Ao entrar" em vermelho quando o `tipo` é `nada`: a API manda o tipo, não um status; a cor segue o mockup;
-  - o botão principal da gaveta é verde, como o `.btn` do resto do app (no mockup é grafite);
-  - a troca de empresa é pelo menu (rail), e não "pelo topo do app" como diz o mockup; o texto da prévia diz "pelo menu";
-  - a prévia do menu mostra só o nome dos painéis: o contrato não traz a contagem de gráficos do mockup;
-  - o cartão do perfil conta só as pessoas ativas (`pessoas`), e o filtro da coluna lateral conta todas (`total`): para o Cliente usuário do mock aparecem 5 e 6. São os números da API; unificar seria no back.
-- [ ] **Pedido adiantado ao entrar por "/".** Com o slug obrigatório, a Visão geral não sai mais junto com a `/api/sessao` em "/": espera a sessão dizer a empresa (uma ida a mais à API, só no login direto; o back já prepara as telas quando recebe a sessão). Dá para voltar a pedir junto, sem slug, só para quem tem uma empresa, mas o Admin BORD e quem tem mais de uma receberiam um 403 a cada login, e a API registra toda negação. Ver [adiantar.ts](src/api/adiantar.ts).
-
-- [ ] **Sinal de menos nos textos que o back monta.** O front escreve os valores negativos com o menos tipográfico ("−R$ 1,95 mi", em [numero.ts](src/format/numero.ts)), e o back, nos textos prontos, com o hífen ("-R$ 1,95 mi", `moeda_sinal` e `numero` em `visao_geral/texto.py`); só o `vendas.py` já usa o "−". Com a API, os dois aparecem na mesma tela (no "De onde vem a projeção" e na Visão geral). Decidir se o back troca para "−" em tudo (muda textos da Visão geral e os testes de lá); o prompt foi entregue em 10/11/2026.
-- [ ] **Caixa mínimo do Fluxo de caixa.** O usuário não sabe de onde vem (09/11/2026). Sem ele, a linha laranja do saldo projetado não sai, e o farol do "Menor saldo" só fica crítico abaixo de zero. Proposta: um parâmetro por cliente cadastrado pela LANN (`financeiro.caixa_minimo`, já previsto no back), por exemplo cerca de 15 dias de saídas médias.
+- [ ] **Site institucional: o que ainda falta para divulgar** (depende de outras pessoas). Ver [conteudo.ts](src/screens/site/conteudo.ts):
+  - **Política de privacidade:** o texto completo (adaptar o da BORD, com revisão jurídica). Quando sair, volta à Segurança a frase "Tratamento conforme a LGPD";
+  - **Contato definitivo:** um canal da empresa no lugar do provisório (WhatsApp (85) 99744-0016 e nuno.alvares@overnex.app), como `contato@overnex.app` (a caixa precisa existir). Troca em `conteudo.ts` e no `index.html`;
+  - **Números da BORD** em "Quem faz" e **prazo médio de implantação** (com o Abraão) na pergunta "Quanto tempo para começar?". Até lá, o bloco fica escondido e a resposta, genérica.
 - [ ] **Partes antigas em grafite sem a cor do mockup registrada.** Com a decisão de 09/11/2026 (cores do mockup também fora de status), foram trocadas as que o TODO registrava. Sem o mockup no repositório, não dá para conferir as outras, como a "Cobertura de caixa" e as barras da Visão geral (decisão de 28/10/2026). Trazer os mockups para conferir.
-
-- [ ] **Fluxo de caixa, partes do mockup Total M2.1.1 ("Caixa") que ficaram de fora ou mudaram** (decidir com o usuário). A tela só tem o realizado, porque o back não tem saldo bancário nem projeção (decisão de 06/11/2026). Ver [fluxo-caixa.json](src/api/fixtures/fluxo-caixa.json):
-  - a projeção foi feita em 09/11/2026 (ver Concluído). Ficaram de fora: o V2 "O que fazer para não furar" e o banner das contas a pagar incompletas como faixa própria (virou a `chamada` do saldo projetado). Mudou: "De onde vem a projeção" tem uma linha por grupo de provisão (no mockup, "Folha", "Impostos estimados pelo faturamento" e "Recorrentes"), os impostos saem pela média paga, e não pelo faturamento; "De onde vem" fica ao lado da semana a semana, e "Para onde vai" divide a linha com o pago contra lançado (no mockup, sozinho); a coluna "Média paga por mês" virou "Média por mês", porque os recebimentos também estão nela; "Para onde vai" usa os nomes dos grupos de provisão ("Empréstimos e juros" no lugar de "Financeiro") e fica sem o rodapé da dívida líquida (sem fonte de dívida);
-  - "Movimentações do período" (lançamento a lançamento, com busca): o back não citou; precisaria de um cartão novo e de outra consulta;
-  - nome da tela: no mockup é "Caixa"; aqui ficou "Fluxo de caixa". Código FIN-04 a confirmar com o back;
-  - cascata "Do saldo inicial ao saldo final" e os destaques do topo não estão no mockup (a cascata foi sugestão do back), e a cascata ficou sem "i" (o mockup não traz texto para ela);
-  - o chip "Comparar com" saiu desta tela: o caixa não tem orçado, e os destaques já comparam com o mês anterior.
 - [ ] **Cascata: rótulo de valor pequeno em reais cheios.** No "Do saldo inicial ao saldo final", o "Sem classificação" sai "−R$ 6.000", ao lado de "−48 mil" e "−120 mil". É o formato do eixo ([escala.ts](src/charts/escala.ts)) para valores abaixo da escala do gráfico; mudar vale para todas as cascatas.
-
 - [ ] **Grupos de pagamento da PJ Cortes** ("Contas a pagar lançadas"): o back já tem uma regra, combinada em 03/11/2026, pelo `Id_Descritivo` de cada conta: Fornecedores = 120.01, 120.04 e verbas de fornecedor (2500xx em 180); Capex = classe FCI; Dívida = 400 e 170.01.05; fora dos grupos = retirada de sócios (210), receitas lançadas no a pagar (100, 160 e 190) e conta fora do caixa (900); o resto vai para Custos fixos, despesas e impostos. Falta a LANN validar com os dados, conta a conta: valores por grupo nos 6 meses, contas duvidosas e contas do a pagar sem de-para (prompt de validação entregue ao back em 04/11/2026). Ver `supabase/producao/pj_cortes_grupos_pagamento.sql` no back.
-
-- [ ] **Painel Pessoas, partes do mockup M2.1.1 que ficaram de fora ou mudaram** (decidir com o usuário). Ver [pessoas.json](src/api/fixtures/pessoas.json):
-  - cartão V2 "Módulo de analista de RH" (a chave "Mostrar nomes" de "Cargos e salários" foi feita em 04/11/2026, abaixo);
-  - chip "Setor" no topo: ficou só a chave dentro de "Admissões, desligamentos e turnover" (decisão de 30/10/2026);
-  - no celular, "Indicador" some da produtividade (o título do gráfico ao lado diz qual é);
-
-- [ ] **Painéis financeiros, partes do mockup que não encaixam nas regras ou no back** (decidir com o usuário). Onde havia recomendação, o front já a seguiu; falta confirmar:
-  - cartões marcados "A decidir" no mockup (Ponte do EBITDA, Maiores desvios e Nível 3 da DRE): estão nas fixtures; o back só os manda depois da aprovação. A Tabela financeira foi aprovada em 30/10/2026;
-  - sem fonte no back: saldo em conta, "Saldo em 30 dias" e "Saldo no fim" das janelas. O front mostra se vierem;
-  - PDD ("regra a definir") e limite de crédito (`en_limitecredito` existe na PJ?);
-  - "Quem cobrar hoje" ficou sem a caixa de marcar (sem gravar no back, a marcação sumiria ao recarregar);
-  - selo "Universal Completo" no menu e no cabeçalho: ficou de fora;
-  - "Comparar com" vai na consulta do Resultado só com "Mês anterior"; "Meta comercial" e "Mesmo mês de 2025" continuam só no rótulo. Ver [filtrosPainel.ts](src/screens/paineis/filtrosPainel.ts);
-- [ ] **Explicação ("i") dos cartões que o mockup não explica:** Linhas de produto, Vendas nos últimos 12 meses, Participação das linhas, Movimento por dia da semana, Itens que mais vendem, Itens por atendimento e todos os cartões de Pessoas. Escrever os textos ou deixar sem "i"? Na Visão geral, os cartões do Financeiro já aceitam `explicacao`; a inadimplência fica sem, porque o mockup não traz texto para ela. Ver [Explicacao.tsx](src/components/Explicacao.tsx).
-
-- [ ] **Partes do mockup Login M2.0.0 que ficaram de fora** (decidir com o usuário). Ver [LoginTela.tsx](src/screens/login/LoginTela.tsx) e [LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx):
-  - entrar com Microsoft e Google;
-  - código de verificação por e-mail (2FA);
-  - "Manter conectado neste aparelho";
-  - tela "Preparando os números";
-  - tela "Senha salva" (hoje a pessoa entra direto);
-  - no convite, quem convidou, nome e e-mail;
-  - aceite dos termos;
-  - links Privacidade, Termos de uso e Ajuda;
-  - contagem "Restam N tentativas".
 - [ ] **Textos do mockup de login a confirmar:** "atualizados todo dia às 9h" e "equipe" na coluna da marca; "Um produto BORD", "consultor BORD" e "overnex.app" (o resto do projeto fala em LANN). Ver [LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx).
-
-- [ ] **Quantos meses adiantar.** Hoje são os 2 anteriores ao mais recente e o anterior ao mês escolhido, um pedido por vez. Se o back ficar mais rápido ou o banco aguentar mais conexões, vale adiantar mais (ou também a empresa mais usada)? Ver [adiantar.ts](src/api/adiantar.ts).
-
-- [ ] **Microsoft Entra.** Fora por enquanto (decisão de 23/10/2026: login com e-mail e senha). Se voltar, entra como outro `AuthClient` ao lado de [authClient.ts](src/auth/authClient.ts); a validação do token do Entra continua no back, desligada.
-
-- [ ] **Histórico x espaço no banco.** A Visão geral pede 6 meses de tendência e 12 de inadimplência, mas as tabelas de movimento estão com janela de 1 mês (Supabase gratuito perto de 500 MB). Guardar agregados mensais, aumentar a janela ou mudar de plano?
 - [ ] **Regras de negócio dos indicadores.** Qual tabela e qual conta geram cada indicador (meta, orçado, CMV por linha, cobertura de caixa, ciclo de caixa, faixas do farol). O back ainda não tem nenhuma regra definida.
-- [ ] **Dias úteis da seção Vendas.** "Projeção de fechamento" e "A realizar por dia útil" dependem de quais dias contam: sábado entra? Feriados só nacionais ou também estaduais e municipais por empresa? O back ainda não tem calendário. A regra do status desses dois cards também está em aberto. Ver o `vendas.py` do back.
-- [ ] **Contra qual banco testar localmente.** Supabase local (precisa de Docker) ou o de produção (precisa da senha do `api_site`, ainda não definida).
-
-- [ ] **Legenda dos velocímetros.** Foi incluída a pedido, mas o mockup não a mostra e ela deixa cada cartão 48px mais alto. Manter ou tirar?
-- [ ] **Partes do mockup Visão geral M2.1.2 que ficaram de fora ou mudaram** (decidir com o usuário):
-  - "Placar das áreas" (marcado V2), seções Compras e Estoque (Módulo Distribuidora, fora do escopo universal) e o botão "Etiquetas internas" com os selos "Universal Completo", "fonte a definir" e "nome a validar";
-  - (M2.1.4) "Saldo em conta hoje", o caixa mínimo e a "Cobertura de caixa" voltaram à fixture, mas o back não tem fonte de saldo bancário: de onde vem o saldo e quem cadastra o caixa mínimo (R$ 500 mil no mockup)? Sem saldo, o "Próximos 7, 15 e 30 dias" começa em zero e mostra quanto sobra ou falta na janela;
-  - status das janelas sem saldo: sobra = saudável e falta = atenção? Com saldo, o mockup usa crítico abaixo de zero e atenção abaixo do caixa mínimo;
-  - (M2.1.4) a nota do topo fala em "aceleradores" (os velocímetros), como no mockup: manter o termo?
-  - "Inadimplência corrente": o mockup marca o nome como "nome a validar";
-- [ ] **Aviso "este filtro só muda o rótulo".** O mockup mostra um aviso ao trocar filtro; ficou de fora. Incluir enquanto os filtros não funcionam?
 - [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
 
 ## Concluído
 
+- [x] 19/11/2026 · **Decisões do "A decidir"** (recomendações aprovadas pelo usuário).
+  - **Site institucional:** sem script de analytics (as visitas pelo painel do Cloudflare, sem exceção na CSP; se precisar medir cliques, abre-se a exceção só para o Web Analytics); na Segurança, "Dados armazenados no Brasil" no lugar de "hospedados" e sem a frase da LGPD até a política sair ([conteudo.ts](src/screens/site/conteudo.ts)); "Para quem é" fica de fora, como no mockup; aceitas as diferenças do mockup (a pílula do app, o "Ir para o conteúdo" no foco, o favicon novo também no app, a conta do farol no front); "Mais de uma empresa" fica escondida até o desenho #18267;
+  - **Login:** link "Privacidade" no pé da coluna do formulário, que aparece também no celular ([LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx)); o resto do mockup Login M2.0.0 (Microsoft e Google, 2FA, "Manter conectado", "Preparando os números", "Senha salva", dados de quem convidou, aceite dos termos, Termos de uso e Ajuda, "Restam N tentativas") fica para depois do lançamento; o Microsoft Entra continua fora;
+  - **Aceitas como estão** as diferenças dos mockups na Gestão, no Fluxo de caixa, em Pessoas, nos painéis financeiros e na Visão geral (sem saldo bancário no lançamento);
+  - **Mantidos:** o pedido adiantado depois da sessão ao entrar por "/inicio" (sem um 403 a cada login do Admin BORD e de quem tem mais de uma empresa), os meses adiantados (os 2 anteriores e o anterior ao escolhido, um por vez) e a legenda dos velocímetros;
+  - **"i" dos cartões sem texto:** ficam sem até alguém da BORD escrever;
+  - **Para o back e para a infraestrutura** (ver "A fazer"): "−" em todos os textos prontos, o caixa mínimo por empresa (padrão de cerca de 15 dias de saídas médias), os dias úteis (sábado como preferência da empresa, feriados nacionais mais os da Gestão), o Supabase Pro antes de entrar cliente e um projeto de homologação para testar.
+- [x] 19/11/2026 · **Site institucional (mockup overnex-site-w2_0_0, W2.0.0) e domínio overnex.app.** `/` (a landing) e `/privacidade` em [src/screens/site/](src/screens/site/), em React, um componente por seção com o CSS ao lado (classes `s-`), textos e contato em [conteudo.ts](src/screens/site/conteudo.ts). Ficam fora dos Providers ([Raiz.tsx](src/app/Raiz.tsx)): visitar o site não abre sessão nem chama a API; são baixados à parte (cerca de 7 KB de JS e 5 KB de CSS, comprimidos). A entrada do app passou de `/` para `/inicio` (destino depois do login e de definir a senha, rota coringa e testes). Só claro: `.tema-claro` em [tokens.css](src/theme/tokens.css). Do mockup para as regras: sem `innerHTML`, sem `<script>` ou `<style>` no HTML e sem Google Fonts (fontes do `@fontsource`); reaproveita `Gauge`, `Pill` e os formatadores do app. A `/entrar/` do mockup não entrou: "Entrar" leva ao login do app, que ganhou `noindex`. [index.html](index.html) com título, descrição, `og:*`, JSON-LD e noscript; `public/` com `og.png`, o favicon novo, `robots.txt` e `sitemap.xml`. Testes em [Site.test.tsx](src/screens/site/Site.test.tsx). Conferido por prints do Edge sem janela a 1440 px, contra o mockup, servido pelo `wrangler dev`.
+- [x] 19/11/2026 · **Publicação no Cloudflare, no lugar do Azure Static Web Apps.** Worker com os arquivos do site ([wrangler.jsonc](wrangler.jsonc)): rota do app recebe o `index.html`, e só `/api/*` passa por [worker/index.ts](worker/index.ts), que repassa para a API (`API_ORIGEM`), com o IP de quem navega no `X-Forwarded-For` e o segredo `PROXY_SEGREDO` no `X-Proxy-Segredo`, descartando os forjados; sem API responde 503, com a API fora do ar, 502, sem corpo. A CSP e os outros cabeçalhos passaram do `staticwebapp.config.json` (apagado) para [public/_headers](public/_headers), com cache longo em `/assets/*`. [.env.production](.env.production) liga a API e o login de verdade em todo build de produção. CI monta o Worker sem publicar; `npm run typecheck` checa o Worker; o setup dos testes só prepara o `window` quando ele existe. Passo a passo em [DEPLOY.md](DEPLOY.md). Testes do Worker em [index.test.ts](worker/index.test.ts); conferido no `wrangler dev` (rotas do app, cabeçalhos, cache, 502 e o repasse para um servidor de eco: caminho, corpo, `Host`, IP e segredo trocados, cookie de volta). Não foi publicado no Cloudflare nem testado com a API de verdade.
 - [x] 18/11/2026 · **Chave "vê nomes" na matriz da Gestão (aba Acesso)**, com o mock, pelo prompt do back de 18/11/2026. `LinhaDaMatriz` ganhou `nomes` (por perfil; `null` nos painéis sem a chave) em [gestao.ts](src/contracts/gestao.ts), e o cliente, `salvarNomesDoPerfil` ([httpClient.ts](src/api/httpClient.ts), `PUT …/nomes` com `{ veNomes }`). Na matriz, o painel com `nomes` ganha a sublinha "Vê os nomes", com uma chave por perfil, só onde o perfil vê o painel (o Admin BORD, marcado e travado); a recusa da API aparece como veio, como nas outras gravações da matriz ([AbaAcesso.tsx](src/screens/gestao/AbaAcesso.tsx)). O rótulo da sublinha é genérico, sem o nome do cartão, porque o contrato não manda rótulo. No mock, o painel com a chave vem marcado no catálogo da [fixture](src/api/fixtures/gestao.json) (`temNomes`, só Pessoas), e tirar o painel do perfil apaga a marca ([mockGestao.ts](src/api/mockGestao.ts)). Testes em [Gestao.test.tsx](src/screens/gestao/Gestao.test.tsx) e [httpClient.test.ts](src/api/httpClient.test.ts). Não foi aberto no navegador.
 - [x] 16/11/2026 · **Ajustes da demonstração (sprint S3, #18025 e #18028)**, com o mock, pelo prompt do back de 16/11/2026 (o contrato não mudou).
   - **Valores cheios na Visão geral:** KPIs, número do velocímetro, quadros da inadimplência e fim de cada janela já passavam o `Valor` inteiro pelo formatador; agora o número fica numa linha só e a fonte encolhe pelo tamanho do texto até caber no cartão (classe `.cabe`, em [base.css](src/app/base.css), e [caber.ts](src/components/caber.ts)). A [fixture](src/api/fixtures/visao-geral.json) ganhou `"compacto": false` nesses lugares.

@@ -20,9 +20,9 @@ const menu = () =>
     .getAllByRole('link')
     .map((a) => a.textContent);
 
-describe('ao entrar ("/")', () => {
+describe('ao entrar ("/inicio")', () => {
   it('quem tem uma empresa só vai direto para a Visão geral dela, sem seletor de empresa', async () => {
-    abrir('/', 'cliente');
+    abrir('/inicio', 'cliente');
     expect(await screen.findByRole('heading', { level: 1, name: 'Visão geral' })).toBeInTheDocument();
     await screen.findByRole('heading', { level: 3, name: 'Vendas' });
     expect(screen.queryByRole('combobox', { name: 'Empresa' })).toBeNull();
@@ -31,13 +31,13 @@ describe('ao entrar ("/")', () => {
 
   it('sem a Visão geral liberada, abre a primeira tela que a pessoa tem', async () => {
     const api = criarMockClient({ atrasoMs: 0, sessao: { ...fixtureSessao, telas: ['COM-01', 'FIN-03'] } });
-    renderizarApp('/', undefined, api);
+    renderizarApp('/inicio', undefined, api);
     expect(await screen.findByRole('heading', { level: 1, name: 'Vendas' })).toBeInTheDocument();
     await waitFor(() => expect(menu()).toEqual(['Vendas', 'Receber e pagar']));
   });
 
   it('o Admin BORD vai para a Gestão', async () => {
-    abrir('/', 'admin');
+    abrir('/inicio', 'admin');
     // a primeira empresa da lista, por nome
     expect(await screen.findByRole('heading', { level: 1, name: 'Agência Aurora' })).toBeInTheDocument();
     expect(screen.getByText('Interno BORD')).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('ao entrar ("/")', () => {
 
   it('quem tem duas empresas escolhe uma, e depois troca pelo menu, cada uma com os dados e o menu dela', async () => {
     const user = userEvent.setup();
-    const { api } = abrir('/', 'consultor');
+    const { api } = abrir('/inicio', 'consultor');
     const visaoGeral = vi.spyOn(api, 'obterVisaoGeral');
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Escolha a empresa' })).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe('ao entrar ("/")', () => {
 
   it('conta sem empresa: mostra o aviso da API e o botão Sair', async () => {
     const user = userEvent.setup();
-    abrir('/', 'sem-empresa');
+    abrir('/inicio', 'sem-empresa');
     expect(
       await screen.findByText('Sua conta ainda não tem empresa. Fale com a BORD para liberar o acesso.'),
     ).toBeInTheDocument();

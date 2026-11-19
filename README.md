@@ -14,21 +14,23 @@ cp .env.example .env   # opcional
 npm run dev            # http://localhost:5173 → /demo/visao-geral
 ```
 
-| Script              | O que faz                                    |
-| ------------------- | -------------------------------------------- |
-| `npm run dev`       | servidor de desenvolvimento                  |
-| `npm run build`     | checagem de tipos e build de produção (dist) |
-| `npm run preview`   | serve o `dist`                               |
-| `npm run lint`      | ESLint                                       |
-| `npm run typecheck` | `tsc --noEmit`                               |
-| `npm test`          | Vitest + Testing Library                     |
-| `npm run format`    | Prettier                                     |
+| Script                       | O que faz                                                     |
+| ---------------------------- | ------------------------------------------------------------- |
+| `npm run dev`                | servidor de desenvolvimento                                   |
+| `npm run build`              | checagem de tipos e build de produção (dist)                  |
+| `npm run preview`            | serve o `dist`                                                |
+| `npm run lint`               | ESLint                                                        |
+| `npm run typecheck`          | `tsc --noEmit` do app e do Worker                             |
+| `npm test`                   | Vitest + Testing Library                                      |
+| `npm run format`             | Prettier                                                      |
+| `npm run preview:cloudflare` | build e o Worker do Cloudflare em http://localhost:8787       |
+| `npm run deploy`             | build e publicação no Cloudflare (ver [DEPLOY.md](DEPLOY.md)) |
 
 ### Rotas e dados de desenvolvimento
 
 A empresa aberta é o `:clienteSlug` da URL (o "cliente" do contrato; na tela, "empresa"). As rotas são `/:clienteSlug/visao-geral`, `/:clienteSlug/vendas`, `/:clienteSlug/equipe-comercial`, `/:clienteSlug/clientes`, `/:clienteSlug/resultado`, `/:clienteSlug/receber-pagar`, `/:clienteSlug/fluxo-caixa` e `/:clienteSlug/pessoas`. `/gestao` é a Gestão (abaixo). O slug vai em `?cliente=` de `/api/sessao` e de toda rota `/api/telas/*` e entra em toda chave do cache; quem decide o acesso é a API (slug que a pessoa não pode abrir responde 403, e a tela mostra "sem acesso").
 
-`/` decide para onde a pessoa vai, pela `/api/sessao` sem empresa escolhida (`Inicio`, em `src/app/Guardas.tsx`):
+`/` e `/privacidade` são o site institucional (abaixo). A entrada do app é `/inicio`, que decide para onde a pessoa vai, pela `/api/sessao` sem empresa escolhida (`Inicio`, em `src/app/Guardas.tsx`):
 
 - `gestao: true` (Admin BORD): `/gestao`;
 - `cliente` preenchido (uma empresa só): a primeira tela liberada dela, que é a Visão geral quando liberada;
@@ -46,13 +48,13 @@ Enquanto não há API, o cliente mock (`src/api/mockClient.ts`) responde conform
 
 No mock, quem está logado é a pessoa do login fake (ver "Login"), e a sessão, as telas liberadas e a Gestão saem de um banco na memória (`src/api/mockGestao.ts`, a partir de `fixtures/gestao.json`), com 5 empresas fictícias: a `demo` (a das fixtures das telas) e mais quatro, em que só o nome do cabeçalho muda. O que se grava na Gestão vale até recarregar a página.
 
-Com `VITE_API_MODO=api` no `.env`, o front usa o cliente HTTP (`src/api/httpClient.ts`) em vez do mock. Em dev, o Vite repassa `/api` para a API local em `http://127.0.0.1:8001`, que sobe com `uv run fastapi dev --port 8001` (a API não tem CORS; em produção, front e API dividem o domínio).
+Com `VITE_API_MODO=api` no `.env`, o front usa o cliente HTTP (`src/api/httpClient.ts`) em vez do mock. Em dev, o Vite repassa `/api` para a API local em `http://127.0.0.1:8001`, que sobe com `uv run fastapi dev --port 8001` (a API não tem CORS; em produção, front e API dividem o domínio: o Worker do Cloudflare repassa `/api/*` para a API, ver [DEPLOY.md](DEPLOY.md)). O build de produção já sai com a API e o login de verdade (`.env.production`).
 
 ### Pedidos adiantados
 
 Para a Visão geral aparecer mais rápido (`src/api/adiantar.ts`):
 
-- Ao abrir uma empresa, a Visão geral padrão dela (sem `mes`) é pedida assim que a sessão diz que ela está liberada, seja qual for a tela aberta; a tela usa a mesma query key e aproveita a resposta. Entrando por `/`, a sessão vem antes, porque é ela que dá o slug (antes de 10/11/2026 as duas saíam juntas); quem tem uma empresa só não pede a sessão de novo com o slug.
+- Ao abrir uma empresa, a Visão geral padrão dela (sem `mes`) é pedida assim que a sessão diz que ela está liberada, seja qual for a tela aberta; a tela usa a mesma query key e aproveita a resposta. Entrando por `/inicio`, a sessão vem antes, porque é ela que dá o slug (antes de 10/11/2026 as duas saíam juntas); quem tem uma empresa só não pede a sessão de novo com o slug.
 - Depois da primeira tela, os 2 meses anteriores de `periodos` são pedidos em segundo plano. Ao escolher um mês, o anterior a ele também. Um pedido adiantado por vez (cada Visão geral usa até 3 conexões do banco no back), só com a aba visível, e nada que já esteja fresco no cache.
 - A Visão geral vale 15 min no cache (o mesmo prazo do cache da API). Ao trocar de mês, os números anteriores ficam na tela, esmaecidos, até os novos chegarem.
 - Sair apaga o cache inteiro, inclusive o que foi adiantado.
@@ -87,6 +89,14 @@ Sem uso, a sessão cai, com aviso 2 minutos antes. O tempo é de cada pessoa e v
 
 A API responde 204 nas gravações e não devolve o estado novo: depois de gravar, a Gestão é pedida de novo (e a sessão, quando muda painel, perfil ou pessoa). Regra quebrada vem como 422 com o texto pronto, mostrado como veio. Convidar gente nova é pelo botão "Convidar usuário" (na tela Usuários e no cabeçalho da empresa; na aba "Usuários e acesso", "Convidar para <empresa>"): `POST /api/admin/usuarios` responde 202 com o texto do passo final, e o e-mail sai depois, por um job do back. Quem ainda não entrou vem com `convite` (o rótulo do botão de mandar de novo, `POST /api/admin/usuarios/{id}/convite`), na linha da lista e na gaveta de edição. A `notaConvite` da API aparece na gaveta de convite. Enquanto houver alguém com o convite na fila, a lista é pedida de novo a cada 25 s. "Nova empresa", na barra lateral, cria a empresa (`POST /api/admin/clientes`, 201 com o texto do passo final) só com nome e setor; o identificador é a API que monta. Quem está desativado vem com `podeApagar`: a gaveta de edição oferece "Apagar usuário" (`DELETE /api/admin/usuarios/{id}`, 204), com confirmação. "Editar", no cabeçalho da empresa, troca o nome e o setor (`PUT /api/admin/clientes/{slug}`, 204); o identificador não muda.
 
+## Publicação
+
+O front roda no Cloudflare (Workers com os arquivos do site), e a API no Azure App Service. Cada push na `main` publica sozinho. Passo a passo, variáveis e como testar: [DEPLOY.md](DEPLOY.md).
+
+## Site institucional
+
+`/` (a landing) e `/privacidade`, em `src/screens/site/`, seguem o mockup `overnex-site-w2_0_0` (W2.0.0). Ficam fora dos Providers do app (`src/app/Raiz.tsx`): não abrem sessão nem chamam a API, e são baixados à parte. Todos os textos e o contato (provisório) estão em `src/screens/site/conteudo.ts`; o contato se repete no `index.html` (noscript e JSON-LD), junto com as tags de compartilhamento (`og:*`), que valem para o domínio todo. A landing é só clara (classe `.tema-claro`, de `tokens.css`) e as classes dela começam com `s-`. Reaproveita o velocímetro (`Gauge`), a `Pill` e os formatadores do app; os números são ilustrativos do Cliente Demo, e o farol interativo calcula a projeção no front (`farol.ts`), a única conta de negócio fora da API. "Entrar" leva ao login do app (`/entrar`).
+
 ## Regras do projeto
 
 ### O front não calcula
@@ -110,7 +120,7 @@ Um filtro da tela com `cartao` (a `projecao` do Fluxo de caixa) não aparece na 
 ### Segurança
 
 - `innerHTML`, `outerHTML`, `insertAdjacentHTML` e `dangerouslySetInnerHTML` são proibidos no ESLint. Texto com destaque usa `Trecho[]` e o componente `Trechos`.
-- `staticwebapp.config.json` aplica uma CSP restritiva (`default-src 'self'`, sem domínios externos, sem `unsafe-inline`). Por isso as fontes vêm do `@fontsource` e a marca é servida como arquivo (o Vite não gera `data:` URI: `assetsInlineLimit: 0`).
+- `public/_headers` (cabeçalhos do Cloudflare) aplica uma CSP restritiva (`default-src 'self'`, sem domínios externos, sem `unsafe-inline`). Por isso as fontes vêm do `@fontsource` e a marca é servida como arquivo (o Vite não gera `data:` URI: `assetsInlineLimit: 0`).
 - O cliente na URL é só o pedido de quem navega (vai em `?cliente=`). Quem decide o acesso é a API.
 - O access token nunca vai para `localStorage` ou `sessionStorage`; ao sair, o cache do TanStack Query é apagado. Os erros de login mostram o `detail` que a API mandou.
 - Nada de segredo no código. `.env` só tem variáveis `VITE_` públicas, que vão para o navegador.
@@ -120,7 +130,7 @@ Um filtro da tela com `cartao` (a `projecao` do Fluxo de caixa) não aparece na 
 ```
 src/
   app/         rotas, providers (QueryClient, Auth, Tema), moldura, CSS base
-  screens/     telas (visao-geral/, paineis/, login/, entrada/, gestao/)
+  screens/     telas (visao-geral/, paineis/, login/, entrada/, gestao/) e o site institucional (site/)
   charts/      gráficos em SVG próprio: Gauge, MiniTendencia, Linha, BarraEmpilhada e, nos painéis,
                Barras, Combo, Linhas, Empilhado, Dispersao, Degraus, Cascata (escolhidos em Grafico.tsx)
   components/  Rail, Cabecalho, BarraFiltros, Chip, Segmentado, FaixaSecao, Kpi, IndicadorGauge,
@@ -132,6 +142,7 @@ src/
   format/      formatadores pt-BR
   theme/       tokens.css, fontes, tema claro/escuro/automático, status
   assets/      logotipo e símbolo oficiais da Overnex (SVG extraído do mockup)
+worker/        Worker do Cloudflare: serve o site e repassa /api/* para a API (DEPLOY.md)
 ```
 
 A marca é usada com `<use href="arquivo.svg#id">`: as letras do logotipo herdam `color`, o símbolo é sempre neon.

@@ -3,3 +3,4 @@ coverage
 node_modules
 src/assets/*.svg
 public/*.svg
+.wrangler

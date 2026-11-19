@@ -1,9 +1,11 @@
 /* Tokens do mockup overnex-mockup-parcial-G1-m1.6, com os mesmos nomes e valores.
    Status usa só --ok, --warn e --crit (e variações); as cores da marca (--neon, --verde) nunca indicam status.
    Fora de status, as cores seguem o mockup (decisão de 09/11/2026): séries em --c4 (azul) e --c6 (laranja),
-   chave ligada em --verde, a receber e a pagar em --fluxo-entra e --fluxo-sai. */
+   chave ligada em --verde, a receber e a pagar em --fluxo-entra e --fluxo-sai.
+   .tema-claro: o tema claro dentro de um elemento, mesmo com o app no escuro (o site institucional). */
 
-:root {
+:root,
+.tema-claro {
   color-scheme: light;
   /* marca */
   --grafite: #2f2f2f;

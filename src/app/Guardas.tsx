@@ -10,7 +10,7 @@ import { EscolhaEmpresa } from '../screens/entrada/EscolhaEmpresa';
 import { AvisoInatividade } from './AvisoInatividade';
 import { primeiraTela } from './menu';
 
-// Estados fora da moldura (sem rail): ao abrir o site e no redirecionamento de "/".
+// Estados fora da moldura (sem rail): ao abrir o app e no redirecionamento de "/inicio".
 export function TelaSolta({ children }: { children: ReactNode }) {
   return <main className="tela-solta">{children}</main>;
 }
@@ -27,7 +27,7 @@ export function RotaProtegida() {
       </TelaSolta>
     );
   if (estado === 'anonimo') {
-    const voltar = !saiu && pathname !== '/' ? `?voltar=${encodeURIComponent(pathname + search)}` : '';
+    const voltar = !saiu && pathname !== '/inicio' ? `?voltar=${encodeURIComponent(pathname + search)}` : '';
     return <Navigate to={`/entrar${voltar}`} replace />;
   }
   return (
@@ -57,7 +57,7 @@ export function SoAnonimo() {
 const telaDeEntrada = (slug: string, telas: string[]) => `/${slug}/${primeiraTela(telas) ?? 'visao-geral'}`;
 
 /**
- * "/": para onde a pessoa vai ao entrar, pelo que /api/sessao (sem empresa escolhida) diz dela:
+ * "/inicio": para onde a pessoa vai ao entrar (o app; "/" é o site institucional), pelo que /api/sessao (sem empresa escolhida) diz dela:
  * - Admin BORD: a Gestão;
  * - uma empresa só: a primeira tela dela (a Visão geral, quando liberada);
  * - duas ou mais: a tela "Escolha a empresa";

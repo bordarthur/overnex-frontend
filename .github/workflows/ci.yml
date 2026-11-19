@@ -1,4 +1,5 @@
-# CI do front: formatação, lint, tipos, testes e build a cada push em main/dev e a cada PR.
+# CI do front: formatação, lint, tipos, testes, build e o Worker do Cloudflare (sem publicar) a cada
+# push em main/dev e a cada PR. Quem publica é o Cloudflare, pela integração com o GitHub (DEPLOY.md).
 # O job "verificar" é o check obrigatório dos rulesets de main e dev.
 name: CI
 
@@ -31,3 +32,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+      # monta o Worker do Cloudflare com o dist, sem publicar (pega erro do wrangler.jsonc no PR)
+      - run: npx wrangler deploy --dry-run --outdir .wrangler/dry-run
+        env:
+          WRANGLER_SEND_METRICS: 'false'
