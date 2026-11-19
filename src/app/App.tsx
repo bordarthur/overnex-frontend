@@ -28,8 +28,8 @@ export function App() {
       {/* Link do e-mail de convite ou de recuperação: vale com ou sem sessão aberta. */}
       <Route path="/definir-senha" element={<DefinirSenhaTela />} />
       <Route element={<RotaProtegida />}>
-        <Route path="/" element={<Inicio />} />
-        {/* Antes de "/:clienteSlug": "gestao" não é slug de empresa. */}
+        <Route path="/inicio" element={<Inicio />} />
+        {/* Rota fixa ganha de "/:clienteSlug": "gestao" (e "inicio", acima) não é slug de empresa. */}
         <Route
           path="/gestao/*"
           element={
@@ -54,7 +54,7 @@ export function App() {
           <Route path="pessoas" element={<PainelTela key="pessoas" tela="pessoas" />} />
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/inicio" replace />} />
     </Routes>
   );
 }

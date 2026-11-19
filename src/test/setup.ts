@@ -18,16 +18,19 @@ class ResizeObserverFake {
 }
 globalThis.ResizeObserver ??= ResizeObserverFake as unknown as typeof ResizeObserver;
 
-window.matchMedia ??= ((consulta: string) => ({
-  matches: false,
-  media: consulta,
-  onchange: null,
-  addEventListener: () => {},
-  removeEventListener: () => {},
-  addListener: () => {},
-  removeListener: () => {},
-  dispatchEvent: () => false,
-})) as typeof window.matchMedia;
+// Os testes do Worker (worker/) rodam no ambiente node, sem window.
+if (typeof window !== 'undefined') {
+  window.matchMedia ??= ((consulta: string) => ({
+    matches: false,
+    media: consulta,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    addListener: () => {},
+    removeListener: () => {},
+    dispatchEvent: () => false,
+  })) as typeof window.matchMedia;
 
-// jsdom não rola a página (window.scrollTo só avisa "not implemented"); os testes espionam esta.
-window.scrollTo = (() => {}) as typeof window.scrollTo;
+  // jsdom não rola a página (window.scrollTo só avisa "not implemented"); os testes espionam esta.
+  window.scrollTo = (() => {}) as typeof window.scrollTo;
+}

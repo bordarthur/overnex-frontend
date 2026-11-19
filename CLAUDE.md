@@ -15,17 +15,18 @@ React 19 + TypeScript + Vite 7 + TanStack Query 5 + react-router 7 (modo declara
 
 ```bash
 npm run dev   # http://localhost:5173
+npm run preview:cloudflare   # build e o Worker do Cloudflare em http://localhost:8787
 npm run format:check && npm run lint && npm run typecheck && npm test && npm run build
 ```
 
-O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens.
+O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens e monta o Worker sem publicar (`wrangler deploy --dry-run`).
 
 ## Regras do código
 
 - **O front não calcula.** Todo número, status, texto e rótulo de dado vem pronto da API; o front só formata e desenha.
 - **Nada fixo de seção ou indicador** no código: os nomes vêm do contrato.
 - **Segurança:**
-  - CSP restritiva em `staticwebapp.config.json`: nada de domínio externo, `data:` URI, Google Fonts ou HTML cru;
+  - CSP restritiva em `public/_headers` (cabeçalhos do Cloudflare): nada de domínio externo, `data:` URI, Google Fonts ou HTML cru;
   - o access token fica só na memória, nunca em `localStorage` ou `sessionStorage`;
   - o slug do cliente na URL é só o pedido de quem navega: vai em `?cliente=` de toda chamada, e quem decide o acesso é a API, pelo token (slug que a pessoa não pode abrir responde 403).
 - **Cores:** seguem as do mockup, também fora de status (séries em azul ou laranja, chave ligada em verde, a receber em azul e a pagar em vermelho; decisão de 09/11/2026, no lugar da de 28/10/2026). Status continua só com `--ok` (azul), `--warn` e `--crit`, e as cores da marca (`--neon`, `--verde`) nunca indicam status. Cor fora de status usa token ou estilo próprio (`serie-azul`, `--fluxo-entra`), não a classe de status.
@@ -45,6 +46,13 @@ O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens.
 
 ## Decisões em vigor
 
+- **Publicação** (decisão de 19/11/2026, no lugar do Azure Static Web Apps):
+  - o front roda num Worker do Cloudflare com os arquivos do site (`wrangler.jsonc`), e só `/api/*` passa pelo código do Worker (`worker/index.ts`), que repassa para a API no Azure App Service;
+  - o Worker põe o IP de quem navega no `X-Forwarded-For` e o segredo `PROXY_SEGREDO` no `X-Proxy-Segredo`, descartando os que vierem de fora; `API_ORIGEM` e `PROXY_SEGREDO` ficam no painel do Cloudflare, nunca no código;
+  - o build de produção usa a API e o login de verdade pelo `.env.production`, que é versionado;
+  - cada push na `main` publica; passo a passo em `DEPLOY.md`;
+  - o domínio é `overnex.app` (o site institucional e o app no mesmo endereço).
+- **Site institucional** (mockup `overnex-site-w2_0_0`, 19/11/2026): `/` e `/privacidade`, em `src/screens/site/`, fora dos Providers (`src/app/Raiz.tsx`: sem sessão e sem chamada à API). A entrada do app passou de `/` para `/inicio`. Textos e contato em `conteudo.ts`. Exceção à regra "o front não calcula": o farol interativo da landing projeta o mês a partir de números ilustrativos fixos (`farol.ts`); no app, nada muda. Sem script de analytics (decisão de 19/11/2026): as visitas ficam no painel do Cloudflare, sem exceção na CSP.
 - **Login:**
   - é por e-mail e senha, sem Microsoft Entra por enquanto;
   - a LANN cadastra os usuários; ninguém cria conta sozinho;
@@ -59,7 +67,7 @@ O CI (`.github/workflows/ci.yml`, job `verificar`) roda as mesmas checagens.
 - **Gestão (Interno BORD):** rota `/gestao`, só com `gestao: true` na sessão, em arquivo separado do resto do app (`src/screens/gestao/`). Contrato em `src/contracts/gestao.ts`. Convite de usuário é pela tela (decisão de 13/11/2026, no lugar de "só por comando da BORD"): o botão "Convidar usuário" abre a gaveta de convite, a API põe o pedido numa fila e um job do back manda o e-mail. O comando da BORD continua valendo. Empresa nova também é pela tela ("Nova empresa", na barra lateral): nome e setor, que depois se trocam pelo "Editar" do cabeçalho da empresa (o slug não muda).
 - **Inatividade por pessoa:** o tempo vem de `inatividadeSegundos` (entrar, renovar e definir senha); sem ele, 30 min. `VITE_INATIVIDADE_MIN` passa por cima, para teste.
 - **Pedidos adiantados** (`src/api/adiantar.ts`):
-  - a Visão geral padrão da empresa é pedida assim que a sessão dela diz que está liberada, seja qual for a tela aberta (em "/" não dá para pedir antes: falta o slug);
+  - a Visão geral padrão da empresa é pedida assim que a sessão dela diz que está liberada, seja qual for a tela aberta (em "/inicio" não dá para pedir antes: falta o slug);
   - os meses vizinhos são pedidos um por vez, só com a aba visível, e valem 15 min no cache;
   - sair apaga o cache inteiro.
 

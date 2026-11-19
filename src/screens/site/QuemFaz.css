@@ -1,0 +1,53 @@
+.s-qf-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(40px, 6vw, 96px);
+  align-items: start;
+}
+.s-qf-grade.s-qf-so-texto {
+  grid-template-columns: 1fr;
+}
+.s-qf-numeros {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+.s-qf-numeros li {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+.s-qf-numeros li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.s-qf-numeros b {
+  display: block;
+  font-family: 'Saira', sans-serif;
+  font-weight: 900;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.s-qf-numeros span {
+  display: block;
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+.s-qf-manifesto {
+  margin-top: clamp(72px, 9vw, 128px);
+  font-family: 'Saira', sans-serif;
+  font-weight: 900;
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  max-width: 20ch;
+}
+.s-qf-manifesto em {
+  font-style: normal;
+  color: var(--verde-texto);
+}
+@media (max-width: 860px) {
+  .s-qf-grade {
+    grid-template-columns: 1fr;
+  }
+}

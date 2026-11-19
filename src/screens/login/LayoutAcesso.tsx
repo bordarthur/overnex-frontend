@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
+import { Link } from 'react-router';
 import { Logotipo } from '../../components/Marca';
 import { Feixe } from './Feixe';
 import './Acesso.css';
@@ -24,6 +25,8 @@ export function LayoutAcesso({ titulo, subtitulo, marca, children }: PropsLayout
 
   return (
     <div className="acesso">
+      {/* as telas de acesso não vão para os buscadores (o React 19 põe a tag no <head>) */}
+      <meta name="robots" content="noindex" />
       <aside className="acesso-marca" aria-label="Overnex">
         <Logotipo className="acesso-logo" rotulo="Overnex" />
         <Feixe />
@@ -47,6 +50,9 @@ export function LayoutAcesso({ titulo, subtitulo, marca, children }: PropsLayout
             {children}
           </div>
         </div>
+        <p className="acesso-links">
+          <Link to="/privacidade">Privacidade</Link>
+        </p>
       </main>
     </div>
   );

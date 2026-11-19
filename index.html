@@ -3,11 +3,45 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- O título e as tags abaixo são os do site institucional ("/"); cada tela do app troca o título. -->
+    <title>Overnex · Seu farol de decisões</title>
+    <meta
+      name="description"
+      content="Vendas, caixa, resultado e equipe num lugar só, atualizados todo dia e comparados com a sua meta. Veja para onde sua empresa está indo antes do fim do mês. Um produto BORD."
+    />
+    <meta name="theme-color" content="#2F2F2F" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Overnex · Visão geral</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="Overnex" />
+    <meta property="og:title" content="Overnex · Seu farol de decisões" />
+    <meta property="og:description" content="Veja para onde sua empresa está indo. Antes do fim do mês." />
+    <meta property="og:url" content="https://overnex.app/" />
+    <meta property="og:image" content="https://overnex.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- Dado para os buscadores, não é código: a CSP (script-src 'self') não se aplica. Contato provisório, igual ao de src/screens/site/conteudo.ts. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Overnex",
+        "url": "https://overnex.app/",
+        "logo": "https://overnex.app/favicon.svg",
+        "slogan": "Seu farol de decisões",
+        "email": "nuno.alvares@overnex.app",
+        "parentOrganization": { "@type": "Organization", "name": "BORD Números e Gestão" }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      Overnex · Seu farol de decisões. Fale com a gente:
+      <a href="https://wa.me/5585997440016">WhatsApp (85) 99744-0016</a> ·
+      <a href="mailto:nuno.alvares@overnex.app">nuno.alvares@overnex.app</a>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

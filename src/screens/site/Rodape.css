@@ -1,0 +1,43 @@
+.s-pe {
+  padding: 56px 0 40px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+.s-pe-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.s-pe-logo svg {
+  width: 180px;
+  height: auto;
+  color: var(--ink);
+}
+.s-pe-logo p {
+  margin-top: 12px;
+}
+.s-pe nav ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+.s-pe nav a {
+  text-decoration: none;
+}
+.s-site .s-pe nav a:hover {
+  color: var(--ink);
+}
+.s-pe-base {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ink-3);
+}

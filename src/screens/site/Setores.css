@@ -1,0 +1,236 @@
+.s-set-abas {
+  margin-top: clamp(40px, 5vw, 56px);
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+}
+.s-set-aba {
+  border: 0;
+  background: none;
+  padding: 14px 18px;
+  margin-bottom: -1px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink-2);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.s-set-aba:hover {
+  color: var(--ink);
+}
+.s-set-aba[aria-selected='true'] {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+.s-set-painel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+  padding-top: clamp(40px, 5vw, 56px);
+}
+.s-set-painel.s-on {
+  animation: s-entrar 0.45s var(--ease);
+}
+@keyframes s-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.s-set-perguntas {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.s-set-perguntas li {
+  font-family: 'Saira', sans-serif;
+  font-weight: 600;
+  font-size: clamp(20px, 2vw, 26px);
+  line-height: 1.25;
+  padding-left: 28px;
+  position: relative;
+}
+.s-set-perguntas li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 12px;
+  height: 2px;
+  background: var(--verde-texto);
+}
+.s-set-nota {
+  margin-top: 22px;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+/* exemplo em miniatura */
+.s-mini {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 24px;
+  min-height: 300px;
+}
+.s-mini-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+.s-mini-lado {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 400;
+}
+.s-mini .gauge {
+  max-width: 280px;
+  margin: 8px auto 0;
+}
+.s-vg-linha {
+  display: grid;
+  grid-template-columns: 12px 110px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 14.5px;
+}
+.s-mini-h + .s-vg-linha {
+  border-top: 0;
+}
+.s-vg-linha i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.s-vg-linha i[data-status='saudavel'] {
+  background: var(--ok);
+}
+.s-vg-linha i[data-status='atencao'] {
+  background: var(--warn-mark);
+}
+.s-vg-linha i[data-status='critico'] {
+  background: var(--crit);
+}
+.s-vg-linha b {
+  font-weight: 500;
+}
+.s-vg-linha span {
+  color: var(--ink-2);
+  font-size: 13.5px;
+}
+.s-vencido {
+  margin-top: 14px;
+}
+.s-vencido .s-vg-linha {
+  border-top: 1px solid var(--line-soft);
+}
+.s-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.s-barras-depois {
+  margin-top: 14px;
+}
+.s-barra-l {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  margin-bottom: 6px;
+}
+.s-barra-l span:last-child {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.s-barra-t {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  position: relative;
+  overflow: hidden;
+}
+.s-barra-t i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 5px;
+  background: var(--ink);
+}
+.s-barra-t i[data-tom='ok'] {
+  background: var(--ok);
+}
+.s-barra-t i[data-tom='warn'] {
+  background: var(--warn-mark);
+}
+.s-barra-t i[data-tom='crit'] {
+  background: var(--crit);
+}
+.s-barra-t em {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--ink-3);
+}
+.s-custo {
+  width: 100%;
+  height: auto;
+}
+.s-custo .s-spk-l {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+.s-custo circle {
+  fill: var(--ink);
+}
+.s-spk-t {
+  font-size: 10.5px;
+  fill: var(--ink-3);
+}
+.s-mini-nota {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+.s-mini-nota svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke: var(--ink-2);
+  fill: none;
+  stroke-width: 1.8;
+}
+@media (max-width: 860px) {
+  .s-set-painel {
+    grid-template-columns: 1fr;
+  }
+  .s-set-abas {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .s-set-aba {
+    white-space: nowrap;
+  }
+}
