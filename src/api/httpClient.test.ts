@@ -219,6 +219,7 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
     });
     await api.gestao.salvarSessaoDoUsuario(id, 240);
     await api.gestao.salvarAcessoDoUsuario(id, false);
+    await api.gestao.salvarNomesDoPerfil('pj-cortes', 'cliente_principal', 'PES-01', true);
 
     const chamadas = fetch.mock.calls.map(([url, init]) => [init?.method, url, init?.body]);
     expect(chamadas).toEqual([
@@ -234,6 +235,11 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
       ],
       ['PUT', `/api/admin/usuarios/${id}/sessao`, '{"minutos":240}'],
       ['PUT', `/api/admin/usuarios/${id}/acesso`, '{"ativo":false}'],
+      [
+        'PUT',
+        '/api/admin/clientes/pj-cortes/perfis/cliente_principal/paineis/PES-01/nomes',
+        '{"veNomes":true}',
+      ],
     ]);
     // o DELETE não leva Content-Type
     expect(fetch.mock.calls[4]![1]?.headers).not.toHaveProperty('Content-Type');

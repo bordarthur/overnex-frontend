@@ -144,6 +144,40 @@ describe('Gestão: empresa', () => {
     expect(screen.getByRole('button', { name: 'Convidar para Cliente Demo' })).toBeInTheDocument();
   });
 
+  it('matriz: "vê os nomes" só onde o perfil vê o painel; tirar o painel apaga a marca; a recusa aparece como veio', async () => {
+    const { api, user } = abrir('/gestao/empresas/demo?aba=acesso');
+    const nomes = vi.spyOn(api.gestao, 'salvarNomesDoPerfil');
+    await screen.findByRole('heading', { level: 2, name: 'Quem acessa Cliente Demo' });
+
+    // só Pessoas tem a chave; o Admin BORD vem marcado e travado
+    expect(screen.queryByRole('switch', { name: 'Admin BORD vê os nomes em Vendas' })).toBeNull();
+    expect(chave('Admin BORD vê os nomes em Pessoas')).toBeChecked();
+    expect(chave('Admin BORD vê os nomes em Pessoas')).toBeDisabled();
+    expect(chave('Cliente principal vê os nomes em Pessoas')).toBeChecked();
+    // quem não vê o painel não tem a chave
+    expect(
+      screen.queryByRole('switch', { name: 'Consultor por carteira vê os nomes em Pessoas' }),
+    ).toBeNull();
+
+    await user.click(chave('Cliente principal vê os nomes em Pessoas'));
+    expect(nomes).toHaveBeenCalledWith('demo', 'cliente_principal', 'PES-01', false);
+    await waitFor(() => expect(chave('Cliente principal vê os nomes em Pessoas')).not.toBeChecked());
+    await user.click(chave('Cliente principal vê os nomes em Pessoas'));
+    await waitFor(() => expect(chave('Cliente principal vê os nomes em Pessoas')).toBeChecked());
+
+    // tirar o painel do perfil apaga a marca: ao pôr de volta, volta sem nomes
+    await user.click(chave('Cliente principal vê Pessoas'));
+    await waitFor(() =>
+      expect(screen.queryByRole('switch', { name: 'Cliente principal vê os nomes em Pessoas' })).toBeNull(),
+    );
+    await user.click(chave('Cliente principal vê Pessoas'));
+    await waitFor(() => expect(chave('Cliente principal vê os nomes em Pessoas')).not.toBeChecked());
+
+    nomes.mockRejectedValueOnce(new ApiErro(422, 'Este perfil não vê o painel.'));
+    await user.click(chave('Cliente principal vê os nomes em Pessoas'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Este perfil não vê o painel.');
+  });
+
   it('preferências: a escolha e os feriados gravam; a recusa da API aparece como veio', async () => {
     const { api, user } = abrir('/gestao/empresas/demo?aba=preferencias');
     const preferencia = vi.spyOn(api.gestao, 'salvarPreferencia');

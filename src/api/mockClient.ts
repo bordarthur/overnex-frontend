@@ -23,6 +23,7 @@ import {
   repedirConvite,
   gravarPreferenciaDoCliente,
   mudarAcessoDoPerfil,
+  mudarNomesDoPerfil,
   mudarAcessoDoUsuario,
   mudarPainel,
   mudarPreferencia,
@@ -329,6 +330,10 @@ export function criarMockClient({
       async salvarAcessoDoPerfil(slug, perfil, codigo, ve) {
         await admin();
         mudarAcessoDoPerfil(banco, slug, perfil, codigo, ve);
+      },
+      async salvarNomesDoPerfil(slug, perfil, codigo, veNomes) {
+        await admin();
+        mudarNomesDoPerfil(banco, slug, perfil, codigo, veNomes);
       },
       async salvarPreferencia(slug, id, valor) {
         await admin();

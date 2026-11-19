@@ -80,6 +80,7 @@
     {
       "codigo": "PES-01",
       "nome": "Pessoas",
+      "temNomes": true,
       "camada": "pessoas",
       "exige": ["f_folha_"],
       "usa": ["f_folha_", "f_vendas_"],
@@ -196,6 +197,7 @@
         "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
         "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"]
       },
+      "nomes": { "cliente_principal": ["PES-01"] },
       "feriados": [
         { "data": "2026-03-19", "nome": "São José (estadual)" },
         { "data": "2026-08-15", "nome": "Nossa Senhora da Assunção (Fortaleza)" }
@@ -221,6 +223,7 @@
         "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02"],
         "cliente_usuario": ["VG-01", "COM-01", "COM-03"]
       },
+      "nomes": {},
       "feriados": []
     },
     {
@@ -241,6 +244,7 @@
         "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01"],
         "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03"]
       },
+      "nomes": {},
       "feriados": [{ "data": "2026-04-13", "nome": "Aniversário de Fortaleza" }]
     },
     {
@@ -259,6 +263,7 @@
         "cliente_principal": ["VG-01", "COM-01", "COM-03", "FIN-03", "PES-01"],
         "cliente_usuario": ["VG-01", "COM-01"]
       },
+      "nomes": {},
       "feriados": []
     },
     {
@@ -273,6 +278,7 @@
         "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
         "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"]
       },
+      "nomes": { "cliente_principal": ["PES-01"] },
       "feriados": []
     }
   ],

@@ -117,6 +117,9 @@ export interface LinhaDaMatriz {
   nome: string;
   // por `PerfilDaMatriz.id`
   ve: Record<string, boolean>;
+  // a chave "vê nomes", por `PerfilDaMatriz.id`; null nos painéis sem a chave. Só vale onde `ve` é
+  // true (onde não é, vem false); o Admin BORD vem sempre true.
+  nomes: Record<string, boolean> | null;
 }
 
 export interface MatrizDeAcesso {

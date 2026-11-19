@@ -123,6 +123,12 @@ export function criarHttpClient({
           { ve },
         );
       },
+      salvarNomesDoPerfil(slug, perfil, codigo, veNomes) {
+        return gravar(
+          `${caminhoCliente(slug)}/perfis/${encodeURIComponent(perfil)}/paineis/${encodeURIComponent(codigo)}/nomes`,
+          { veNomes },
+        );
+      },
       salvarPreferencia(slug, id, valor) {
         return gravar(`${caminhoCliente(slug)}/preferencias/${encodeURIComponent(id)}`, { valor });
       },
