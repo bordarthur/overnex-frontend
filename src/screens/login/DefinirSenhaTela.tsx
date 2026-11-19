@@ -83,7 +83,7 @@ function FormSenha({ tokenHash, tipo, onVencido }: PropsFormSenha) {
     setEnviando(true);
     try {
       await definirSenha({ tokenHash, tipo, senha });
-      navegar('/', { replace: true });
+      navegar('/inicio', { replace: true });
     } catch (e) {
       setEnviando(false);
       if (e instanceof ApiErro && e.status === 410) return onVencido();

@@ -9,7 +9,7 @@ import tseslint from 'typescript-eslint';
 const SEM_HTML_CRU = 'Proibido montar HTML como texto. Use componentes React.';
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage'] },
+  { ignores: ['dist', 'coverage', '.wrangler'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -34,6 +34,11 @@ export default tseslint.config(
   {
     files: ['vite.config.ts', 'eslint.config.js'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // o Worker do Cloudflare roda fora do navegador, sem DOM
+    files: ['worker/**/*.ts'],
+    languageOptions: { globals: globals.serviceworker },
   },
   prettier,
 );

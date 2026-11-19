@@ -13,7 +13,7 @@ import { opcoesVisaoGeral } from './useVisaoGeral';
  * Ao abrir uma empresa (ou trocar de empresa), pede a Visão geral padrão dela, seja qual for a tela
  * aberta. Só quando a sessão diz que a Visão geral está liberada (`liberada`): sem isso o pedido
  * viraria um 403 à toa, e toda negação fica no registro de acessos da API.
- * A sessão vem antes porque é ela que dá o slug a quem entra por "/": a Visão geral precisa do
+ * A sessão vem antes porque é ela que dá o slug a quem entra por "/inicio": a Visão geral precisa do
  * `?cliente=` (obrigatório para o Admin BORD e para quem tem mais de uma empresa).
  */
 export function useAdiantarAoEntrar(cliente: string, liberada: boolean) {

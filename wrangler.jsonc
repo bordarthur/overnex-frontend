@@ -1,0 +1,19 @@
+// Publicação no Cloudflare (Workers com arquivos estáticos). Passo a passo em DEPLOY.md.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "overnex-frontend",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    // o build do Vite (npm run build)
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // rota do app aberta direto ou com F5 (/gestao, /pj-cortes/vendas…) recebe o index.html
+    "not_found_handling": "single-page-application",
+    // só /api/* passa pelo Worker, que repassa para a API; o resto sai direto dos arquivos
+    "run_worker_first": ["/api/*"],
+  },
+  // API_ORIGEM e PROXY_SEGREDO ficam no painel do Cloudflare (ver DEPLOY.md); o deploy não os apaga.
+  "keep_vars": true,
+  "observability": { "enabled": true },
+}

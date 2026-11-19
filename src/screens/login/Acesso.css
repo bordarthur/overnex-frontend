@@ -144,6 +144,20 @@
   justify-content: center;
   padding: 48px 32px;
 }
+/* links do pé (a política de privacidade, no site institucional) */
+.acesso-links {
+  padding: 0 32px 24px;
+  text-align: center;
+  font-size: 12.5px;
+}
+.acesso-links a {
+  color: var(--ink-3);
+  text-decoration: none;
+}
+.acesso-links a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
 .acesso-tela {
   width: 100%;
   max-width: 372px;

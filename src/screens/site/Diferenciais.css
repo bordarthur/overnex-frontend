@@ -1,0 +1,39 @@
+.s-dif-grade {
+  margin-top: clamp(48px, 6vw, 72px);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  overflow: hidden;
+}
+.s-dif-grade > div {
+  background: var(--bg);
+  padding: clamp(28px, 4vw, 48px);
+}
+.s-dif-grade span {
+  font-family: 'Saira', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink-3);
+}
+.s-dif-grade h3 {
+  margin-top: 14px;
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: clamp(24px, 2.6vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.s-dif-grade p {
+  margin-top: 12px;
+  font-size: 16px;
+  color: var(--ink-2);
+  max-width: 40ch;
+}
+@media (max-width: 760px) {
+  .s-dif-grade {
+    grid-template-columns: 1fr;
+  }
+}

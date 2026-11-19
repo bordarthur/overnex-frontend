@@ -1,0 +1,11 @@
+# Cabeçalhos dos arquivos do site no Cloudflare (as respostas de /api/* são da API).
+# CSP restritiva: nada de domínio externo, data: URI, Google Fonts ou HTML cru. Ver README.md.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+
+# Arquivos do build com hash no nome: podem ficar no cache para sempre.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

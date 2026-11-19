@@ -106,11 +106,11 @@ describe('AuthProvider', () => {
 describe('destino depois de entrar', () => {
   it.each([
     ['/demo/visao-geral?mes=2026-09', '/demo/visao-geral?mes=2026-09'],
-    [null, '/'],
-    ['', '/'],
-    ['https://exemplo.com', '/'],
-    ['//exemplo.com', '/'],
-    ['/\\exemplo.com', '/'],
+    [null, '/inicio'],
+    ['', '/inicio'],
+    ['https://exemplo.com', '/inicio'],
+    ['//exemplo.com', '/inicio'],
+    ['/\\exemplo.com', '/inicio'],
   ])('%s → %s', (voltar, esperado) => {
     expect(destinoSeguro(voltar)).toBe(esperado);
   });
