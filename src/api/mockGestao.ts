@@ -36,6 +36,8 @@ export const MSG = {
   painel: 'Painel não encontrado.',
   perfilDaMatriz: 'Perfil não encontrado.',
   adminFixo: 'Admin BORD vê tudo e não pode ser alterado.',
+  perfilNaoVe: 'Este perfil não vê o painel.',
+  semNomes: 'Este painel não tem nomes para liberar.',
   semDado: 'Este painel ainda não tem dado nesta empresa.',
   preferencia: 'Preferência não encontrada.',
   opcao: 'Opção inválida.',
@@ -83,6 +85,8 @@ interface ClienteMock {
   ligados: string[];
   // perfil → códigos dos painéis que ele vê
   acesso: Record<string, string[]>;
+  // perfil → códigos dos painéis em que ele vê os nomes (a chave "vê nomes"; só nos que ele vê)
+  nomes: Record<string, string[]>;
   feriados: { data: string; nome: string }[];
   // escolhas gravadas (a mesma do seletor da Visão geral), por id
   preferencias: Record<string, string>;
@@ -133,6 +137,7 @@ export function criarBancoGestao(): BancoGestao {
     clientes: copia.clientes.map((c) => ({
       ...c,
       fontesFora: c.fontesFora as Record<string, FonteFora>,
+      nomes: c.nomes as Record<string, string[]>,
       preferencias: {},
     })),
     usuarios: copia.usuarios,
@@ -461,6 +466,14 @@ export function clienteDoBanco(banco: BancoGestao, slug: string): ClienteGestaoP
         codigo: p.codigo,
         nome: p.nome,
         ve: Object.fromEntries(dados.perfis.map((k) => [k.id, k.id === ADMIN || ve(k.id, p.codigo)])),
+        nomes: p.temNomes
+          ? Object.fromEntries(
+              dados.perfis.map((k) => [
+                k.id,
+                k.id === ADMIN || (ve(k.id, p.codigo) && (c.nomes[k.id]?.includes(p.codigo) ?? false)),
+              ]),
+            )
+          : null,
       })),
     },
     usuarios: pessoas,
@@ -538,6 +551,26 @@ export function mudarAcessoDoPerfil(
   if (!perfilDe(perfil)) throw new ApiErro(404, MSG.perfilDaMatriz);
   const atuais = (c.acesso[perfil] ?? []).filter((x) => x !== codigo);
   c.acesso[perfil] = ve ? [...atuais, codigo] : atuais;
+  // tirar o painel do perfil apaga a marca de nomes: ao pôr de volta, volta sem nomes
+  if (!ve) c.nomes[perfil] = (c.nomes[perfil] ?? []).filter((x) => x !== codigo);
+}
+
+/** Como PUT …/perfis/{perfil}/paineis/{codigo}/nomes: a chave "vê nomes" do perfil no painel. */
+export function mudarNomesDoPerfil(
+  banco: BancoGestao,
+  slug: string,
+  perfil: string,
+  codigo: string,
+  veNomes: boolean,
+) {
+  const c = clienteDoSlug(banco, slug);
+  const p = painelDoCodigo(codigo);
+  if (perfil === ADMIN) throw new ApiErro(422, MSG.adminFixo);
+  if (!perfilDe(perfil)) throw new ApiErro(404, MSG.perfilDaMatriz);
+  if (!p.temNomes) throw new ApiErro(422, MSG.semNomes);
+  if (!c.acesso[perfil]?.includes(codigo)) throw new ApiErro(422, MSG.perfilNaoVe);
+  const atuais = (c.nomes[perfil] ?? []).filter((x) => x !== codigo);
+  c.nomes[perfil] = veNomes ? [...atuais, codigo] : atuais;
 }
 
 export function mudarPreferencia(banco: BancoGestao, slug: string, id: string, valor: string) {
@@ -620,6 +653,7 @@ export function criarEmpresa(banco: BancoGestao, m: NovaEmpresa): EmpresaCriada 
     ),
     ligados: [],
     acesso: {},
+    nomes: {},
     feriados: [],
     preferencias: {},
   });

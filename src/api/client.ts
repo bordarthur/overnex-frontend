@@ -83,6 +83,8 @@ export interface GestaoApi {
   salvarPainel(slug: string, codigo: string, ligado: boolean): Promise<void>;
   /** Define se o perfil vê o painel na empresa (a matriz de acesso). */
   salvarAcessoDoPerfil(slug: string, perfil: string, codigo: string, ve: boolean): Promise<void>;
+  /** Define se o perfil vê os nomes do painel na empresa (a chave "vê nomes" da matriz). */
+  salvarNomesDoPerfil(slug: string, perfil: string, codigo: string, veNomes: boolean): Promise<void>;
   salvarPreferencia(slug: string, id: string, valor: string): Promise<void>;
   /** Cadastra o feriado da empresa (ou troca o nome). `data`: AAAA-MM-DD. */
   salvarFeriado(slug: string, data: string, nome: string): Promise<void>;

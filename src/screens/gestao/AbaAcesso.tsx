@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useGestao, useGravarGestao } from '../../api/useGestao';
 import { Chave } from '../../components/Chave';
-import type { ClienteGestaoPayload, MatrizDeAcesso, UsuarioDoCliente } from '../../contracts/gestao';
+import type {
+  ClienteGestaoPayload,
+  LinhaDaMatriz,
+  MatrizDeAcesso,
+  PerfilDaMatriz,
+  UsuarioDoCliente,
+} from '../../contracts/gestao';
 import { erroDaGravacao } from './apoio';
 import { ConvidarUsuario } from './ConvidarUsuario';
 import { GavetaUsuario } from './GavetaUsuario';
@@ -117,13 +123,31 @@ function QuemAcessa({ cliente, usuarios }: Pick<Props, 'cliente' | 'usuarios'>) 
   );
 }
 
+/** Uma marca da matriz: se o perfil vê o painel ou, nos painéis com a chave, se vê os nomes. */
+interface MarcaDaMatriz {
+  chave: 've' | 'nomes';
+  perfil: string;
+  codigo: string;
+  ligada: boolean;
+}
+
 function Matriz({ slug, acesso }: { slug: string; acesso: MatrizDeAcesso }) {
   const gravar = useGravarGestao(
-    (gestao, m: { perfil: string; codigo: string; ve: boolean }) =>
-      gestao.salvarAcessoDoPerfil(slug, m.perfil, m.codigo, m.ve),
+    (gestao, m: MarcaDaMatriz) =>
+      m.chave === 've'
+        ? gestao.salvarAcessoDoPerfil(slug, m.perfil, m.codigo, m.ligada)
+        : gestao.salvarNomesDoPerfil(slug, m.perfil, m.codigo, m.ligada),
     'acesso',
   );
   const gravando = gravar.isPending ? gravar.variables : undefined;
+  // o valor que a chave mostra: o pedido em curso, se for dela; senão, o que veio da API
+  const valor = (chave: MarcaDaMatriz['chave'], p: PerfilDaMatriz, linha: LinhaDaMatriz) => {
+    if (gravando?.chave === chave && gravando.perfil === p.id && gravando.codigo === linha.codigo) {
+      return gravando.ligada;
+    }
+    return (chave === 've' ? linha.ve : linha.nomes)?.[p.id] ?? false;
+  };
+  const temNomes = acesso.linhas.some((l) => l.nomes);
   const fixos = acesso.perfis
     .filter((p) => p.fixo)
     .map((p) => p.rotulo)
@@ -157,25 +181,49 @@ function Matriz({ slug, acesso }: { slug: string; acesso: MatrizDeAcesso }) {
           </thead>
           <tbody>
             {acesso.linhas.map((linha) => (
-              <tr key={linha.codigo}>
-                <th scope="row" className="l forte">
-                  {linha.nome}
-                </th>
-                {acesso.perfis.map((p) => {
-                  const pendente = gravando?.perfil === p.id && gravando.codigo === linha.codigo;
-                  return (
+              <Fragment key={linha.codigo}>
+                <tr>
+                  <th scope="row" className="l forte">
+                    {linha.nome}
+                  </th>
+                  {acesso.perfis.map((p) => (
                     <td key={p.id} className="c">
                       <Chave
                         rotulo={`${p.rotulo} vê ${linha.nome}`}
                         ocultarRotulo
-                        ligada={pendente ? gravando.ve : (linha.ve[p.id] ?? false)}
+                        ligada={valor('ve', p, linha)}
                         desabilitada={p.fixo || gravar.isPending}
-                        onMudar={(ve) => gravar.mutate({ perfil: p.id, codigo: linha.codigo, ve })}
+                        onMudar={(ligada) =>
+                          gravar.mutate({ chave: 've', perfil: p.id, codigo: linha.codigo, ligada })
+                        }
                       />
                     </td>
-                  );
-                })}
-              </tr>
+                  ))}
+                </tr>
+                {linha.nomes && (
+                  <tr className="gst-matriz-nomes">
+                    <th scope="row" className="l">
+                      Vê os nomes
+                    </th>
+                    {acesso.perfis.map((p) => (
+                      <td key={p.id} className="c">
+                        {/* a chave só existe onde o perfil vê o painel */}
+                        {valor('ve', p, linha) && (
+                          <Chave
+                            rotulo={`${p.rotulo} vê os nomes em ${linha.nome}`}
+                            ocultarRotulo
+                            ligada={valor('nomes', p, linha)}
+                            desabilitada={p.fixo || gravar.isPending}
+                            onMudar={(ligada) =>
+                              gravar.mutate({ chave: 'nomes', perfil: p.id, codigo: linha.codigo, ligada })
+                            }
+                          />
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                )}
+              </Fragment>
             ))}
             {acesso.linhas.length === 0 && (
               <tr>
@@ -191,6 +239,12 @@ function Matriz({ slug, acesso }: { slug: string; acesso: MatrizDeAcesso }) {
         <p className="note">
           {fixos} vê tudo e não pode ser alterado. Painel ligado sem nenhum outro perfil marcado só é visto
           por {fixos}: serve para validar antes de liberar ao cliente.
+        </p>
+      )}
+      {temNomes && (
+        <p className="note">
+          &quot;Vê os nomes&quot; libera os nomes das pessoas no painel. Tirar o painel do perfil apaga essa
+          marca: ao pôr de volta, o painel volta sem nomes.
         </p>
       )}
     </section>
