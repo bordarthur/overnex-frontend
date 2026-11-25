@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
+import type { ApiClient } from '../api/client';
 import { criarMockClient, fixtureSessao } from '../api/mockClient';
 import type { PersonaFake } from '../auth/personasFake';
 import { renderizarApp } from '../test/renderizar';
@@ -11,10 +12,21 @@ beforeAll(async () => {
   await import('../screens/gestao/Gestao');
 });
 
-const abrir = (rota: string, persona: PersonaFake) => {
-  const api = criarMockClient({ atrasoMs: 0, persona });
-  return { api, ...renderizarApp(rota, undefined, api) };
-};
+const abrir = (rota: string, persona: PersonaFake, api = criarMockClient({ atrasoMs: 0, persona })) => ({
+  api,
+  ...renderizarApp(rota, undefined, api),
+});
+
+/**
+ * Alguém com duas empresas que não abre a Gestão (um cliente principal de um grupo, por exemplo): o
+ * consultor do mock, com a sessão sem `gestao`.
+ */
+function semGestao(api: ApiClient): ApiClient {
+  return {
+    ...api,
+    obterSessao: async (cliente, opcoes) => ({ ...(await api.obterSessao(cliente, opcoes)), gestao: false }),
+  };
+}
 const menu = () =>
   within(screen.getByRole('navigation', { name: 'Painéis' }))
     .getAllByRole('link')
@@ -45,8 +57,9 @@ describe('ao entrar ("/inicio")', () => {
 
   it('quem tem duas empresas escolhe uma, e depois troca pelo menu, cada uma com os dados e o menu dela', async () => {
     const user = userEvent.setup();
-    const { api } = abrir('/inicio', 'consultor');
+    const api = semGestao(criarMockClient({ atrasoMs: 0, persona: 'consultor' }));
     const visaoGeral = vi.spyOn(api, 'obterVisaoGeral');
+    abrir('/inicio', 'consultor', api);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Escolha a empresa' })).toBeInTheDocument();
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual(['CDCliente Demo', 'PJPJ']);
@@ -108,10 +121,74 @@ describe('acesso por empresa e por tela', () => {
     expect(screen.getByRole('combobox', { name: 'Empresa' })).toHaveValue('horizonte');
   });
 
-  it('a Gestão é só do Admin BORD', async () => {
-    const { api } = abrir('/gestao', 'consultor');
+  it('quem não abre a Gestão vê "sem acesso", sem pedir nada a /api/admin', async () => {
+    const { api } = abrir('/gestao', 'cliente');
     const gestao = vi.spyOn(api.gestao, 'obterGestao');
     expect(await screen.findByText(/Você não tem acesso a esta tela/)).toBeInTheDocument();
     expect(gestao).not.toHaveBeenCalled();
+  });
+});
+
+describe('o consultor na Gestão', () => {
+  const abrirConsultor = (rota: string) => {
+    const api = criarMockClient({ atrasoMs: 0, persona: 'consultor' });
+    const usuarios = vi.spyOn(api.gestao, 'obterUsuarios');
+    abrir(rota, 'consultor', api);
+    return { usuarios, user: userEvent.setup() };
+  };
+  const abas = () => screen.getAllByRole('tab').map((t) => t.textContent);
+
+  it('o consultor entra na Gestão só de leitura', async () => {
+    const { usuarios } = abrirConsultor('/inicio');
+    // a primeira empresa da carteira, por nome
+    expect(await screen.findByRole('heading', { level: 1, name: 'Cliente Demo' })).toBeInTheDocument();
+    expect(screen.getByText('Interno BORD')).toBeInTheDocument();
+
+    // a barra lateral: só as empresas dele, sem "Usuários" e sem "Nova empresa"
+    const lista = screen.getByRole('navigation', { name: 'Empresas' });
+    expect(
+      within(lista)
+        .getAllByRole('link')
+        .map((a) => a.querySelector('b')?.textContent),
+    ).toEqual(['Cliente Demo', 'PJ']);
+    expect(screen.queryByRole('navigation', { name: 'Área da gestão' })).toBeNull();
+    expect(screen.queryByRole('link', { name: /^Usuários/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Nova empresa' })).toBeNull();
+
+    // a empresa: só duas abas e, no cabeçalho, só o atalho para os painéis
+    expect(abas()).toEqual(['Implantação', 'Prontidão dos dados']);
+    expect(screen.queryByRole('button', { name: 'Convidar usuário' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Editar empresa' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'Abrir os painéis desta empresa' })).toHaveAttribute(
+      'href',
+      '/demo',
+    );
+    // sem o chip de usuários
+    expect(screen.queryByText(/\d+ usuários?$/)).toBeNull();
+    expect(usuarios).not.toHaveBeenCalled();
+  });
+
+  it('?aba= com uma aba que o consultor não vê cai na primeira', async () => {
+    const { usuarios } = abrirConsultor('/gestao/empresas/pj?aba=acesso');
+    expect(await screen.findByRole('heading', { level: 1, name: 'PJ' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Implantação' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('article', { name: 'Universal Completo' })).toBeInTheDocument();
+    expect(usuarios).not.toHaveBeenCalled();
+  });
+
+  it('empresa fora da carteira mostra "sem acesso" (403 da API)', async () => {
+    abrirConsultor('/gestao/empresas/aurora');
+    expect(await screen.findByText(/Você não tem acesso a esta tela/)).toBeInTheDocument();
+  });
+
+  it('o endereço da área Usuários volta para as empresas, sem pedir a lista', async () => {
+    const { usuarios } = abrirConsultor('/gestao/usuarios');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Cliente Demo' })).toBeInTheDocument();
+    expect(usuarios).not.toHaveBeenCalled();
+  });
+
+  it('nos painéis, o consultor tem o atalho Gestão no menu', async () => {
+    abrirConsultor('/pj/vendas');
+    expect(await screen.findByRole('link', { name: 'Gestão' })).toHaveAttribute('href', '/gestao');
   });
 });

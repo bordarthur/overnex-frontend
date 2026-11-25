@@ -1,4 +1,13 @@
 {
+  "abas": [
+    { "id": "implantacao", "rotulo": "Implantação" },
+    { "id": "dados", "rotulo": "Prontidão dos dados" },
+    { "id": "paineis", "rotulo": "Painéis" },
+    { "id": "preferencias", "rotulo": "Preferências da empresa" },
+    { "id": "acesso", "rotulo": "Usuários e acesso" },
+    { "id": "cargas", "rotulo": "Cargas" }
+  ],
+  "abasDoConsultor": ["implantacao", "dados"],
   "perfis": [
     {
       "id": "admin",

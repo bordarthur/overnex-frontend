@@ -32,6 +32,7 @@ import {
   preferenciaDoCliente,
   salvarFeriado,
   sessaoDoBanco,
+  soAdmin,
   tirarFeriado,
   usuarioDaPersona,
   usuariosDoBanco,
@@ -223,12 +224,17 @@ export function criarMockClient({
         reject(signal.reason);
       });
     });
-  // a Gestão é só do Admin BORD; devolve quem está gravando, para as regras que olham o autor
-  const admin = async (signal?: AbortSignal) => {
+  // quem está na Gestão; quem pode abrir cada rota, o banco decide (gestaoDoBanco, clienteDoBanco)
+  const naGestao = async (signal?: AbortSignal) => {
     await esperar(signal);
     if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
-    if (!(await sessaoDe()).gestao) throw new ApiErro(403, MSG.negado);
     return quem();
+  };
+  // usuários e gravações são só do Admin BORD; devolve quem está gravando, para as regras que olham o autor
+  const admin = async (signal?: AbortSignal) => {
+    const id = await naGestao(signal);
+    soAdmin(banco, id);
+    return id;
   };
 
   return {
@@ -312,12 +318,10 @@ export function criarMockClient({
     },
     gestao: {
       async obterGestao(opcoes) {
-        await admin(opcoes?.signal);
-        return gestaoDoBanco(banco);
+        return gestaoDoBanco(banco, await naGestao(opcoes?.signal));
       },
       async obterCliente(slug, opcoes) {
-        await admin(opcoes?.signal);
-        return clienteDoBanco(banco, slug);
+        return clienteDoBanco(banco, await naGestao(opcoes?.signal), slug);
       },
       async obterUsuarios(opcoes) {
         await admin(opcoes?.signal);

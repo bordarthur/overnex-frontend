@@ -20,8 +20,9 @@ import '../paineis/TabelaCartao.css';
 import './GestaoMoldura.css';
 
 /**
- * Gestão (Interno BORD): só para quem a sessão diz `gestao: true` (o Admin BORD). Para os outros,
- * "sem acesso"; e a API recusa as rotas /api/admin/* do mesmo jeito.
+ * Gestão (Interno BORD): só para quem a sessão diz `gestao: true` (o Admin BORD e, só para ler, o
+ * Consultor por carteira). Para os outros, "sem acesso"; e a API recusa as rotas /api/admin/* do
+ * mesmo jeito. O que aparece (Usuários, Nova empresa) vem de `permissoes` da API.
  */
 export function GestaoMoldura() {
   const sessao = useSessao();
@@ -53,7 +54,9 @@ function Dentro() {
   const { usuario, sair } = useAuth();
   const { modo, alternar } = useTema();
   const gestao = useGestao();
-  const usuarios = useUsuariosGestao();
+  const permissoes = gestao.data?.permissoes;
+  // a contagem do seletor "Usuários": só pede quem pode abrir a área
+  const usuarios = useUsuariosGestao(permissoes?.usuarios === true);
   const emUsuarios = useMatch('/gestao/usuarios') !== null;
   const empresaAberta = useMatch('/gestao/empresas/:slug')?.params.slug;
   // Voltar de Usuários para Empresas reabre a empresa em que a pessoa estava.
@@ -64,6 +67,9 @@ function Dentro() {
   const clientes = gestao.data?.clientes;
   const totalPessoas = usuarios.data?.filtros.find((f) => f.id === FILTRO_TODOS)?.total;
   const camadas = clientes?.[0]?.camadas.map((k) => k.rotulo).join(', ');
+
+  // sem a área Usuários, o endereço dela volta para as empresas
+  if (emUsuarios && permissoes && !permissoes.usuarios) return <Navigate to="/gestao" replace />;
 
   return (
     <>
@@ -76,21 +82,28 @@ function Dentro() {
             <Logotipo className="gst-logo" rotulo="Overnex" />
             <span className="gst-selo">Interno BORD</span>
           </div>
-          <nav className="gst-modos" aria-label="Área da gestão">
-            <Link
-              to={ultimaEmpresa ? `/gestao/empresas/${ultimaEmpresa}` : '/gestao/empresas'}
-              aria-current={emUsuarios ? undefined : 'page'}
-            >
-              Empresas{clientes && <em>{clientes.length}</em>}
-            </Link>
-            <Link to="/gestao/usuarios" aria-current={emUsuarios ? 'page' : undefined}>
-              Usuários{totalPessoas !== undefined && <em>{totalPessoas}</em>}
-            </Link>
-          </nav>
+          {/* sem a área Usuários, não há o que alternar: o seletor some */}
+          {permissoes?.usuarios && (
+            <nav className="gst-modos" aria-label="Área da gestão">
+              <Link
+                to={ultimaEmpresa ? `/gestao/empresas/${ultimaEmpresa}` : '/gestao/empresas'}
+                aria-current={emUsuarios ? undefined : 'page'}
+              >
+                Empresas{clientes && <em>{clientes.length}</em>}
+              </Link>
+              <Link to="/gestao/usuarios" aria-current={emUsuarios ? 'page' : undefined}>
+                Usuários{totalPessoas !== undefined && <em>{totalPessoas}</em>}
+              </Link>
+            </nav>
+          )}
           {emUsuarios ? (
             <ListaFiltros filtros={usuarios.data?.filtros} />
           ) : (
-            <ListaEmpresas clientes={clientes} aberta={empresaAberta} />
+            <ListaEmpresas
+              clientes={clientes}
+              aberta={empresaAberta}
+              criar={permissoes?.criarEmpresa === true}
+            />
           )}
           <div className="gst-pe">
             {!emUsuarios && camadas && <p>Camadas na barra: {camadas}.</p>}
@@ -137,7 +150,16 @@ export function PrimeiraEmpresa() {
   return <Navigate to={`/gestao/empresas/${primeira.slug}`} replace />;
 }
 
-function ListaEmpresas({ clientes, aberta }: { clientes?: ClienteDaLista[]; aberta?: string }) {
+function ListaEmpresas({
+  clientes,
+  aberta,
+  criar,
+}: {
+  clientes?: ClienteDaLista[];
+  aberta?: string;
+  /** mostra o botão "Nova empresa" (`permissoes.criarEmpresa`) */
+  criar: boolean;
+}) {
   const [busca, setBusca] = useState('');
   // trocar de empresa mantém a aba aberta (`?aba=`)
   const { search } = useLocation();
@@ -174,7 +196,7 @@ function ListaEmpresas({ clientes, aberta }: { clientes?: ClienteDaLista[]; aber
         ))}
         {lista?.length === 0 && <p className="gst-nota-lado">Nenhuma empresa com esse nome.</p>}
       </nav>
-      <NovaEmpresa />
+      {criar && <NovaEmpresa />}
     </div>
   );
 }

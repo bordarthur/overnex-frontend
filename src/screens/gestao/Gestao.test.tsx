@@ -42,6 +42,13 @@ describe('Gestão: empresa', () => {
       'href',
       '/pj',
     );
+    // o Admin BORD tem tudo: as 6 abas, os botões do cabeçalho, Usuários e Nova empresa
+    expect(screen.getAllByRole('tab')).toHaveLength(6);
+    expect(screen.getByRole('button', { name: 'Convidar usuário' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Editar empresa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nova empresa' })).toBeInTheDocument();
+    // a contagem do seletor vem de GET /api/admin/usuarios
+    await waitFor(() => expect(screen.getByRole('link', { name: /^Usuários/ })).toHaveTextContent(/\d/));
   });
 
   it('convidar pelo cabeçalho da empresa: ela já vem marcada, e o passo final mostra o texto da API', async () => {
