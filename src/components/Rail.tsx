@@ -66,7 +66,7 @@ interface PropsRail {
   telas: string[];
   /** As empresas que a pessoa pode abrir. Com mais de uma, o rail ganha o seletor de empresa. */
   clientes: ClienteSessao[];
-  /** O Admin BORD: mostra o atalho para a Gestão. */
+  /** Quem abre a Gestão (`gestao` da sessão: Admin BORD e consultor): mostra o atalho para ela. */
   gestao: boolean;
 }
 

@@ -1,5 +1,6 @@
 import type { PersonaFake } from '../auth/personasFake';
 import type {
+  AbaEmpresa,
   CamadaDoCliente,
   ClienteGestaoPayload,
   ConvitePedido,
@@ -26,6 +27,8 @@ import dados from './fixtures/gestao.json';
 // API; as telas continuam só desenhando o que recebem. Tudo volta ao começo ao recarregar a página.
 
 const ADMIN = 'admin';
+// o Consultor por carteira abre a Gestão só para ler, e só as empresas da carteira
+const CONSULTOR = 'consultor';
 const SESSAO_MAXIMA_COMUM = 720;
 const DOMINIO_ADMIN = '@bord.com.br';
 
@@ -181,6 +184,18 @@ function clienteDoSlug(banco: BancoGestao, slug: string): ClienteMock {
   return c;
 }
 
+/** Quem abre a Gestão (GET /api/admin/gestao e /clientes/{slug}): o Admin BORD e o consultor. */
+export function quemAbreGestao(banco: BancoGestao, usuarioId: string): UsuarioMock {
+  const u = banco.usuarios.find((x) => x.id === usuarioId);
+  if (!u || !u.ativo || (u.perfil !== ADMIN && u.perfil !== CONSULTOR)) throw new ApiErro(403, MSG.negado);
+  return u;
+}
+
+/** Usuários e gravações da Gestão: só o Admin BORD. */
+export function soAdmin(banco: BancoGestao, usuarioId: string) {
+  if (quemAbreGestao(banco, usuarioId).perfil !== ADMIN) throw new ApiErro(403, MSG.negado);
+}
+
 function pessoaDoId(banco: BancoGestao, id: string): UsuarioMock {
   const u = banco.usuarios.find((x) => x.id === id);
   if (!u) throw new ApiErro(404, MSG.pessoa);
@@ -222,7 +237,7 @@ export function sessaoDoBanco(banco: BancoGestao, usuarioId: string, slug?: stri
   return {
     usuario: { nome: u.nome, email: u.email },
     perfil: { id: u.perfil as PerfilId, rotulo: rotuloPerfil(u.perfil) },
-    gestao: admin,
+    gestao: admin || u.perfil === CONSULTOR,
     clientes: lista.map(clienteSessao),
     cliente: escolhido ? clienteSessao(escolhido) : null,
     papel: escolhido ? papelDoPerfil(u.perfil) : null,
@@ -390,9 +405,20 @@ function todosOsUsuarios(banco: BancoGestao) {
 
 // ---------- GET /api/admin/* ----------
 
-export function gestaoDoBanco(banco: BancoGestao): GestaoPayload {
+// Rótulos das abas, como no mockup Gestão M2.1.0. A última é "Horas e cargas" no mockup; ficou
+// "Cargas" porque as horas de implantação não entram agora.
+const ABAS = dados.abas as AbaEmpresa[];
+
+/** As empresas que a pessoa vê na Gestão: todas (admin) ou as da carteira (consultor). */
+const daGestao = (banco: BancoGestao, u: UsuarioMock) =>
+  u.perfil === ADMIN ? banco.clientes : banco.clientes.filter((c) => u.clientes.includes(c.slug));
+
+export function gestaoDoBanco(banco: BancoGestao, usuarioId: string): GestaoPayload {
+  const u = quemAbreGestao(banco, usuarioId);
+  const admin = u.perfil === ADMIN;
   return {
-    clientes: porNome(banco.clientes).map((c) => ({
+    permissoes: { criarEmpresa: admin, usuarios: admin },
+    clientes: porNome(daGestao(banco, u)).map((c) => ({
       slug: c.slug,
       nome: c.nome,
       segmento: c.segmento ?? null,
@@ -404,21 +430,48 @@ export function gestaoDoBanco(banco: BancoGestao): GestaoPayload {
         status,
       })),
     })),
-    perfis: dados.perfis.map((p) => ({
-      ...p,
-      sessaoPadraoRotulo: rotuloSessao(p.sessaoPadraoMinutos),
-      pessoas: banco.usuarios.filter((u) => u.perfil === p.id && u.ativo).length,
-    })),
-    sessoes: dados.sessoes.map((minutos) => ({
-      minutos,
-      rotulo: rotuloSessao(minutos),
-      soAdmin: minutos > SESSAO_MAXIMA_COMUM,
-    })),
+    perfis: !admin
+      ? []
+      : dados.perfis.map((p) => ({
+          ...p,
+          sessaoPadraoRotulo: rotuloSessao(p.sessaoPadraoMinutos),
+          pessoas: banco.usuarios.filter((x) => x.perfil === p.id && x.ativo).length,
+        })),
+    sessoes: !admin
+      ? []
+      : dados.sessoes.map((minutos) => ({
+          minutos,
+          rotulo: rotuloSessao(minutos),
+          soAdmin: minutos > SESSAO_MAXIMA_COMUM,
+        })),
   };
 }
 
-export function clienteDoBanco(banco: BancoGestao, slug: string): ClienteGestaoPayload {
-  const c = clienteDoSlug(banco, slug);
+export function clienteDoBanco(banco: BancoGestao, usuarioId: string, slug: string): ClienteGestaoPayload {
+  const u = quemAbreGestao(banco, usuarioId);
+  if (u.perfil !== ADMIN) {
+    // empresa fora da carteira, ou que não existe: para o consultor, sempre 403
+    const c = daGestao(banco, u).find((x) => x.slug === slug);
+    if (!c) throw new ApiErro(403, MSG.negado);
+    return {
+      ...clienteCompleto(banco, c, false),
+      abas: ABAS.filter((a) => dados.abasDoConsultor.includes(a.id)),
+      permissoes: { editar: false, convidar: false },
+      paineis: [],
+      acesso: { perfis: [], linhas: [] },
+      usuarios: [],
+      preferencias: [],
+      feriados: [],
+      cargas: [],
+      menu: [],
+    };
+  }
+  return clienteCompleto(banco, clienteDoSlug(banco, slug), true);
+}
+
+/** A empresa como o Admin BORD a vê. `comUsuarios` false: o resumo sai sem o chip de usuários. */
+function clienteCompleto(banco: BancoGestao, c: ClienteMock, comUsuarios: boolean): ClienteGestaoPayload {
+  const slug = c.slug;
   const listaCamadas = camadas(c);
   const noAr = dados.paineis.filter((p) => c.ligados.includes(p.codigo));
   const ve = (perfil: string, codigo: string) => c.acesso[perfil]?.includes(codigo) ?? false;
@@ -447,12 +500,16 @@ export function clienteDoBanco(banco: BancoGestao, slug: string): ClienteGestaoP
 
   return {
     cliente: { slug: c.slug, nome: c.nome, segmento: c.segmento ?? null, logoUrl: null },
+    abas: ABAS,
+    permissoes: { editar: true, convidar: true },
     resumo: [
       {
         rotulo: `${ativas} de ${listaCamadas.length} camadas ativas`,
         status: ativas === listaCamadas.length ? 'saudavel' : 'atencao',
       },
-      { rotulo: `${ativos} ${ativos === 1 ? 'usuário' : 'usuários'}`, status: 'neutro' },
+      ...(comUsuarios
+        ? [{ rotulo: `${ativos} ${ativos === 1 ? 'usuário' : 'usuários'}`, status: 'neutro' as const }]
+        : []),
       ultima
         ? { rotulo: `Última carga: hoje, ${ultima.inicio}`, status: ultima.status as StatusGestao }
         : { rotulo: 'Sem carga ainda', status: 'critico' },

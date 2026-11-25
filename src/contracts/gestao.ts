@@ -1,8 +1,13 @@
-// Contrato das rotas /api/admin/* do overnex-backend: a área "Gestão" (Interno BORD), só para o
-// Admin BORD. Espelho de api/app/admin/contrato.py (conferido contra o api/openapi.json em 10/11/2026).
+// Contrato das rotas /api/admin/* do overnex-backend: a área "Gestão" (Interno BORD). Espelho de
+// api/app/admin/contrato.py (conferido contra o api/openapi.json em 10/11/2026; consultor só de
+// leitura conferido em 25/11/2026).
 //
-// - Quem não é Admin BORD recebe 403 {"detail": "Acesso negado."};
-// - empresa que não existe: 404 {"detail": "Empresa não encontrada."};
+// - Quem tem `gestao: true` na sessão abre: o Admin BORD, com tudo, e o Consultor por carteira, só para
+//   ler as empresas da carteira dele. O que cada um vê vem em `permissoes` e `abas`;
+// - quem não abre a Gestão recebe 403 {"detail": "Acesso negado."}. `GET /api/admin/usuarios` e todas
+//   as gravações também são 403 para o consultor;
+// - empresa que não existe: 404 {"detail": "Empresa não encontrada."} (para o consultor, 403: empresa
+//   fora da carteira ou que não existe dá na mesma);
 // - regra quebrada: 422 com o texto pronto em `detail` (corpo fora do formato também é 422, mas com
 //   `detail` em lista: o front trata como erro genérico);
 // - gravação com sucesso: 204 sem corpo; os dois POST de convite respondem 202 com `ConvitePedido`
@@ -62,10 +67,22 @@ export interface OpcaoSessao {
   soAdmin: boolean;
 }
 
+/** O que a pessoa pode fazer na Gestão. Admin BORD: tudo true; consultor: tudo false. */
+export interface PermissoesGestao {
+  // o botão "Nova empresa" da barra lateral
+  criarEmpresa: boolean;
+  // a área "Usuários" (e GET /api/admin/usuarios)
+  usuarios: boolean;
+}
+
 export interface GestaoPayload {
+  // para o consultor, só as empresas da carteira
   clientes: ClienteDaLista[];
+  // para o consultor, vazio
   perfis: PerfilDaGestao[];
+  // para o consultor, vazio
   sessoes: OpcaoSessao[];
+  permissoes: PermissoesGestao;
 }
 
 // ---------- GET /api/admin/clientes/{slug} ----------
@@ -207,10 +224,32 @@ export interface GrupoDoMenu {
   itens: { nome: string }[];
 }
 
-/** Tudo das abas de uma empresa, numa resposta. */
+export type IdAbaEmpresa = 'implantacao' | 'dados' | 'paineis' | 'preferencias' | 'acesso' | 'cargas';
+
+export interface AbaEmpresa {
+  id: IdAbaEmpresa;
+  rotulo: string;
+}
+
+/** Os botões do cabeçalho da empresa. Admin BORD: true; consultor: false. */
+export interface PermissoesEmpresa {
+  // "Editar" (nome e setor)
+  editar: boolean;
+  // "Convidar usuário"
+  convidar: boolean;
+}
+
+/**
+ * Tudo das abas de uma empresa, numa resposta. Para o consultor, o que fica fora das abas dele vem
+ * vazio: `paineis`, `usuarios`, `preferencias`, `feriados`, `cargas` e `menu` em [], e `acesso` sem
+ * perfis nem linhas.
+ */
 export interface ClienteGestaoPayload {
   cliente: { slug: string; nome: string; segmento: string | null; logoUrl: string | null };
-  // chips do cabeçalho
+  // as abas que a pessoa vê, na ordem (admin: as 6; consultor: implantacao e dados)
+  abas: AbaEmpresa[];
+  permissoes: PermissoesEmpresa;
+  // chips do cabeçalho (para o consultor, sem o de usuários)
   resumo: ChipResumo[];
   camadas: CamadaDoCliente[];
   fontes: FonteDoCliente[];

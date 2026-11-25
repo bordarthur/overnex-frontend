@@ -2,7 +2,7 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 19/11/2026
+Última atualização: 25/11/2026
 
 ## Em andamento
 
@@ -48,6 +48,7 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 
 ## A fazer
 
+- [ ] **Gestão só de leitura do consultor: testar com a API e conferir no navegador.** O front está pronto com o mock (ver Concluído em 25/11/2026); o back mudou em 25/11/2026, ainda não publicado (migration 33), e o contrato foi copiado do prompt do back, sem conferir contra o `api/openapi.json`. Falta abrir com `VITE_API_MODO=api` como Caio e conferir: a entrada em `/gestao`, a barra só com as empresas da carteira, sem o seletor Usuários e sem "Nova empresa"; as duas abas e o cabeçalho só com "Abrir os painéis desta empresa"; nenhum `GET /api/admin/usuarios` no log; o 403 da empresa fora da carteira; e, como Dora, tudo igual a antes. Falta também olhar a barra lateral sem o seletor no navegador (claro, escuro e 390 px). Ver [GestaoMoldura.tsx](src/screens/gestao/GestaoMoldura.tsx) e [EmpresaTela.tsx](src/screens/gestao/EmpresaTela.tsx).
 - [ ] **Back: sinal de menos, caixa mínimo e dias úteis** (decisões de 19/11/2026; prompt do back de 19/11/2026): "−" tipográfico em todos os textos prontos; `financeiro.caixa_minimo` por empresa, cadastrado pela LANN, com padrão de cerca de 15 dias de saídas médias; dias úteis com o sábado como preferência de cada empresa e os feriados nacionais mais os cadastrados na Gestão.
 - [ ] **Supabase: plano Pro antes de entrar cliente** (decisão de 19/11/2026). A tendência de 6 meses e a inadimplência de 12 não cabem nos 500 MB do plano grátis (as tabelas de movimento estão com janela de 1 mês).
 - [ ] **Supabase: projeto de homologação para testar** (decisão de 19/11/2026), no plano grátis, no lugar do banco de produção ou do Supabase local (que precisa de Docker).
@@ -93,6 +94,7 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 
 ## A decidir
 
+- [ ] **Prévia "Ao entrar, a pessoa vê" do consultor** (25/11/2026). A prévia da gaveta de convite e de edição é montada no front pelo número de empresas marcadas e só trata o Admin BORD como "abre a Gestão"; com o consultor entrando na Gestão, ela ainda mostra "Abre direto em X" ou "Escolhe entre N empresas". Resolver sem regra por perfil no front pede um campo novo do back em `PerfilDaGestao` (por exemplo, `abreGestao: boolean`). O `aoEntrar.rotulo` da lista de pessoas vem pronto da API; no mock, o do consultor continua o antigo. Ver [CamposDeAcesso.tsx](src/screens/gestao/CamposDeAcesso.tsx).
 - [ ] **Site institucional: o que ainda falta para divulgar** (depende de outras pessoas). Ver [conteudo.ts](src/screens/site/conteudo.ts):
   - **Política de privacidade:** o texto completo (adaptar o da BORD, com revisão jurídica). Quando sair, volta à Segurança a frase "Tratamento conforme a LGPD";
   - **Contato definitivo:** um canal da empresa no lugar do provisório (WhatsApp (85) 99744-0016 e nuno.alvares@overnex.app), como `contato@overnex.app` (a caixa precisa existir). Troca em `conteudo.ts` e no `index.html`;
@@ -106,6 +108,7 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 
 ## Concluído
 
+- [x] 25/11/2026 · **Gestão só de leitura do Consultor por carteira**, com o mock, pelo prompt do back de 25/11/2026. Contrato: `permissoes` (`criarEmpresa`, `usuarios`) em `GestaoPayload`, e `abas` e `permissoes` (`editar`, `convidar`) em `ClienteGestaoPayload` ([gestao.ts](src/contracts/gestao.ts)); `gestao` da sessão vale também para o consultor ([sessao.ts](src/contracts/sessao.ts)). A barra lateral só mostra o seletor Empresas | Usuários e "Nova empresa" com a permissão, e só pede `GET /api/admin/usuarios` (a contagem) com `permissoes.usuarios`; sem ela, `/gestao/usuarios` volta para as empresas ([GestaoMoldura.tsx](src/screens/gestao/GestaoMoldura.tsx), [UsuariosTela.tsx](src/screens/gestao/UsuariosTela.tsx), [useGestao.ts](src/api/useGestao.ts)). As abas da empresa vêm de `abas` (a constante `ABAS` saiu), com `?aba=` fora da lista caindo na primeira, e "Convidar usuário" e "Editar" seguem `permissoes` ([EmpresaTela.tsx](src/screens/gestao/EmpresaTela.tsx)). No mock, o consultor abre a Gestão com as empresas da carteira e a empresa reduzida (2 abas, 2 chips, o resto vazio), 403 fora da carteira, e usuários e gravações só do admin ([mockGestao.ts](src/api/mockGestao.ts), [mockClient.ts](src/api/mockClient.ts), abas na [fixture](src/api/fixtures/gestao.json)). Testes em [entrada.test.tsx](src/app/entrada.test.tsx) (o consultor só de leitura; o teste da escolha de empresa passou a usar o consultor com a sessão sem `gestao`, porque nenhuma pessoa do mock tem duas empresas sem abrir a Gestão) e em [Gestao.test.tsx](src/screens/gestao/Gestao.test.tsx) (o admin com tudo). Não foi aberto no navegador.
 - [x] 19/11/2026 · **Decisões do "A decidir"** (recomendações aprovadas pelo usuário).
   - **Site institucional:** sem script de analytics (as visitas pelo painel do Cloudflare, sem exceção na CSP; se precisar medir cliques, abre-se a exceção só para o Web Analytics); na Segurança, "Dados armazenados no Brasil" no lugar de "hospedados" e sem a frase da LGPD até a política sair ([conteudo.ts](src/screens/site/conteudo.ts)); "Para quem é" fica de fora, como no mockup; aceitas as diferenças do mockup (a pílula do app, o "Ir para o conteúdo" no foco, o favicon novo também no app, a conta do farol no front); "Mais de uma empresa" fica escondida até o desenho #18267;
   - **Login:** link "Privacidade" no pé da coluna do formulário, que aparece também no celular ([LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx)); o resto do mockup Login M2.0.0 (Microsoft e Google, 2FA, "Manter conectado", "Preparando os números", "Senha salva", dados de quem convidou, aceite dos termos, Termos de uso e Ajuda, "Restam N tentativas") fica para depois do lançamento; o Microsoft Entra continua fora;

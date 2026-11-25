@@ -4,7 +4,10 @@
 // "Cliente" aqui é a "empresa" que a pessoa escolhe na tela (Nilo Maia, PJ). As `empresas` são outra
 // coisa: os CNPJs dentro do cliente escolhido (o chip "Empresa" dos filtros).
 
-/** Os 4 perfis fixos do Overnex. Só o `admin` (Admin BORD) abre a Gestão e vê todos os clientes. */
+/**
+ * Os 4 perfis fixos do Overnex. Só o `admin` (Admin BORD) vê todos os clientes; ele e o `consultor`
+ * abrem a Gestão (o consultor, só para ler).
+ */
 export type PerfilId = 'admin' | 'consultor' | 'cliente_principal' | 'cliente_usuario';
 
 export const PERFIL_ADMIN: PerfilId = 'admin';
@@ -34,7 +37,8 @@ export interface ClienteSessao {
 export interface SessaoPayload {
   usuario: { nome: string | null; email: string };
   perfil: { id: PerfilId; rotulo: string };
-  // a pessoa abre a Gestão (/api/admin/*): só o Admin BORD
+  // a pessoa abre a Gestão (/api/admin/*): o Admin BORD, com tudo, e o Consultor por carteira, só para
+  // ler as empresas da carteira (o que cada um vê vem em `permissoes` e `abas` da Gestão)
   gestao: boolean;
   // os clientes que a pessoa pode abrir, por nome (o seletor de empresa)
   clientes: ClienteSessao[];

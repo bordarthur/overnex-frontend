@@ -44,8 +44,12 @@ export const useGestao = () => useQuery(opcoesGestao(useApiClient()));
 /** Tudo das abas de uma empresa. */
 export const useClienteGestao = (slug: string) => useQuery(opcoesClienteGestao(useApiClient(), slug));
 
-/** Todas as pessoas, os filtros da lista e a nota do convite. */
-export const useUsuariosGestao = () => useQuery(opcoesUsuariosGestao(useApiClient()));
+/**
+ * Todas as pessoas, os filtros da lista e a nota do convite. `pedir` false: não pede (quem não tem
+ * `permissoes.usuarios` levaria um 403 certo).
+ */
+export const useUsuariosGestao = (pedir = true) =>
+  useQuery({ ...opcoesUsuariosGestao(useApiClient()), enabled: pedir });
 
 /** O que mais uma gravação da Gestão muda, além das telas da própria Gestão. */
 export type AlcanceDaGravacao =

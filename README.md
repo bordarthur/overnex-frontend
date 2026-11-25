@@ -32,7 +32,7 @@ A empresa aberta é o `:clienteSlug` da URL (o "cliente" do contrato; na tela, "
 
 `/` e `/privacidade` são o site institucional (abaixo). A entrada do app é `/inicio`, que decide para onde a pessoa vai, pela `/api/sessao` sem empresa escolhida (`Inicio`, em `src/app/Guardas.tsx`):
 
-- `gestao: true` (Admin BORD): `/gestao`;
+- `gestao: true` (Admin BORD e Consultor por carteira): `/gestao`;
 - `cliente` preenchido (uma empresa só): a primeira tela liberada dela, que é a Visão geral quando liberada;
 - duas ou mais em `clientes`: a tela "Escolha a empresa". Depois, a troca é pelo seletor do menu (no rail estreito e no celular, a sigla da empresa);
 - nenhuma: o texto de `aviso` e o botão Sair.
@@ -82,7 +82,7 @@ Sem uso, a sessão cai, com aviso 2 minutos antes. O tempo é de cada pessoa e v
 
 ### Gestão (Interno BORD)
 
-`/gestao`, só para o Admin BORD (`gestao: true` na sessão; as rotas `/api/admin/*` respondem 403 para os outros). Visual do mockup Gestão M2.1.0; contrato em `src/contracts/gestao.ts`. O código fica num arquivo separado do resto do app (`src/screens/gestao/`), que só a Gestão baixa.
+`/gestao`, para quem tem `gestao: true` na sessão (as rotas `/api/admin/*` respondem 403 para os outros): o Admin BORD, com tudo, e o Consultor por carteira, só para ler as empresas da carteira dele. O que cada um vê vem da API, sem regra por perfil no front: `permissoes` de `GET /api/admin/gestao` (`criarEmpresa` mostra "Nova empresa"; `usuarios` mostra o seletor Empresas | Usuários, e sem ele a lista de pessoas nem é pedida e `/gestao/usuarios` volta para as empresas), e `abas` e `permissoes` de `GET /api/admin/clientes/{slug}` (as abas da empresa, com os rótulos, e os botões "Convidar usuário" e "Editar"; `?aba=` com uma aba fora da lista cai na primeira). Visual do mockup Gestão M2.1.0; contrato em `src/contracts/gestao.ts`. O código fica num arquivo separado do resto do app (`src/screens/gestao/`), que só a Gestão baixa.
 
 - **Empresas** (`/gestao/empresas/:slug?aba=…`): Implantação (camadas), Prontidão dos dados, Painéis (liga e desliga, com a prévia do menu), Preferências (as que a API mandar e os feriados), Usuários e acesso (quem acessa e a matriz do que cada perfil vê) e Cargas.
 - **Usuários** (`/gestao/usuarios?filtro=…`): a lista, os filtros que a API manda e a gaveta de edição (nome, perfil, empresas, sessão, desativar e reativar).
