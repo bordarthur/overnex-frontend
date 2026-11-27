@@ -1,0 +1,241 @@
+[
+  {
+    "id": "excesso-parados",
+    "largura": 12,
+    "titulo": "Excesso e parados: o dinheiro preso",
+    "subtitulo": "Valor acima do ideal e produtos sem venda há 90 dias ou mais",
+    "explicacao": "Excesso: o que passa de 1,5 vez o ideal, em reais a custo. Parado: produto com estoque e sem venda há 90 dias ou mais (vale o estoque inteiro). A ação sai da Classe BCG do produto.",
+    "tipo": "tabela",
+    "colunas": [
+      {
+        "rotulo": "Produto",
+        "alinhar": "esquerda",
+        "ordenavel": true
+      },
+      {
+        "rotulo": "Classe BCG",
+        "alinhar": "esquerda",
+        "ordenavel": true,
+        "ocultarNoCelular": true
+      },
+      {
+        "rotulo": "Dinheiro preso",
+        "ordenavel": true
+      },
+      {
+        "rotulo": "Cobertura",
+        "ordenavel": true,
+        "ocultarNoCelular": true
+      },
+      {
+        "rotulo": "Sem venda há",
+        "ordenavel": true
+      },
+      {
+        "rotulo": "Ação sugerida",
+        "alinhar": "esquerda",
+        "ocultarNoCelular": true
+      }
+    ],
+    "linhas": [
+      {
+        "celulas": [
+          {
+            "valor": "Charque ponta de agulha",
+            "sub": "fora dos principais · Bovinos",
+            "ordem": "Charque ponta de agulha"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 212000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 1,
+              "estilo": "atencao-escura"
+            },
+            "ordem": 212000
+          },
+          {
+            "valor": "—",
+            "tom": "apagado",
+            "sub": "ideal 12",
+            "ordem": 9999
+          },
+          {
+            "valor": {
+              "valor": 124,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "negrito": true,
+            "ordem": 124
+          },
+          {
+            "valor": "Liquidar: promoção com os vendedores"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Queijo coalho em barra",
+            "sub": "fora dos principais · Mercearia",
+            "ordem": "Queijo coalho em barra"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 118000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.557,
+              "estilo": "atencao-escura"
+            },
+            "ordem": 118000
+          },
+          {
+            "valor": "—",
+            "tom": "apagado",
+            "sub": "ideal 12",
+            "ordem": 9999
+          },
+          {
+            "valor": {
+              "valor": 92,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "negrito": true,
+            "ordem": 92
+          },
+          {
+            "valor": "Liquidar: promoção com os vendedores"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Kani-kama",
+            "sub": "fora dos principais · Mercearia",
+            "ordem": "Kani-kama"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 96000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.453,
+              "estilo": "atencao-escura"
+            },
+            "ordem": 96000
+          },
+          {
+            "valor": "—",
+            "tom": "apagado",
+            "sub": "ideal 12",
+            "ordem": 9999
+          },
+          {
+            "valor": {
+              "valor": 97,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "negrito": true,
+            "ordem": 97
+          },
+          {
+            "valor": "Liquidar: promoção com os vendedores"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Lagosta congelada",
+            "sub": "fora dos principais · Mercearia",
+            "ordem": "Lagosta congelada"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 92000,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.434,
+              "estilo": "atencao-escura"
+            },
+            "ordem": 92000
+          },
+          {
+            "valor": "—",
+            "tom": "apagado",
+            "sub": "ideal 12",
+            "ordem": 9999
+          },
+          {
+            "valor": {
+              "valor": 140,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "negrito": true,
+            "ordem": 140
+          },
+          {
+            "valor": "Liquidar: promoção com os vendedores"
+          }
+        ]
+      }
+    ],
+    "vazio": "Nada preso neste recorte.",
+    "limite": 10,
+    "rodape": [
+      {
+        "texto": "4 produtos somam "
+      },
+      {
+        "texto": "R$ 518 mil",
+        "destaque": true
+      },
+      {
+        "texto": " presos."
+      }
+    ]
+  }
+]

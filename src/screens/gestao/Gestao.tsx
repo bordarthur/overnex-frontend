@@ -5,7 +5,7 @@ import { UsuariosTela } from './UsuariosTela';
 
 /**
  * Rotas da Gestão (Interno BORD), debaixo de "/gestao". Ficam num arquivo à parte do resto do app
- * (ver App.tsx): só o Admin BORD baixa este código.
+ * (ver App.tsx): só quem abre a Gestão (Admin BORD e consultor) baixa este código.
  */
 export default function Gestao() {
   return (

@@ -1,10 +1,12 @@
 import type { PersonaFake } from '../auth/personasFake';
 import type {
+  AbaEmpresa,
   CamadaDoCliente,
   ClienteGestaoPayload,
   ConvitePedido,
   EmpresaCriada,
   MudancaEmpresa,
+  MudancaUnidade,
   FiltroUsuarios,
   FonteDoCliente,
   GestaoPayload,
@@ -12,10 +14,13 @@ import type {
   NovaEmpresa,
   NovoUsuario,
   PainelDoCliente,
+  Rotulado,
   StatusGestao,
+  UnidadeDaGestao,
   UsuarioGestao,
   UsuariosPayload,
 } from '../contracts/gestao';
+import type { NegociosSessao, NegociosValores } from '../contracts/negocios';
 import type { ClienteSessao, Empresa, PerfilId, PeriodoDisponivel, SessaoPayload } from '../contracts/sessao';
 import { ApiErro } from './client';
 import dados from './fixtures/gestao.json';
@@ -26,6 +31,8 @@ import dados from './fixtures/gestao.json';
 // API; as telas continuam só desenhando o que recebem. Tudo volta ao começo ao recarregar a página.
 
 const ADMIN = 'admin';
+// o Consultor por carteira abre a Gestão só para ler, e só as empresas da carteira
+const CONSULTOR = 'consultor';
 const SESSAO_MAXIMA_COMUM = 720;
 const DOMINIO_ADMIN = '@bord.com.br';
 
@@ -50,6 +57,11 @@ export const MSG = {
   ultimoAdmin: 'O Overnex precisa de pelo menos um Admin BORD ativo.',
   proprio: 'Você não pode tirar o próprio acesso de Admin BORD. Peça a outro Admin BORD.',
   nomeDaEmpresa: 'Informe o nome da empresa.',
+  unidade: 'Unidade não encontrada.',
+  nomeDaUnidade: 'Informe o nome da unidade.',
+  unidadeRepetida: 'Já existe uma unidade com esse nome nesta empresa.',
+  setor: 'Setor inválido.',
+  uf: 'UF inválida.',
   slug: 'O identificador só aceita letras minúsculas, números e hífen (ex.: pj-cortes).',
   empresaCriada:
     'Empresa criada. Já dá para convidar as pessoas; os painéis ligam quando a primeira ' +
@@ -75,8 +87,6 @@ interface FonteFora {
 interface ClienteMock {
   slug: string;
   nome: string;
-  // o setor, texto livre
-  segmento?: string | null;
   sigla: string;
   // final do nome das tabelas do cliente (f_vendas_<sufixo>)
   sufixo: string;
@@ -90,6 +100,13 @@ interface ClienteMock {
   feriados: { data: string; nome: string }[];
   // escolhas gravadas (a mesma do seletor da Visão geral), por id
   preferencias: Record<string, string>;
+  // o cadastro de unidades (cfg.empresa); sem ele, as unidades do mock inteiro, sem setor
+  unidades?: UnidadeMock[];
+}
+
+/** Uma linha do cadastro de unidades, como a tabela da LANN: o setor pelo id de cfg.setor. */
+interface UnidadeMock extends Omit<UnidadeDaGestao, 'setor'> {
+  setor: string | null;
 }
 
 interface UsuarioMock {
@@ -155,6 +172,95 @@ const PERIODOS: PeriodoDisponivel[] = [
   { id: '2026-08', rotulo: 'Agosto de 2026', dadosAte: '2026-08-31' },
 ];
 
+// os setores de cfg.setor, na ordem
+const SETORES = dados.setores as Rotulado[];
+
+// código da tela → setores em que ela vale (app/seguranca/setores.py no back)
+const SETORES_DA_TELA: Record<string, string[]> = { 'EST-01': ['distribuidora'] };
+
+/** As unidades do cliente na ordem da bandeja: setor (de cfg.setor), grupo e nome. */
+function unidadesDo(c: ClienteMock): UnidadeMock[] {
+  const lista =
+    c.unidades ??
+    EMPRESAS.map((e) => ({
+      ...e,
+      setor: null,
+      segmento: null,
+      grupo: null,
+      uf: null,
+      cidade: null,
+      bairro: null,
+      endereco: null,
+    }));
+  const ordem = (setor: string | null) =>
+    setor == null ? SETORES.length : SETORES.findIndex((x) => x.id === setor);
+  return [...lista].sort(
+    (a, b) =>
+      ordem(a.setor) - ordem(b.setor) ||
+      (a.grupo ?? '').localeCompare(b.grupo ?? '', 'pt-BR') ||
+      a.nome.localeCompare(b.nome, 'pt-BR', { numeric: true }),
+  );
+}
+
+/** Os setores das unidades, sem repetir, na ordem de cfg.setor. */
+const setoresDo = (c: ClienteMock): Rotulado[] =>
+  SETORES.filter((s) => unidadesDo(c).some((u) => u.setor === s.id));
+
+/** A árvore da bandeja "Negócios": só com mais de um grupo (setor e grupo). */
+function negociosDo(c: ClienteMock): NegociosSessao | null {
+  const unidades = unidadesDo(c);
+  if (new Set(unidades.map((u) => `${u.setor}/${u.grupo}`)).size <= 1) return null;
+  const setores = [...new Set(unidades.map((u) => u.setor))].map((setor) => {
+    const doSetor = unidades.filter((u) => u.setor === setor);
+    const id = setor ?? 'sem-setor';
+    return {
+      id,
+      rotulo: SETORES.find((x) => x.id === setor)?.rotulo ?? 'Sem setor',
+      grupos: [...new Set(doSetor.map((u) => u.grupo))].map((grupo) => ({
+        id: `${id}/${grupo ?? 'sem-grupo'}`,
+        rotulo: grupo ?? 'Sem grupo',
+        unidades: doSetor.filter((u) => u.grupo === grupo).map((u) => u.id),
+      })),
+    };
+  });
+  return { setores, telasPorSetor: {} };
+}
+
+/** Faturado fictício de uma unidade, fixo pelo id (o mock faz o papel da API). */
+function faturadoFicticio(id: string): number {
+  let h = 0;
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) % 9973;
+  return 150_000 + (h % 330) * 1_000;
+}
+
+/** Como GET /api/negocios: os valores da bandeja, do setor, do grupo e da unidade inteiros. */
+export function valoresNegociosDo(banco: BancoGestao, slug: string, mes?: string): NegociosValores {
+  const arvore = negociosDo(clienteDoSlug(banco, slug));
+  const brl = (valor: number) => ({ valor, unidade: 'brl' as const });
+  const soma = (ids: string[]) => ids.reduce((t, id) => t + faturadoFicticio(id), 0);
+  const periodo = PERIODOS.find((p) => p.id === mes);
+  // como a API: mês fora dos períodos da sessão é 422; com um negócio só, os mapas vêm vazios
+  if (mes !== undefined && !periodo) throw new ApiErro(422, 'Mês sem dados.');
+  if (!arvore) return { rotulo: 'Sem faturado para mostrar.', setores: {}, grupos: {}, unidades: {} };
+  return {
+    rotulo:
+      !periodo || periodo === PERIODOS[0]
+        ? 'Valores: faturado de 1º a 12/10'
+        : `Valores: faturado em ${periodo.rotulo.toLowerCase()}`,
+    setores: Object.fromEntries(
+      (arvore?.setores ?? []).map((s) => [s.id, brl(soma(s.grupos.flatMap((g) => g.unidades)))]),
+    ),
+    grupos: Object.fromEntries(
+      (arvore?.setores ?? []).flatMap((s) => s.grupos.map((g) => [g.id, brl(soma(g.unidades))])),
+    ),
+    unidades: Object.fromEntries(
+      (arvore?.setores ?? []).flatMap((s) =>
+        s.grupos.flatMap((g) => g.unidades.map((u) => [u, brl(faturadoFicticio(u))])),
+      ),
+    ),
+  };
+}
+
 const porNome = <T extends { nome: string }>(lista: T[]) =>
   [...lista].sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
 
@@ -179,6 +285,18 @@ function clienteDoSlug(banco: BancoGestao, slug: string): ClienteMock {
   const c = banco.clientes.find((x) => x.slug === slug);
   if (!c) throw new ApiErro(404, MSG.cliente);
   return c;
+}
+
+/** Quem abre a Gestão (GET /api/admin/gestao e /clientes/{slug}): o Admin BORD e o consultor. */
+export function quemAbreGestao(banco: BancoGestao, usuarioId: string): UsuarioMock {
+  const u = banco.usuarios.find((x) => x.id === usuarioId);
+  if (!u || !u.ativo || (u.perfil !== ADMIN && u.perfil !== CONSULTOR)) throw new ApiErro(403, MSG.negado);
+  return u;
+}
+
+/** Usuários e gravações da Gestão: só o Admin BORD. */
+export function soAdmin(banco: BancoGestao, usuarioId: string) {
+  if (quemAbreGestao(banco, usuarioId).perfil !== ADMIN) throw new ApiErro(403, MSG.negado);
 }
 
 function pessoaDoId(banco: BancoGestao, id: string): UsuarioMock {
@@ -219,15 +337,24 @@ export function sessaoDoBanco(banco: BancoGestao, usuarioId: string, slug?: stri
   const liberadas = escolhido
     ? escolhido.ligados.filter((codigo) => admin || escolhido.acesso[u.perfil]?.includes(codigo))
     : [];
+  // O Estoque (EST-01) ainda não está no catálogo da Gestão do mock: vale para quem vê as Vendas,
+  // nas empresas com alguma unidade de um setor dele (como SETORES_DA_TELA no back).
+  const setores = escolhido ? new Set(setoresDo(escolhido).map((s) => s.id)) : new Set<string>();
+  const porSetor = Object.entries(SETORES_DA_TELA).filter(
+    ([, deles]) => liberadas.includes('COM-01') && deles.some((s) => setores.has(s)),
+  );
+  const telas = [...liberadas, ...porSetor.map(([codigo]) => codigo)].sort();
+  const negocios = escolhido ? negociosDo(escolhido) : null;
   return {
     usuario: { nome: u.nome, email: u.email },
     perfil: { id: u.perfil as PerfilId, rotulo: rotuloPerfil(u.perfil) },
-    gestao: admin,
+    gestao: admin || u.perfil === CONSULTOR,
     clientes: lista.map(clienteSessao),
     cliente: escolhido ? clienteSessao(escolhido) : null,
     papel: escolhido ? papelDoPerfil(u.perfil) : null,
-    empresas: escolhido ? EMPRESAS : [],
-    telas: [...liberadas].sort(),
+    empresas: escolhido ? unidadesDo(escolhido).map(({ id, nome }): Empresa => ({ id, nome })) : [],
+    negocios: negocios && { ...negocios, telasPorSetor: Object.fromEntries(porSetor) },
+    telas,
     periodos: escolhido ? PERIODOS : [],
     aviso: !admin && lista.length === 0 ? MSG.semCliente : null,
   };
@@ -248,7 +375,8 @@ type PainelCatalogo = (typeof dados.paineis)[number];
 
 const temCarga = (c: ClienteMock, prefixo: string) => !(prefixo in c.fontesFora);
 const temDado = (c: ClienteMock, p: PainelCatalogo) => p.exige.some((prefixo) => temCarga(c, prefixo));
-const grupoDoPainel = (p: PainelCatalogo) => dados.camadas.find((k) => k.id === p.camada)?.grupo ?? '';
+// a camada é a seção do menu ("Financeiro"); o nível vai em cada painel
+const secaoDoPainel = (p: PainelCatalogo) => dados.camadas.find((k) => k.id === p.camada)?.rotulo ?? '';
 
 const ESTADOS: Record<string, [string, StatusGestao]> = {
   ativa: ['Ativa', 'saudavel'],
@@ -268,7 +396,15 @@ function camadas(c: ClienteMock): CamadaDoCliente[] {
         ? 'ativa'
         : 'implantacao';
     const [estadoRotulo, status] = ESTADOS[estado]!;
-    return { id: k.id, rotulo: k.rotulo, grupo: k.grupo, estado, estadoRotulo, status, pendencias };
+    return {
+      id: k.id,
+      rotulo: k.rotulo,
+      estado,
+      estadoRotulo,
+      status,
+      paineis: daCamada.map(({ codigo, nome, nivel }) => ({ codigo, nome, nivel })),
+      pendencias,
+    };
   });
 }
 
@@ -278,7 +414,8 @@ function paineis(c: ClienteMock): PainelDoCliente[] {
     return {
       codigo: p.codigo,
       nome: p.nome,
-      grupo: grupoDoPainel(p),
+      secao: secaoDoPainel(p),
+      nivel: p.nivel,
       ligado: c.ligados.includes(p.codigo),
       podeLigar: disponivel,
       status: disponivel ? 'saudavel' : 'neutro',
@@ -390,12 +527,23 @@ function todosOsUsuarios(banco: BancoGestao) {
 
 // ---------- GET /api/admin/* ----------
 
-export function gestaoDoBanco(banco: BancoGestao): GestaoPayload {
+// Rótulos das abas, como no mockup Gestão M2.1.0. A última é "Horas e cargas" no mockup; ficou
+// "Cargas" porque as horas de implantação não entram agora.
+const ABAS = dados.abas as AbaEmpresa[];
+
+/** As empresas que a pessoa vê na Gestão: todas (admin) ou as da carteira (consultor). */
+const daGestao = (banco: BancoGestao, u: UsuarioMock) =>
+  u.perfil === ADMIN ? banco.clientes : banco.clientes.filter((c) => u.clientes.includes(c.slug));
+
+export function gestaoDoBanco(banco: BancoGestao, usuarioId: string): GestaoPayload {
+  const u = quemAbreGestao(banco, usuarioId);
+  const admin = u.perfil === ADMIN;
   return {
-    clientes: porNome(banco.clientes).map((c) => ({
+    permissoes: { criarEmpresa: admin, usuarios: admin },
+    clientes: porNome(daGestao(banco, u)).map((c) => ({
       slug: c.slug,
       nome: c.nome,
-      segmento: c.segmento ?? null,
+      setores: setoresDo(c),
       camadas: camadas(c).map(({ id, rotulo, estado, estadoRotulo, status }) => ({
         id,
         rotulo,
@@ -404,21 +552,49 @@ export function gestaoDoBanco(banco: BancoGestao): GestaoPayload {
         status,
       })),
     })),
-    perfis: dados.perfis.map((p) => ({
-      ...p,
-      sessaoPadraoRotulo: rotuloSessao(p.sessaoPadraoMinutos),
-      pessoas: banco.usuarios.filter((u) => u.perfil === p.id && u.ativo).length,
-    })),
-    sessoes: dados.sessoes.map((minutos) => ({
-      minutos,
-      rotulo: rotuloSessao(minutos),
-      soAdmin: minutos > SESSAO_MAXIMA_COMUM,
-    })),
+    perfis: !admin
+      ? []
+      : dados.perfis.map((p) => ({
+          ...p,
+          sessaoPadraoRotulo: rotuloSessao(p.sessaoPadraoMinutos),
+          pessoas: banco.usuarios.filter((x) => x.perfil === p.id && x.ativo).length,
+        })),
+    sessoes: !admin
+      ? []
+      : dados.sessoes.map((minutos) => ({
+          minutos,
+          rotulo: rotuloSessao(minutos),
+          soAdmin: minutos > SESSAO_MAXIMA_COMUM,
+        })),
   };
 }
 
-export function clienteDoBanco(banco: BancoGestao, slug: string): ClienteGestaoPayload {
-  const c = clienteDoSlug(banco, slug);
+export function clienteDoBanco(banco: BancoGestao, usuarioId: string, slug: string): ClienteGestaoPayload {
+  const u = quemAbreGestao(banco, usuarioId);
+  if (u.perfil !== ADMIN) {
+    // empresa fora da carteira, ou que não existe: para o consultor, sempre 403
+    const c = daGestao(banco, u).find((x) => x.slug === slug);
+    if (!c) throw new ApiErro(403, MSG.negado);
+    return {
+      ...clienteCompleto(banco, c, false),
+      abas: ABAS.filter((a) => dados.abasDoConsultor.includes(a.id)),
+      permissoes: { editar: false, convidar: false, unidades: false },
+      opcoesSetor: [],
+      paineis: [],
+      acesso: { perfis: [], linhas: [] },
+      usuarios: [],
+      preferencias: [],
+      feriados: [],
+      cargas: [],
+      menu: [],
+    };
+  }
+  return clienteCompleto(banco, clienteDoSlug(banco, slug), true);
+}
+
+/** A empresa como o Admin BORD a vê. `comUsuarios` false: o resumo sai sem o chip de usuários. */
+function clienteCompleto(banco: BancoGestao, c: ClienteMock, comUsuarios: boolean): ClienteGestaoPayload {
+  const slug = c.slug;
   const listaCamadas = camadas(c);
   const noAr = dados.paineis.filter((p) => c.ligados.includes(p.codigo));
   const ve = (perfil: string, codigo: string) => c.acesso[perfil]?.includes(codigo) ?? false;
@@ -441,23 +617,36 @@ export function clienteDoBanco(banco: BancoGestao, slug: string): ClienteGestaoP
   const menu = new Map<string, { nome: string }[]>();
   for (const p of noAr) {
     if (!ve('cliente_principal', p.codigo) || !temDado(c, p)) continue;
-    const grupo = grupoDoPainel(p);
+    // como o menu do app: a Visão geral tem o grupo dela; os outros, a seção
+    const grupo = p.codigo === 'VG-01' ? 'Visão' : secaoDoPainel(p);
     menu.set(grupo, [...(menu.get(grupo) ?? []), { nome: p.nome }]);
   }
 
   return {
-    cliente: { slug: c.slug, nome: c.nome, segmento: c.segmento ?? null, logoUrl: null },
+    cliente: {
+      slug: c.slug,
+      nome: c.nome,
+      logoUrl: null,
+      setores: setoresDo(c),
+    },
+    abas: ABAS,
+    permissoes: { editar: true, convidar: true, unidades: true },
     resumo: [
       {
         rotulo: `${ativas} de ${listaCamadas.length} camadas ativas`,
         status: ativas === listaCamadas.length ? 'saudavel' : 'atencao',
       },
-      { rotulo: `${ativos} ${ativos === 1 ? 'usuário' : 'usuários'}`, status: 'neutro' },
+      ...(comUsuarios
+        ? [{ rotulo: `${ativos} ${ativos === 1 ? 'usuário' : 'usuários'}`, status: 'neutro' as const }]
+        : []),
       ultima
         ? { rotulo: `Última carga: hoje, ${ultima.inicio}`, status: ultima.status as StatusGestao }
         : { rotulo: 'Sem carga ainda', status: 'critico' },
     ],
     camadas: listaCamadas,
+    niveis: dados.niveis,
+    unidades: unidadesDo(c).map((u) => ({ ...u, setor: SETORES.find((x) => x.id === u.setor) ?? null })),
+    opcoesSetor: SETORES,
     fontes: fontes(c),
     paineis: paineis(c),
     acesso: {
@@ -642,7 +831,6 @@ export function criarEmpresa(banco: BancoGestao, m: NovaEmpresa): EmpresaCriada 
   banco.clientes.push({
     slug,
     nome,
-    segmento: m.segmento?.trim().replace(/\s+/g, ' ') || null,
     sigla: semAcento.slice(0, 2).toUpperCase(),
     sufixo: slug.replace(/-/g, '_'),
     fontesFora: Object.fromEntries(
@@ -668,13 +856,44 @@ export function apagarUsuario(banco: BancoGestao, autor: string, id: string) {
   banco.usuarios = banco.usuarios.filter((x) => x.id !== id);
 }
 
-/** Como PUT /api/admin/clientes/{slug}: troca o nome e o setor; o slug fica. */
+/** Como PUT /api/admin/clientes/{slug}: troca o nome; o slug fica. */
 export function mudarEmpresa(banco: BancoGestao, slug: string, m: MudancaEmpresa) {
   const c = clienteDoSlug(banco, slug);
   const nome = m.nome.trim().replace(/\s+/g, ' ');
   if (!nome) throw new ApiErro(422, MSG.nomeDaEmpresa);
   c.nome = nome;
-  c.segmento = m.segmento?.trim().replace(/\s+/g, ' ') || null;
+}
+
+// as 27 siglas, para conferir a UF como a API
+const UFS = new Set(
+  'AC AL AM AP BA CE DF ES GO MA MG MS MT PA PB PE PI PR RJ RN RO RR RS SC SE SP TO'.split(' '),
+);
+const limpo = (v: string | null) => v?.trim().replace(/\s+/g, ' ') || null;
+
+/** Como PUT /api/admin/clientes/{slug}/unidades/{id}: troca as colunas da unidade; o cliente fica. */
+export function mudarUnidade(banco: BancoGestao, slug: string, id: string, m: MudancaUnidade) {
+  const c = clienteDoSlug(banco, slug);
+  // a empresa sem cadastro próprio passa a ter o dela, a partir das unidades que mostrava
+  c.unidades ??= unidadesDo(c).map((u) => ({ ...u }));
+  const u = c.unidades.find((x) => x.id === id);
+  if (!u) throw new ApiErro(404, MSG.unidade);
+  const nome = limpo(m.nome);
+  if (!nome) throw new ApiErro(422, MSG.nomeDaUnidade);
+  if (c.unidades.some((x) => x.id !== id && x.nome.toLowerCase() === nome.toLowerCase()))
+    throw new ApiErro(422, MSG.unidadeRepetida);
+  if (m.setor != null && !SETORES.some((s) => s.id === m.setor)) throw new ApiErro(422, MSG.setor);
+  const uf = limpo(m.uf)?.toUpperCase() ?? null;
+  if (uf != null && !UFS.has(uf)) throw new ApiErro(422, MSG.uf);
+  Object.assign(u, {
+    nome,
+    setor: m.setor,
+    segmento: limpo(m.segmento),
+    grupo: limpo(m.grupo),
+    uf,
+    cidade: limpo(m.cidade),
+    bairro: limpo(m.bairro),
+    endereco: limpo(m.endereco),
+  });
 }
 
 // formato mínimo, como no back; quem valida de verdade é o envio do e-mail

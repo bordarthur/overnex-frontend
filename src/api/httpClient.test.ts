@@ -35,14 +35,14 @@ describe('cliente HTTP', () => {
     expect(api.dadosFicticios).toBe(false);
   });
 
-  it('manda o mês e a empresa (CNPJ) escolhidos na query, depois do cliente', async () => {
+  it('manda o mês e as unidades escolhidas na query, depois do cliente', async () => {
     const { api, fetch } = criar(json(fixtureVisaoGeral));
     await api.obterVisaoGeral('pj-cortes', {
       mes: '2026-09',
-      empresa: '0e000000-0000-4000-8000-000000000001',
+      unidades: '0e000000-0000-4000-8000-000000000001',
     });
     expect(fetch.mock.calls[0]![0]).toBe(
-      '/api/telas/visao-geral?cliente=pj-cortes&mes=2026-09&empresa=0e000000-0000-4000-8000-000000000001',
+      '/api/telas/visao-geral?cliente=pj-cortes&mes=2026-09&unidades=0e000000-0000-4000-8000-000000000001',
     );
   });
 
@@ -57,6 +57,12 @@ describe('cliente HTTP', () => {
     );
   });
 
+  it('pede os valores da bandeja Negócios com o cliente e o mês', async () => {
+    const { api, fetch } = criar(json({ rotulo: 'Valores', setores: {}, grupos: {}, unidades: {} }));
+    await api.obterValoresNegocios('leao-de-ouro', { mes: '2026-09' });
+    expect(fetch.mock.calls[0]![0]).toBe('/api/negocios?cliente=leao-de-ouro&mes=2026-09');
+  });
+
   it('um filtro chamado "cliente" não passa por cima do slug da empresa', async () => {
     const { api, fetch } = criar(json(fixturesPainel.vendas));
     await api.obterPainel('pj-cortes', 'vendas', { cliente: 'outra', canal: 'varejo' });
@@ -65,10 +71,10 @@ describe('cliente HTTP', () => {
 
   it('pede os nomes de um cartão na rota dele, com o cliente e os filtros do painel', async () => {
     const { api, fetch } = criar(json({ colunas: [], linhas: [] }));
-    await api.obterNomes('pj-cortes', 'pessoas', 'cargos-salarios', { mes: '2026-09', empresa: 'e1' });
+    await api.obterNomes('pj-cortes', 'pessoas', 'cargos-salarios', { mes: '2026-09', unidades: 'e1,e2' });
     const [url, init] = fetch.mock.calls[0]!;
     expect(url).toBe(
-      '/api/telas/pessoas/cartoes/cargos-salarios/nomes?cliente=pj-cortes&mes=2026-09&empresa=e1',
+      '/api/telas/pessoas/cartoes/cargos-salarios/nomes?cliente=pj-cortes&mes=2026-09&unidades=e1%2Ce2',
     );
     expect(init?.headers).toMatchObject({ Authorization: 'Bearer fake:abc' });
   });
@@ -87,7 +93,7 @@ describe('cliente HTTP', () => {
     expect(init?.body).toBe('{"valor":"3"}');
   });
 
-  it('grava as provisões com PUT nas rotas do cartão, em reais, com o cliente e a empresa da tela', async () => {
+  it('grava as provisões com PUT nas rotas do cartão, em reais, com o cliente e as unidades da tela', async () => {
     const { api, fetch } = criarComVarias(() => new Response(null, { status: 204 }));
     await api.salvarPeriodoProvisoes('pj-cortes', 'fluxo-caixa', 'provisoes', { periodo: '12-meses' });
     await api.salvarGrupoProvisao(
@@ -96,7 +102,7 @@ describe('cliente HTTP', () => {
       'provisoes',
       'folha',
       { ligado: true, valor: 900500 },
-      { empresa: '0e000000-0000-4000-8000-000000000001' },
+      { unidades: '0e000000-0000-4000-8000-000000000001' },
     );
     await api.salvarGrupoProvisao('pj-cortes', 'fluxo-caixa', 'provisoes', 'investimentos', {
       ligado: false,
@@ -107,7 +113,7 @@ describe('cliente HTTP', () => {
     expect(periodo![0]).toBe('/api/telas/fluxo-caixa/cartoes/provisoes/periodo?cliente=pj-cortes');
     expect(periodo![1]).toMatchObject({ method: 'PUT', body: '{"periodo":"12-meses"}' });
     expect(grupo![0]).toBe(
-      '/api/telas/fluxo-caixa/cartoes/provisoes/grupos/folha?cliente=pj-cortes&empresa=0e000000-0000-4000-8000-000000000001',
+      '/api/telas/fluxo-caixa/cartoes/provisoes/grupos/folha?cliente=pj-cortes&unidades=0e000000-0000-4000-8000-000000000001',
     );
     expect(grupo![1]).toMatchObject({ method: 'PUT', body: '{"ligado":true,"valor":900500}' });
     expect(desligar![0]).toBe(
@@ -116,13 +122,13 @@ describe('cliente HTTP', () => {
     expect(desligar![1]?.body).toBe('{"ligado":false,"valor":null}');
   });
 
-  it('a escolha vai com a empresa da tela, quando há', async () => {
+  it('a escolha vai com as unidades da tela, quando há', async () => {
     const { api, fetch } = criar(new Response(null, { status: 204 }));
     await api.salvarPreferenciaVisaoGeral('pj-cortes', 'linhas-custo', 'auto', {
-      empresa: '0e000000-0000-4000-8000-000000000001',
+      unidades: '0e000000-0000-4000-8000-000000000001',
     });
     expect(fetch.mock.calls[0]![0]).toBe(
-      '/api/telas/visao-geral/preferencias/linhas-custo?cliente=pj-cortes&empresa=0e000000-0000-4000-8000-000000000001',
+      '/api/telas/visao-geral/preferencias/linhas-custo?cliente=pj-cortes&unidades=0e000000-0000-4000-8000-000000000001',
     );
   });
 
@@ -258,15 +264,15 @@ describe('cliente HTTP: Gestão (/api/admin)', () => {
 
     await expect(api.gestao.convidarUsuario(novo)).resolves.toEqual(pedido);
     await expect(api.gestao.reenviarConvite('u9')).resolves.toEqual(pedido);
-    await api.gestao.criarCliente({ nome: 'Padaria', segmento: null, slug: null });
-    await api.gestao.salvarCliente('pj-cortes', { nome: 'PJ Cortes', segmento: 'Frigorífico' });
+    await api.gestao.criarCliente({ nome: 'Padaria', slug: null });
+    await api.gestao.salvarCliente('pj-cortes', { nome: 'PJ Cortes' });
     await api.gestao.apagarUsuario('u9');
 
     expect(fetch.mock.calls.map(([url, init]) => [init?.method, url, init?.body])).toEqual([
       ['POST', '/api/admin/usuarios', JSON.stringify(novo)],
       ['POST', '/api/admin/usuarios/u9/convite', undefined],
-      ['POST', '/api/admin/clientes', '{"nome":"Padaria","segmento":null,"slug":null}'],
-      ['PUT', '/api/admin/clientes/pj-cortes', '{"nome":"PJ Cortes","segmento":"Frigorífico"}'],
+      ['POST', '/api/admin/clientes', '{"nome":"Padaria","slug":null}'],
+      ['PUT', '/api/admin/clientes/pj-cortes', '{"nome":"PJ Cortes"}'],
       ['DELETE', '/api/admin/usuarios/u9', undefined],
     ]);
   });

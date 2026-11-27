@@ -9,6 +9,7 @@ import { MarcaDagua } from '../components/MarcaDagua';
 import { Rail } from '../components/Rail';
 import { CODIGO_DA_TELA, ehTelaApp } from '../contracts/telas';
 import { TODAS_AS_TELAS } from './menu';
+import { PARAM_UNIDADES, telaNosNegocios, useNegocios } from './negocios';
 import { useTopoAoTrocarDeTela } from './topo';
 
 const SEM_TELAS: string[] = [];
@@ -23,6 +24,7 @@ export function Moldura() {
   const { dadosFicticios } = useApiClient();
   const { sair } = useAuth();
   const sessao = useSessao();
+  const negocios = useNegocios();
   const rota = useMatch('/:clienteSlug/:tela/*')?.params.tela;
   useTopoAoTrocarDeTela();
 
@@ -30,6 +32,12 @@ export function Moldura() {
   // Sessão fora do ar por outro motivo não derruba a navegação: o menu inteiro aparece, e a API barra.
   const telas = sessao.data?.telas ?? (sessao.isError && !empresaNegada ? TODAS_AS_TELAS : SEM_TELAS);
   const telaNegada = sessao.isSuccess && ehTelaApp(rota) && !telas.includes(CODIGO_DA_TELA[rota]);
+  // o menu acompanha a bandeja "Negócios": some a tela de um setor sem unidade marcada, e os links
+  // levam a escolha junto
+  const noMenu = negocios.arvore
+    ? telas.filter((codigo) => telaNosNegocios(codigo, negocios.arvore, negocios.marcadas))
+    : telas;
+  const busca = negocios.param ? `?${PARAM_UNIDADES}=${negocios.param}` : '';
   useAdiantarAoEntrar(clienteSlug, sessao.isSuccess && telas.includes(CODIGO_DA_TELA['visao-geral']));
 
   return (
@@ -42,7 +50,8 @@ export function Moldura() {
         <Rail
           clienteSlug={clienteSlug}
           dadosFicticios={dadosFicticios}
-          telas={telas}
+          telas={noMenu}
+          busca={busca}
           clientes={sessao.data?.clientes ?? SEM_CLIENTES}
           gestao={sessao.data?.gestao ?? false}
         />

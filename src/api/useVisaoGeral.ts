@@ -5,17 +5,17 @@ import { useClienteSlug } from './useClienteSlug';
 // O mesmo prazo do cache da API: o que foi adiantado conta como fresco por esse tempo.
 const VALIDADE_MS = 15 * 60_000;
 
-/** Começo da query key de toda Visão geral (qualquer empresa, mês e CNPJ). */
+/** Começo da query key de toda Visão geral (qualquer empresa, mês e unidades). */
 export const CHAVE_VISAO_GERAL = 'visao-geral';
 
 /**
  * Consulta da Visão geral. A tela e os pedidos adiantados (adiantar.ts) usam estas mesmas opções,
- * para a tela aproveitar o que já chegou. Cada empresa (o slug da URL), mês e CNPJ é uma consulta.
+ * para a tela aproveitar o que já chegou. Cada empresa (o slug da URL), mês e escolha de unidades é uma consulta.
  */
-export function opcoesVisaoGeral(api: ApiClient, cliente: string, { mes, empresa }: FiltrosVisaoGeral = {}) {
+export function opcoesVisaoGeral(api: ApiClient, cliente: string, { mes, unidades }: FiltrosVisaoGeral = {}) {
   return queryOptions({
-    queryKey: [CHAVE_VISAO_GERAL, cliente, mes ?? null, empresa ?? null],
-    queryFn: ({ signal }) => api.obterVisaoGeral(cliente, { mes, empresa }, { signal }),
+    queryKey: [CHAVE_VISAO_GERAL, cliente, mes ?? null, unidades ?? null],
+    queryFn: ({ signal }) => api.obterVisaoGeral(cliente, { mes, unidades }, { signal }),
     staleTime: VALIDADE_MS,
     // Sem permissão não muda com nova tentativa.
     retry: (falhas, erro) => !semPermissao(erro) && falhas < 2,

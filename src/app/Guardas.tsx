@@ -58,7 +58,7 @@ const telaDeEntrada = (slug: string, telas: string[]) => `/${slug}/${primeiraTel
 
 /**
  * "/inicio": para onde a pessoa vai ao entrar (o app; "/" é o site institucional), pelo que /api/sessao (sem empresa escolhida) diz dela:
- * - Admin BORD: a Gestão;
+ * - quem abre a Gestão (`gestao`: Admin BORD e Consultor por carteira): a Gestão;
  * - uma empresa só: a primeira tela dela (a Visão geral, quando liberada);
  * - duas ou mais: a tela "Escolha a empresa";
  * - nenhuma: o aviso que a API mandou e o botão Sair.

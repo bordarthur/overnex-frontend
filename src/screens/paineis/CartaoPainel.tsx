@@ -1,8 +1,10 @@
 import type { Cartao } from '../../contracts/painel';
+import { AcoesBcgCartao } from './AcoesBcgCartao';
 import { AndamentoMes } from './AndamentoMes';
 import { ArvoreMensal } from './ArvoreMensal';
 import { BarraPartes } from './BarraPartes';
 import { BarrasHorizontais } from './BarrasHorizontais';
+import { BcgCartao } from './BcgCartao';
 import { CicloCaixa } from './CicloCaixa';
 import { ContraMeta } from './ContraMeta';
 import { CurvaAbc } from './CurvaAbc';
@@ -19,6 +21,8 @@ import { Matriz } from './Matriz';
 import { NumeroGrafico } from './NumeroGrafico';
 import { OrigemProjecao } from './OrigemProjecao';
 import { Provisoes } from './Provisoes';
+import { RealIdealCartao } from './RealIdealCartao';
+import { SaudeEstoqueCartao } from './SaudeEstoqueCartao';
 import { TabelaCartao } from './TabelaCartao';
 
 /** Desenha o cartão pelo `tipo` que veio da API. */
@@ -66,5 +70,13 @@ export function CartaoPainel({ cartao }: { cartao: Cartao }) {
       return <OrigemProjecao cartao={cartao} />;
     case 'provisoes':
       return <Provisoes cartao={cartao} />;
+    case 'bcg':
+      return <BcgCartao cartao={cartao} />;
+    case 'acoes-bcg':
+      return <AcoesBcgCartao cartao={cartao} />;
+    case 'real-ideal':
+      return <RealIdealCartao cartao={cartao} />;
+    case 'saude-estoque':
+      return <SaudeEstoqueCartao cartao={cartao} />;
   }
 }

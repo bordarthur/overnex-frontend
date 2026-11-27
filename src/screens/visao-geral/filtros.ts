@@ -11,13 +11,15 @@ export interface FiltrosDaTela {
 
 /**
  * Chips da Visão geral a partir de /api/sessao. Os chips trabalham com rótulos; aqui eles viram
- * o `id` do período (AAAA-MM) e da empresa (UUID). Sem sessão, só fica o "Comparar com".
+ * o `id` do período (AAAA-MM) e da unidade. Sem sessão, só fica o "Comparar com".
  * - Período: os meses com dados, o mais recente como padrão (é o que a API usa sem `mes`);
- * - Empresa: só aparece com mais de uma empresa no vínculo; o padrão é "Todas".
+ * - Unidade: só para cliente com um negócio só (`negocios` null) e mais de uma unidade; o padrão é
+ *   "Todas". Com mais de um negócio, a escolha é pela bandeja "Negócios", que fica na URL e chega
+ *   aqui em `bandeja` (os ids marcados, separados por vírgula; sem ele, todas).
  */
-export function montarFiltros(sessao: SessaoPayload | undefined): FiltrosDaTela {
+export function montarFiltros(sessao: SessaoPayload | undefined, bandeja?: string): FiltrosDaTela {
   const periodos = sessao?.periodos ?? [];
-  const empresas = sessao?.empresas ?? [];
+  const unidades = sessao?.empresas ?? [];
   const defs: FiltroDef[] = [];
 
   const periodo: FiltroDef | undefined = periodos[0] && {
@@ -29,12 +31,12 @@ export function montarFiltros(sessao: SessaoPayload | undefined): FiltrosDaTela 
   if (periodo) defs.push(periodo);
   defs.push(FILTRO_COMPARAR);
 
-  const todas = `Todas (${empresas.length})`;
-  const empresa: FiltroDef | undefined =
-    empresas.length > 1
-      ? { id: 'empresa', rotulo: 'Empresa', opcoes: [todas, ...empresas.map((e) => e.nome)], padrao: todas }
+  const todas = `Todas (${unidades.length})`;
+  const unidade: FiltroDef | undefined =
+    !sessao?.negocios && unidades.length > 1
+      ? { id: 'unidade', rotulo: 'Unidade', opcoes: [todas, ...unidades.map((e) => e.nome)], padrao: todas }
       : undefined;
-  if (empresa) defs.push(empresa);
+  if (unidade) defs.push(unidade);
 
   return {
     defs,
@@ -44,10 +46,11 @@ export function montarFiltros(sessao: SessaoPayload | undefined): FiltrosDaTela 
       if (rotuloPeriodo && rotuloPeriodo !== periodo.padrao) {
         filtros.mes = periodos.find((p) => p.rotulo === rotuloPeriodo)?.id;
       }
-      const nomeEmpresa = empresa && valores[empresa.id];
-      if (nomeEmpresa && nomeEmpresa !== empresa.padrao) {
-        filtros.empresa = empresas.find((e) => e.nome === nomeEmpresa)?.id;
+      const nomeUnidade = unidade && valores[unidade.id];
+      if (nomeUnidade && nomeUnidade !== unidade.padrao) {
+        filtros.unidades = unidades.find((e) => e.nome === nomeUnidade)?.id;
       }
+      if (sessao?.negocios && bandeja) filtros.unidades = bandeja;
       return filtros;
     },
   };

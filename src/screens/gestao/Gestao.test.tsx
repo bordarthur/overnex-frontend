@@ -26,11 +26,26 @@ describe('Gestão: empresa', () => {
   it('mostra a empresa com os chips, as camadas e a lista de empresas com o estado de cada camada', async () => {
     abrir('/gestao/empresas/pj');
     expect(await screen.findByRole('heading', { level: 1, name: 'PJ' })).toBeInTheDocument();
-    expect(screen.getByText('2 de 4 camadas ativas')).toBeInTheDocument();
+    expect(screen.getByText('1 de 3 camadas ativas')).toBeInTheDocument();
 
-    const completo = screen.getByRole('article', { name: 'Universal Completo' });
-    expect(within(completo).getByText('Em implantação')).toBeInTheDocument();
-    expect(within(completo).getByText('Fluxo de caixa: sem dado')).toBeInTheDocument();
+    // um cartão por seção do menu, com o nível de cada painel ao lado do nome
+    expect(screen.getAllByRole('article').map((a) => a.getAttribute('aria-label'))).toEqual([
+      'Comercial',
+      'Financeiro',
+      'Pessoas',
+    ]);
+    const financeiro = screen.getByRole('article', { name: 'Financeiro' });
+    expect(within(financeiro).getByText('Em implantação')).toBeInTheDocument();
+    expect(
+      within(within(financeiro).getByRole('list', { name: 'Painéis de Financeiro' }))
+        .getAllByRole('listitem')
+        .map((li) => li.textContent),
+    ).toEqual([
+      'ResultadoUniversal Completo',
+      'Receber e pagarUniversal Básico',
+      'Fluxo de caixaUniversal Completo',
+    ]);
+    expect(within(financeiro).getByText('Fluxo de caixa: sem dado')).toBeInTheDocument();
 
     const lista = screen.getByRole('navigation', { name: 'Empresas' });
     expect(within(lista).getByRole('link', { name: /^PJ/ })).toHaveAttribute('aria-current', 'page');
@@ -42,6 +57,42 @@ describe('Gestão: empresa', () => {
       'href',
       '/pj',
     );
+    // o Admin BORD tem tudo: as 7 abas, os botões do cabeçalho, Usuários e Nova empresa
+    expect(screen.getAllByRole('tab')).toHaveLength(7);
+    expect(screen.getByRole('button', { name: 'Convidar usuário' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Editar empresa' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nova empresa' })).toBeInTheDocument();
+    // a contagem do seletor vem de GET /api/admin/usuarios
+    await waitFor(() => expect(screen.getByRole('link', { name: /^Usuários/ })).toHaveTextContent(/\d/));
+  });
+
+  it('a aba Unidades mostra o cadastro de unidades, e os setores vão para o cabeçalho e a lista', async () => {
+    abrir('/gestao/empresas/leao-de-ouro?aba=unidades');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Leão de Ouro' })).toBeInTheDocument();
+    // só o setor das unidades: a empresa não tem mais ramo
+    expect(screen.getByText('Varejo', { selector: 'p' })).toBeInTheDocument();
+    const lista = screen.getByRole('navigation', { name: 'Empresas' });
+    expect(
+      within(within(lista).getByRole('link', { name: /^Leão de Ouro/ })).getByText('Varejo', {
+        selector: 'small',
+      }),
+    ).toBeInTheDocument();
+
+    const tabela = screen.getByRole('table');
+    const linhas = within(tabela).getAllByRole('row').slice(1);
+    expect(linhas.map((l) => within(l).getAllByRole('cell')[0]!.textContent)).toEqual([
+      'Leão 1',
+      'Leão 2',
+      'Lupo 1',
+      'Lupo 2',
+      'Usaflex 1',
+      'Usaflex 2',
+    ]);
+    expect(
+      within(linhas[2]!)
+        .getAllByRole('cell')
+        .map((c) => c.textContent),
+    ).toEqual(['Lupo 1', 'Varejo', 'Vestuário', 'Lupo', '–', '–', 'Editar']);
   });
 
   it('convidar pelo cabeçalho da empresa: ela já vem marcada, e o passo final mostra o texto da API', async () => {
@@ -114,6 +165,14 @@ describe('Gestão: empresa', () => {
     const gravar = vi.spyOn(api.gestao, 'salvarPainel');
     await screen.findByRole('heading', { level: 1, name: 'PJ' });
     expect(previaDoMenu()).toContain('Resultado');
+    // os painéis por seção do menu, com o nível ao lado do nome
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual(
+      expect.arrayContaining(['Comercial', 'Financeiro', 'Pessoas']),
+    );
+    expect(screen.getByText('Resultado', { selector: 'b' })).toHaveTextContent('ResultadoUniversal Completo');
+    expect(screen.getByText('Receber e pagar', { selector: 'b' })).toHaveTextContent(
+      'Receber e pagarUniversal Básico',
+    );
 
     await user.click(chave('Ligar Resultado'));
     expect(gravar).toHaveBeenCalledWith('pj', 'FIN-02', false);
@@ -209,9 +268,13 @@ describe('Gestão: empresa', () => {
     const { api, user } = abrir('/gestao/empresas/pj');
     const criar = vi.spyOn(api.gestao, 'criarCliente');
     await screen.findByRole('heading', { level: 1, name: 'PJ' });
-    // o setor aparece na barra lateral, quando há
+    // empresa sem unidade com setor: nada embaixo do nome
     const lista = screen.getByRole('navigation', { name: 'Empresas' });
-    expect(within(lista).getByRole('link', { name: /^Agência Aurora/ })).toHaveTextContent('Publicidade');
+    expect(
+      within(lista)
+        .getByRole('link', { name: /^Agência Aurora/ })
+        .querySelector('small'),
+    ).toBeNull();
 
     await user.click(screen.getByRole('button', { name: 'Nova empresa' }));
     const gaveta = screen.getByRole('dialog', { name: 'Nova empresa' });
@@ -228,14 +291,15 @@ describe('Gestão: empresa', () => {
 
     await user.clear(within(gaveta).getByLabelText('Nome'));
     await user.type(within(gaveta).getByLabelText('Nome'), 'Padaria São João');
-    await user.type(within(gaveta).getByLabelText('Setor'), 'Alimentação');
+    // só o nome: setor e segmento são das unidades
+    expect(within(gaveta).getAllByRole('textbox')).toHaveLength(1);
     await user.click(within(gaveta).getByRole('button', { name: 'Criar empresa' }));
-    expect(criar).toHaveBeenLastCalledWith({ nome: 'Padaria São João', segmento: 'Alimentação', slug: null });
+    expect(criar).toHaveBeenLastCalledWith({ nome: 'Padaria São João', slug: null });
     expect(await within(gaveta).findByText(/^Empresa criada\./)).toBeInTheDocument();
 
     await user.click(within(gaveta).getByRole('button', { name: 'Concluir' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Padaria São João' })).toBeInTheDocument();
-    expect(screen.getByText('0 de 4 camadas ativas')).toBeInTheDocument();
+    expect(screen.getByText('0 de 3 camadas ativas')).toBeInTheDocument();
     expect(within(lista).getByRole('link', { name: /^Padaria São João/ })).toHaveAttribute(
       'aria-current',
       'page',
@@ -245,7 +309,7 @@ describe('Gestão: empresa', () => {
     expect(screen.getByRole('button', { name: 'Convidar para Padaria São João' })).toBeInTheDocument();
   });
 
-  it('editar empresa: troca o nome e o setor, sem campo de identificador; a recusa da API aparece', async () => {
+  it('editar empresa: troca só o nome, sem identificador nem ramo; a recusa da API aparece', async () => {
     const { api, user } = abrir('/gestao/empresas/pj');
     const salvar = vi.spyOn(api.gestao, 'salvarCliente');
     await screen.findByRole('heading', { level: 1, name: 'PJ' });
@@ -253,9 +317,8 @@ describe('Gestão: empresa', () => {
     await user.click(screen.getByRole('button', { name: 'Editar empresa' }));
     const gaveta = screen.getByRole('dialog', { name: 'Editar empresa' });
     expect(within(gaveta).getByLabelText('Nome')).toHaveValue('PJ');
-    // empresa sem setor: campo vazio, e nada no cabeçalho
-    expect(within(gaveta).getByLabelText('Setor')).toHaveValue('');
-    expect(within(gaveta).getAllByRole('textbox')).toHaveLength(2);
+    expect(within(gaveta).queryByLabelText('Ramo')).toBeNull();
+    expect(within(gaveta).getAllByRole('textbox')).toHaveLength(1);
 
     await user.clear(within(gaveta).getByLabelText('Nome'));
     await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
@@ -263,17 +326,18 @@ describe('Gestão: empresa', () => {
     expect(within(gaveta).getByText('Informe o nome da empresa.')).toBeInTheDocument();
 
     await user.type(within(gaveta).getByLabelText('Nome'), 'PJ Cortes');
-    await user.type(within(gaveta).getByLabelText('Setor'), 'Frigorífico');
     salvar.mockRejectedValueOnce(new ApiErro(404, 'Empresa não encontrada.'));
     await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
     expect(await within(gaveta).findByRole('alert')).toHaveTextContent('Empresa não encontrada.');
 
     await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
-    expect(salvar).toHaveBeenLastCalledWith('pj', { nome: 'PJ Cortes', segmento: 'Frigorífico' });
+    expect(salvar).toHaveBeenLastCalledWith('pj', { nome: 'PJ Cortes' });
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(await screen.findByRole('heading', { level: 1, name: 'PJ Cortes' })).toBeInTheDocument();
-    // o setor aparece no cabeçalho e na barra lateral
-    expect(screen.getAllByText('Frigorífico')).toHaveLength(2);
+    // o nome novo também na barra lateral
+    expect(
+      within(screen.getByRole('navigation', { name: 'Empresas' })).getByRole('link', { name: /^PJ Cortes/ }),
+    ).toBeInTheDocument();
   });
 
   it('empresa que não existe mostra o texto da API', async () => {
@@ -533,5 +597,86 @@ describe('Gestão: usuários', () => {
     expect(acesso).toHaveBeenLastCalledWith('0d000000-0000-4000-8000-0000000000c0', true);
     expect(await within(gaveta).findByText('Acesso reativado.')).toBeInTheDocument();
     expect(await within(gaveta).findByRole('button', { name: 'Desativar acesso' })).toBeInTheDocument();
+  });
+});
+
+describe('Gestão: editar unidade', () => {
+  const LUPO_1 = '0e000000-0000-4000-8000-00000000a003';
+
+  it('edita as colunas da unidade e grava pela API', async () => {
+    const { api, user } = abrir('/gestao/empresas/leao-de-ouro?aba=unidades');
+    const salvar = vi.spyOn(api.gestao, 'salvarUnidade');
+    await screen.findByRole('heading', { level: 1, name: 'Leão de Ouro' });
+
+    await user.click(screen.getByRole('button', { name: 'Editar Lupo 1' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Editar unidade' });
+    expect(within(gaveta).getByLabelText('Unidade')).toHaveValue('Lupo 1');
+    expect(within(gaveta).getByLabelText('Setor')).toHaveValue('varejo');
+
+    await user.selectOptions(within(gaveta).getByLabelText('UF'), 'CE');
+    await user.type(within(gaveta).getByLabelText('Cidade'), 'Fortaleza');
+    await user.clear(within(gaveta).getByLabelText('Grupo'));
+    await user.type(within(gaveta).getByLabelText('Grupo'), 'Lupo Kids');
+    await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(salvar).toHaveBeenLastCalledWith('leao-de-ouro', LUPO_1, {
+      nome: 'Lupo 1',
+      setor: 'varejo',
+      segmento: 'Vestuário',
+      grupo: 'Lupo Kids',
+      uf: 'CE',
+      cidade: 'Fortaleza',
+      bairro: null,
+      endereco: null,
+    });
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Editar unidade' })).toBeNull());
+    const linha = screen.getByRole('row', { name: /^Lupo 1/ });
+    expect(linha).toHaveTextContent('Lupo Kids');
+    expect(linha).toHaveTextContent('Fortaleza/CE');
+  });
+
+  it('mostra o erro de nome vazio e a recusa da API', async () => {
+    const { user } = abrir('/gestao/empresas/leao-de-ouro?aba=unidades');
+    await screen.findByRole('heading', { level: 1, name: 'Leão de Ouro' });
+    await user.click(screen.getByRole('button', { name: 'Editar Lupo 1' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Editar unidade' });
+    const nome = within(gaveta).getByLabelText('Unidade');
+
+    await user.clear(nome);
+    await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
+    expect(within(gaveta).getByText('Informe o nome da unidade.')).toBeInTheDocument();
+
+    await user.type(nome, 'Leão 1');
+    await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
+    expect(await within(gaveta).findByRole('alert')).toHaveTextContent(
+      'Já existe uma unidade com esse nome nesta empresa.',
+    );
+  });
+
+  it('trocar o setor muda a bandeja e os painéis por setor da empresa', async () => {
+    const { api, user } = abrir('/gestao/empresas/leao-de-ouro?aba=unidades');
+    await screen.findByRole('heading', { level: 1, name: 'Leão de Ouro' });
+    expect((await api.obterSessao('leao-de-ouro')).telas).not.toContain('EST-01');
+
+    await user.click(screen.getByRole('button', { name: 'Editar Lupo 1' }));
+    const gaveta = screen.getByRole('dialog', { name: 'Editar unidade' });
+    await user.selectOptions(within(gaveta).getByLabelText('Setor'), 'distribuidora');
+    await user.click(within(gaveta).getByRole('button', { name: 'Salvar alterações' }));
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Editar unidade' })).toBeNull());
+
+    const sessao = await api.obterSessao('leao-de-ouro');
+    expect(sessao.telas).toContain('EST-01');
+    expect(sessao.negocios?.setores.map((s) => s.rotulo)).toEqual(['Distribuidora', 'Varejo']);
+    expect(sessao.negocios?.telasPorSetor).toEqual({ 'EST-01': ['distribuidora'] });
+  });
+
+  it('o consultor só lê: sem o "Editar"', async () => {
+    renderizarApp(
+      '/gestao/empresas/demo?aba=unidades',
+      undefined,
+      criarMockClient({ atrasoMs: 0, persona: 'consultor' }),
+    );
+    expect(await screen.findByRole('heading', { level: 2, name: 'Unidades da empresa' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Editar Matriz/ })).toBeNull();
   });
 });

@@ -199,6 +199,8 @@ export interface Secao {
   id: string;
   titulo: string;
   modulo: string | null;
+  // seção que soma só um setor, com outros setores marcados em Negócios ("Conta só a Distribuidora")
+  escopo?: string | null;
   resumo: string;
   kpis: Kpi[];
   seletor?: SeletorSecao | null;

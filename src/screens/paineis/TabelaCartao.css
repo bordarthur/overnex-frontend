@@ -237,3 +237,34 @@
     padding-right: 6px;
   }
 }
+
+/* cabeçalho que ordena (as listas do Estoque) */
+.tbl-ordena {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tbl-ordena:hover {
+  color: var(--ink);
+}
+.tbl-ordena:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.tbl-seta {
+  display: inline-block;
+  width: 10px;
+  color: var(--ink);
+}
+.tbl-mais {
+  display: inline-block;
+  margin-top: 10px;
+}
+.tbl-rodape {
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin-top: 10px;
+}

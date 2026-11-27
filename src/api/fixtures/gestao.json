@@ -1,4 +1,35 @@
 {
+  "abas": [
+    {
+      "id": "implantacao",
+      "rotulo": "Implantação"
+    },
+    {
+      "id": "unidades",
+      "rotulo": "Unidades"
+    },
+    {
+      "id": "dados",
+      "rotulo": "Prontidão dos dados"
+    },
+    {
+      "id": "paineis",
+      "rotulo": "Painéis"
+    },
+    {
+      "id": "preferencias",
+      "rotulo": "Preferências da empresa"
+    },
+    {
+      "id": "acesso",
+      "rotulo": "Usuários e acesso"
+    },
+    {
+      "id": "cargas",
+      "rotulo": "Cargas"
+    }
+  ],
+  "abasDoConsultor": ["implantacao", "unidades", "dados"],
   "perfis": [
     {
       "id": "admin",
@@ -31,16 +62,39 @@
   ],
   "sessoes": [30, 60, 240, 480, 720, 1440],
   "camadas": [
-    { "id": "comercial", "rotulo": "Comercial", "grupo": "Universal Básico" },
-    { "id": "pessoas", "rotulo": "Pessoas", "grupo": "Universal Básico" },
-    { "id": "receber-pagar", "rotulo": "Receber e pagar", "grupo": "Universal Básico" },
-    { "id": "completo", "rotulo": "Universal Completo", "grupo": "Universal Completo" }
+    {
+      "id": "comercial",
+      "rotulo": "Comercial"
+    },
+    {
+      "id": "financeiro",
+      "rotulo": "Financeiro"
+    },
+    {
+      "id": "pessoas",
+      "rotulo": "Pessoas"
+    }
+  ],
+  "niveis": [
+    {
+      "id": "basico",
+      "rotulo": "Universal Básico"
+    },
+    {
+      "id": "completo",
+      "rotulo": "Universal Completo"
+    },
+    {
+      "id": "distribuidora",
+      "rotulo": "Módulo Distribuidora"
+    }
   ],
   "paineis": [
     {
       "codigo": "VG-01",
       "nome": "Visão geral",
       "camada": "comercial",
+      "nivel": "basico",
       "exige": ["f_vendas_"],
       "usa": ["f_vendas_", "f_metas_", "f_receitas_", "f_despesas_", "f_lancamentos_"],
       "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
@@ -49,6 +103,7 @@
       "codigo": "COM-01",
       "nome": "Vendas",
       "camada": "comercial",
+      "nivel": "basico",
       "exige": ["f_vendas_"],
       "usa": ["f_vendas_", "f_metas_", "d_bitem_"],
       "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
@@ -57,6 +112,7 @@
       "codigo": "COM-02",
       "nome": "Equipe comercial",
       "camada": "comercial",
+      "nivel": "basico",
       "exige": ["f_vendas_"],
       "usa": ["f_vendas_", "f_metas_", "d_vendedor_"],
       "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
@@ -65,57 +121,98 @@
       "codigo": "COM-03",
       "nome": "Clientes e atendimentos",
       "camada": "comercial",
+      "nivel": "basico",
       "exige": ["f_vendas_"],
       "usa": ["f_vendas_", "d_bitem_"],
       "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
     },
     {
-      "codigo": "FIN-03",
-      "nome": "Receber e pagar",
-      "camada": "receber-pagar",
-      "exige": ["f_receitas_", "f_despesas_"],
-      "usa": ["f_receitas_", "f_despesas_", "d_cliente_", "d_fornecedor_", "d_vendedor_"],
-      "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
-    },
-    {
-      "codigo": "PES-01",
-      "nome": "Pessoas",
-      "temNomes": true,
-      "camada": "pessoas",
-      "exige": ["f_folha_"],
-      "usa": ["f_folha_", "f_vendas_"],
-      "padrao": ["cliente_principal"]
-    },
-    {
       "codigo": "FIN-02",
       "nome": "Resultado",
-      "camada": "completo",
+      "camada": "financeiro",
+      "nivel": "completo",
       "exige": ["f_lancamentos_"],
       "usa": ["f_lancamentos_", "f_orcamento_", "f_despesas_", "f_vendas_"],
       "padrao": ["consultor", "cliente_principal"]
     },
     {
+      "codigo": "FIN-03",
+      "nome": "Receber e pagar",
+      "camada": "financeiro",
+      "nivel": "basico",
+      "exige": ["f_receitas_", "f_despesas_"],
+      "usa": ["f_receitas_", "f_despesas_", "d_cliente_", "d_fornecedor_", "d_vendedor_"],
+      "padrao": ["consultor", "cliente_principal", "cliente_usuario"]
+    },
+    {
       "codigo": "FIN-04",
       "nome": "Fluxo de caixa",
-      "camada": "completo",
+      "camada": "financeiro",
+      "nivel": "completo",
       "exige": ["f_fluxo_"],
       "usa": ["f_fluxo_", "f_receitas_", "f_despesas_"],
       "padrao": ["consultor", "cliente_principal"]
+    },
+    {
+      "codigo": "PES-01",
+      "nome": "Pessoas",
+      "camada": "pessoas",
+      "nivel": "basico",
+      "temNomes": true,
+      "exige": ["f_folha_"],
+      "usa": ["f_folha_", "f_vendas_"],
+      "padrao": ["cliente_principal"]
     }
   ],
   "fontes": [
-    { "prefixo": "f_vendas_", "linhas": 412380 },
-    { "prefixo": "f_metas_", "linhas": 2137 },
-    { "prefixo": "d_vendedor_", "linhas": 64 },
-    { "prefixo": "d_bitem_", "linhas": 3211 },
-    { "prefixo": "d_cliente_", "linhas": 5890 },
-    { "prefixo": "d_fornecedor_", "linhas": 742 },
-    { "prefixo": "f_receitas_", "linhas": 38214 },
-    { "prefixo": "f_despesas_", "linhas": 29640 },
-    { "prefixo": "f_lancamentos_", "linhas": 96410 },
-    { "prefixo": "f_orcamento_", "linhas": 1284 },
-    { "prefixo": "f_fluxo_", "linhas": 18220 },
-    { "prefixo": "f_folha_", "linhas": 18540 }
+    {
+      "prefixo": "f_vendas_",
+      "linhas": 412380
+    },
+    {
+      "prefixo": "f_metas_",
+      "linhas": 2137
+    },
+    {
+      "prefixo": "d_vendedor_",
+      "linhas": 64
+    },
+    {
+      "prefixo": "d_bitem_",
+      "linhas": 3211
+    },
+    {
+      "prefixo": "d_cliente_",
+      "linhas": 5890
+    },
+    {
+      "prefixo": "d_fornecedor_",
+      "linhas": 742
+    },
+    {
+      "prefixo": "f_receitas_",
+      "linhas": 38214
+    },
+    {
+      "prefixo": "f_despesas_",
+      "linhas": 29640
+    },
+    {
+      "prefixo": "f_lancamentos_",
+      "linhas": 96410
+    },
+    {
+      "prefixo": "f_orcamento_",
+      "linhas": 1284
+    },
+    {
+      "prefixo": "f_fluxo_",
+      "linhas": 18220
+    },
+    {
+      "prefixo": "f_folha_",
+      "linhas": 18540
+    }
   ],
   "ultimaData": "09/11/2026",
   "preferencias": [
@@ -124,14 +221,38 @@
       "rotulo": "Linhas de custo",
       "descricao": "Automático: as linhas que somam 80% do custo, no máximo 7, e o resto em Outros. A escolha fica salva para o cliente.",
       "opcoes": [
-        { "id": "auto", "rotulo": "Automático (80%)" },
-        { "id": "1", "rotulo": "1" },
-        { "id": "2", "rotulo": "2" },
-        { "id": "3", "rotulo": "3" },
-        { "id": "4", "rotulo": "4" },
-        { "id": "5", "rotulo": "5" },
-        { "id": "6", "rotulo": "6" },
-        { "id": "7", "rotulo": "7" }
+        {
+          "id": "auto",
+          "rotulo": "Automático (80%)"
+        },
+        {
+          "id": "1",
+          "rotulo": "1"
+        },
+        {
+          "id": "2",
+          "rotulo": "2"
+        },
+        {
+          "id": "3",
+          "rotulo": "3"
+        },
+        {
+          "id": "4",
+          "rotulo": "4"
+        },
+        {
+          "id": "5",
+          "rotulo": "5"
+        },
+        {
+          "id": "6",
+          "rotulo": "6"
+        },
+        {
+          "id": "7",
+          "rotulo": "7"
+        }
       ],
       "padrao": "auto"
     }
@@ -187,7 +308,6 @@
     {
       "slug": "demo",
       "nome": "Cliente Demo",
-      "segmento": "Distribuição",
       "sigla": "CD",
       "sufixo": "demo",
       "fontesFora": {},
@@ -197,10 +317,42 @@
         "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
         "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"]
       },
-      "nomes": { "cliente_principal": ["PES-01"] },
+      "nomes": {
+        "cliente_principal": ["PES-01"]
+      },
       "feriados": [
-        { "data": "2026-03-19", "nome": "São José (estadual)" },
-        { "data": "2026-08-15", "nome": "Nossa Senhora da Assunção (Fortaleza)" }
+        {
+          "data": "2026-03-19",
+          "nome": "São José (estadual)"
+        },
+        {
+          "data": "2026-08-15",
+          "nome": "Nossa Senhora da Assunção (Fortaleza)"
+        }
+      ],
+      "unidades": [
+        {
+          "id": "0e000000-0000-4000-8000-000000000001",
+          "nome": "Matriz Fortaleza",
+          "setor": "distribuidora",
+          "segmento": "Frigorífico",
+          "grupo": "Cliente Demo",
+          "uf": "CE",
+          "cidade": "Fortaleza",
+          "bairro": null,
+          "endereco": null
+        },
+        {
+          "id": "0e000000-0000-4000-8000-000000000002",
+          "nome": "Filial Maracanaú",
+          "setor": "distribuidora",
+          "segmento": "Frigorífico",
+          "grupo": "Cliente Demo",
+          "uf": "CE",
+          "cidade": "Maracanaú",
+          "bairro": null,
+          "endereco": null
+        }
       ]
     },
     {
@@ -209,13 +361,21 @@
       "sigla": "PJ",
       "sufixo": "pj",
       "fontesFora": {
-        "f_orcamento_": { "status": "critico", "statusRotulo": "sem carga", "observacao": null },
+        "f_orcamento_": {
+          "status": "critico",
+          "statusRotulo": "sem carga",
+          "observacao": null
+        },
         "f_fluxo_": {
           "status": "critico",
           "statusRotulo": "erro",
           "observacao": "Arquivo do saldo inicial não encontrado na pasta do cliente."
         },
-        "f_folha_": { "status": "critico", "statusRotulo": "sem carga", "observacao": null }
+        "f_folha_": {
+          "status": "critico",
+          "statusRotulo": "sem carga",
+          "observacao": null
+        }
       },
       "ligados": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02"],
       "acesso": {
@@ -229,14 +389,29 @@
     {
       "slug": "aurora",
       "nome": "Agência Aurora",
-      "segmento": "Publicidade",
       "sigla": "AA",
       "sufixo": "aurora",
       "fontesFora": {
-        "f_metas_": { "status": "critico", "statusRotulo": "sem carga", "observacao": null },
-        "f_lancamentos_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
-        "f_orcamento_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
-        "f_fluxo_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null }
+        "f_metas_": {
+          "status": "critico",
+          "statusRotulo": "sem carga",
+          "observacao": null
+        },
+        "f_lancamentos_": {
+          "status": "neutro",
+          "statusRotulo": "inativa",
+          "observacao": null
+        },
+        "f_orcamento_": {
+          "status": "neutro",
+          "statusRotulo": "inativa",
+          "observacao": null
+        },
+        "f_fluxo_": {
+          "status": "neutro",
+          "statusRotulo": "inativa",
+          "observacao": null
+        }
       },
       "ligados": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01"],
       "acesso": {
@@ -245,7 +420,12 @@
         "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03"]
       },
       "nomes": {},
-      "feriados": [{ "data": "2026-04-13", "nome": "Aniversário de Fortaleza" }]
+      "feriados": [
+        {
+          "data": "2026-04-13",
+          "nome": "Aniversário de Fortaleza"
+        }
+      ]
     },
     {
       "slug": "sabor-do-mar",
@@ -253,9 +433,21 @@
       "sigla": "SM",
       "sufixo": "sabor",
       "fontesFora": {
-        "f_lancamentos_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
-        "f_orcamento_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null },
-        "f_fluxo_": { "status": "neutro", "statusRotulo": "inativa", "observacao": null }
+        "f_lancamentos_": {
+          "status": "neutro",
+          "statusRotulo": "inativa",
+          "observacao": null
+        },
+        "f_orcamento_": {
+          "status": "neutro",
+          "statusRotulo": "inativa",
+          "observacao": null
+        },
+        "f_fluxo_": {
+          "status": "neutro",
+          "statusRotulo": "inativa",
+          "observacao": null
+        }
       },
       "ligados": ["VG-01", "COM-01", "COM-03", "FIN-03", "PES-01"],
       "acesso": {
@@ -278,8 +470,93 @@
         "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
         "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"]
       },
-      "nomes": { "cliente_principal": ["PES-01"] },
+      "nomes": {
+        "cliente_principal": ["PES-01"]
+      },
       "feriados": []
+    },
+    {
+      "slug": "leao-de-ouro",
+      "nome": "Leão de Ouro",
+      "sigla": "LO",
+      "sufixo": "lo",
+      "fontesFora": {},
+      "ligados": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
+      "acesso": {
+        "consultor": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "FIN-02", "FIN-04"],
+        "cliente_principal": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03", "PES-01", "FIN-02", "FIN-04"],
+        "cliente_usuario": ["VG-01", "COM-01", "COM-02", "COM-03", "FIN-03"]
+      },
+      "nomes": {},
+      "feriados": [],
+      "unidades": [
+        {
+          "id": "0e000000-0000-4000-8000-00000000a001",
+          "nome": "Leão 1",
+          "setor": "varejo",
+          "segmento": "Calçados",
+          "grupo": "Leão",
+          "uf": null,
+          "cidade": null,
+          "bairro": null,
+          "endereco": null
+        },
+        {
+          "id": "0e000000-0000-4000-8000-00000000a002",
+          "nome": "Leão 2",
+          "setor": "varejo",
+          "segmento": "Calçados",
+          "grupo": "Leão",
+          "uf": null,
+          "cidade": null,
+          "bairro": null,
+          "endereco": null
+        },
+        {
+          "id": "0e000000-0000-4000-8000-00000000a003",
+          "nome": "Lupo 1",
+          "setor": "varejo",
+          "segmento": "Vestuário",
+          "grupo": "Lupo",
+          "uf": null,
+          "cidade": null,
+          "bairro": null,
+          "endereco": null
+        },
+        {
+          "id": "0e000000-0000-4000-8000-00000000a004",
+          "nome": "Lupo 2",
+          "setor": "varejo",
+          "segmento": "Vestuário",
+          "grupo": "Lupo",
+          "uf": null,
+          "cidade": null,
+          "bairro": null,
+          "endereco": null
+        },
+        {
+          "id": "0e000000-0000-4000-8000-00000000a005",
+          "nome": "Usaflex 1",
+          "setor": "varejo",
+          "segmento": "Calçados",
+          "grupo": "Usaflex",
+          "uf": null,
+          "cidade": null,
+          "bairro": null,
+          "endereco": null
+        },
+        {
+          "id": "0e000000-0000-4000-8000-00000000a006",
+          "nome": "Usaflex 2",
+          "setor": "varejo",
+          "segmento": "Calçados",
+          "grupo": "Usaflex",
+          "uf": null,
+          "cidade": null,
+          "bairro": null,
+          "endereco": null
+        }
+      ]
     }
   ],
   "usuarios": [
@@ -452,6 +729,24 @@
       "quando": "tentativa hoje, 8h02",
       "entradas30d": 0,
       "ultimo": null
+    }
+  ],
+  "setores": [
+    {
+      "id": "distribuidora",
+      "rotulo": "Distribuidora"
+    },
+    {
+      "id": "industria",
+      "rotulo": "Indústria"
+    },
+    {
+      "id": "varejo",
+      "rotulo": "Varejo"
+    },
+    {
+      "id": "servicos",
+      "rotulo": "Serviços"
     }
   ]
 }

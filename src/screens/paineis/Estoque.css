@@ -1,0 +1,258 @@
+/* Painel Estoque (mockup M3.1.0): real contra ideal, saúde e o que as listas usam. */
+
+/* tons das faixas de saúde: o farol, com o vermelho claro (abaixo do mínimo) e o laranja escuro (parado) */
+.ef-critico {
+  background: var(--crit);
+}
+.ef-critico-claro {
+  background: color-mix(in srgb, var(--crit) 50%, var(--surface));
+}
+.ef-saudavel {
+  background: var(--ok);
+}
+.ef-atencao {
+  background: var(--warn-mark);
+}
+.ef-atencao-escura {
+  background: color-mix(in srgb, var(--warn) 85%, #000);
+}
+
+/* ---------- real contra ideal ---------- */
+.ri-trilha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  min-height: 22px;
+  margin: -6px 0 4px;
+}
+.ri-trilha b {
+  color: var(--ink);
+  font-weight: 600;
+}
+.ri-trilha b:focus {
+  outline: none;
+}
+.ri-passo {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.ri-lista {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  margin: 4px 0 0;
+  padding: 0;
+}
+.ri-lista li + li {
+  border-top: 1px solid var(--line-soft);
+}
+.ri-linha {
+  all: unset;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr) 168px;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 9px 6px;
+  border-radius: 8px;
+}
+.ri-linha.abre {
+  cursor: pointer;
+}
+.ri-linha.abre:hover {
+  background: var(--surface-2);
+}
+.ri-linha.abre:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 1px;
+}
+.ri-nome {
+  font-size: 13.5px;
+  font-weight: 500;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ri-nome small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ri-outros .ri-nome {
+  color: var(--ink-3);
+  font-weight: 400;
+}
+.ri-trilho {
+  position: relative;
+  height: 16px;
+}
+.ri-barra {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 4px;
+}
+.ri-barra.ok {
+  background: var(--ok);
+}
+.ri-barra.warn {
+  background: var(--warn-mark);
+}
+.ri-barra.crit {
+  background: var(--crit);
+}
+.ri-outros .ri-barra {
+  opacity: 0.35;
+}
+.ri-ideal {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+.ri-valor {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+.ri-valor b {
+  font-weight: 600;
+}
+.ri-valor > span {
+  display: block;
+  font-size: 12px;
+}
+
+/* ---------- saúde ---------- */
+.sd-linha {
+  margin-top: 10px;
+}
+.sd-rotulo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-bottom: 5px;
+}
+.sd-barra {
+  display: flex;
+  height: 22px;
+  border-radius: 6px;
+  overflow: hidden;
+  gap: 2px;
+}
+.sd-barra span {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  flex-basis: 0;
+}
+.sd-grupo h3 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 18px 0 2px;
+}
+.sd-grupo ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sd-item {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) 96px 92px;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13.5px;
+}
+.sd-item:first-child {
+  border-top: 0;
+}
+.sd-item > i {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.sd-item small {
+  display: block;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.sd-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.sd-num.apagado {
+  font-size: 12.5px;
+  color: var(--ink-3);
+}
+
+/* ---------- nas células das listas ---------- */
+.cel-quadrante {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.cel-link {
+  margin-left: 10px;
+  font-size: 12.5px;
+}
+.cel-barra {
+  display: block;
+  position: relative;
+  height: 4px;
+  margin-top: 5px;
+  border-radius: 2px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.cel-barra i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 2px;
+}
+
+@media (max-width: 760px) {
+  .ri-linha {
+    grid-template-columns: minmax(0, 1fr) 120px;
+    grid-template-rows: auto auto;
+    row-gap: 6px;
+  }
+  .ri-nome {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .ri-valor {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .ri-trilho {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .sd-item {
+    grid-template-columns: 12px minmax(0, 1fr) 84px;
+  }
+  .sd-num.apagado {
+    display: none;
+  }
+}

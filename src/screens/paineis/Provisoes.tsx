@@ -29,14 +29,14 @@ export function Provisoes({ cartao }: { cartao: CartaoProvisoes }) {
   const salvar = useMutation({
     mutationFn: async (m: Mudanca) => {
       if (!consulta) return;
-      const empresa = { empresa: consulta.filtros.empresa };
+      const unidades = { unidades: consulta.filtros.unidades };
       if (m.tipo === 'periodo')
         await api.salvarPeriodoProvisoes(
           consulta.cliente,
           consulta.tela,
           cartao.id,
           { periodo: m.periodo },
-          empresa,
+          unidades,
         );
       else
         await api.salvarGrupoProvisao(
@@ -45,7 +45,7 @@ export function Provisoes({ cartao }: { cartao: CartaoProvisoes }) {
           cartao.id,
           m.grupo,
           { ligado: m.ligado, valor: m.valor },
-          empresa,
+          unidades,
         );
     },
     // a tela inteira muda (saldo, semanas, de onde vem): pede de novo, com qualquer filtro

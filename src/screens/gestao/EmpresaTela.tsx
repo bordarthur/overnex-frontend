@@ -4,38 +4,28 @@ import { useClienteGestao } from '../../api/useGestao';
 import { Abas, PainelDaAba } from '../../components/Abas';
 import { EstadoTela } from '../../components/EstadoTela';
 import { Pill } from '../../components/Pill';
-import type { ClienteGestaoPayload } from '../../contracts/gestao';
+import type { ClienteGestaoPayload, IdAbaEmpresa } from '../../contracts/gestao';
 import { AbaAcesso } from './AbaAcesso';
 import { AbaCargas, AbaDados } from './AbaDados';
 import { AbaImplantacao } from './AbaImplantacao';
 import { AbaPaineis } from './AbaPaineis';
 import { AbaPreferencias } from './AbaPreferencias';
+import { AbaUnidades } from './AbaUnidades';
 import { useTituloDaGestao } from './apoio';
 import { ConvidarUsuario } from './ConvidarUsuario';
 import { EditarEmpresa } from './EditarEmpresa';
 import './EmpresaTela.css';
 
-// Rótulos das abas, como no mockup Gestão M2.1.0. A última é "Horas e cargas" no mockup; ficou
-// "Cargas" porque as horas de implantação não entram agora.
-const ABAS = [
-  { id: 'implantacao', rotulo: 'Implantação' },
-  { id: 'dados', rotulo: 'Prontidão dos dados' },
-  { id: 'paineis', rotulo: 'Painéis' },
-  { id: 'preferencias', rotulo: 'Preferências da empresa' },
-  { id: 'acesso', rotulo: 'Usuários e acesso' },
-  { id: 'cargas', rotulo: 'Cargas' },
-] as const;
-
-type Aba = (typeof ABAS)[number]['id'];
-
 const ID_ABAS = 'gestao-empresa';
 
-/** Uma empresa na Gestão: o cabeçalho e as abas, com tudo de `GET /api/admin/clientes/{slug}`. */
+/**
+ * Uma empresa na Gestão: o cabeçalho e as abas, com tudo de `GET /api/admin/clientes/{slug}`. As abas
+ * (e os rótulos) e os botões do cabeçalho vêm da API, em `abas` e `permissoes`.
+ */
 export function EmpresaTela() {
   const { slug = '' } = useParams();
   const consulta = useClienteGestao(slug);
   const [params, setParams] = useSearchParams();
-  const aba: Aba = ABAS.find((a) => a.id === params.get('aba'))?.id ?? ABAS[0].id;
   useTituloDaGestao(consulta.data?.cliente.nome ?? 'Empresas');
 
   if (consulta.isPending) return <EstadoTela tipo="carregando" />;
@@ -50,13 +40,18 @@ export function EmpresaTela() {
     );
   }
   const dados = consulta.data;
+  // `?aba=` com uma aba que a pessoa não vê cai na primeira
+  const primeira = dados.abas[0]?.id;
+  const aba = dados.abas.find((a) => a.id === params.get('aba'))?.id ?? primeira;
 
   return (
     <>
       <header className="gst-topo">
         <div>
           <h1>{dados.cliente.nome}</h1>
-          {dados.cliente.segmento && <p>{dados.cliente.segmento}</p>}
+          {dados.cliente.setores.length > 0 && (
+            <p>{dados.cliente.setores.map((s) => s.rotulo).join(' · ')}</p>
+          )}
           <div className="gst-acoes">
             <Link className="btn gst-botao" to={`/${dados.cliente.slug}`}>
               Abrir os painéis desta empresa
@@ -64,8 +59,8 @@ export function EmpresaTela() {
                 <path d="M3 8h10M9 4l4 4-4 4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
-            <ConvidarUsuario empresa={dados.cliente.slug} secundario />
-            <EditarEmpresa cliente={dados.cliente} />
+            {dados.permissoes.convidar && <ConvidarUsuario empresa={dados.cliente.slug} secundario />}
+            {dados.permissoes.editar && <EditarEmpresa cliente={dados.cliente} />}
           </div>
         </div>
         <div className="gst-chips">
@@ -80,29 +75,49 @@ export function EmpresaTela() {
         com as tabelas do ERP; <b>Universal Completo</b> exige plano de contas, De-Para, orçamento e
         saldo-âncora.
       </div>
-      <Abas
-        rotulo={`Configuração de ${dados.cliente.nome}`}
-        idBase={ID_ABAS}
-        abas={[...ABAS]}
-        ativa={aba}
-        // a aba fica na URL: recarregar ou trocar de empresa mantém a mesma
-        onMudar={(id) => setParams(id === ABAS[0].id ? {} : { aba: id }, { replace: true })}
-      />
-      <PainelDaAba idBase={ID_ABAS} ativa={aba}>
-        <ConteudoDaAba aba={aba} dados={dados} />
-      </PainelDaAba>
+      {aba && (
+        <>
+          <Abas
+            rotulo={`Configuração de ${dados.cliente.nome}`}
+            idBase={ID_ABAS}
+            abas={dados.abas}
+            ativa={aba}
+            // a aba fica na URL: recarregar ou trocar de empresa mantém a mesma
+            onMudar={(id) => setParams(id === primeira ? {} : { aba: id }, { replace: true })}
+          />
+          <PainelDaAba idBase={ID_ABAS} ativa={aba}>
+            <ConteudoDaAba aba={aba} dados={dados} />
+          </PainelDaAba>
+        </>
+      )}
     </>
   );
 }
 
-function ConteudoDaAba({ aba, dados }: { aba: Aba; dados: ClienteGestaoPayload }) {
+function ConteudoDaAba({ aba, dados }: { aba: IdAbaEmpresa; dados: ClienteGestaoPayload }) {
   switch (aba) {
     case 'implantacao':
-      return <AbaImplantacao camadas={dados.camadas} />;
+      return <AbaImplantacao camadas={dados.camadas} niveis={dados.niveis} />;
+    case 'unidades':
+      return (
+        <AbaUnidades
+          slug={dados.cliente.slug}
+          unidades={dados.unidades}
+          podeEditar={dados.permissoes.unidades ?? false}
+          setores={dados.opcoesSetor ?? []}
+        />
+      );
     case 'dados':
       return <AbaDados fontes={dados.fontes} />;
     case 'paineis':
-      return <AbaPaineis slug={dados.cliente.slug} paineis={dados.paineis} menu={dados.menu} />;
+      return (
+        <AbaPaineis
+          slug={dados.cliente.slug}
+          paineis={dados.paineis}
+          menu={dados.menu}
+          niveis={dados.niveis}
+        />
+      );
     case 'preferencias':
       return (
         <AbaPreferencias

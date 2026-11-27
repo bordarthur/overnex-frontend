@@ -1,12 +1,13 @@
 import type { TelaPainel } from '../../contracts/painel';
 
 /**
- * Rótulos de tela (título e pergunta do cabeçalho), como nos mockups Total M2.0.1 e M2.1.1. `comparar`: a tela
- * aceita o chip global "Comparar com" na consulta; `semComparar`: a tela não mostra esse chip.
+ * Rótulos de tela (título e pergunta do cabeçalho), como nos mockups Total M2.0.1, M2.1.1 e M3.1.0. `comparar`:
+ * a tela aceita o chip global "Comparar com" na consulta; `semComparar`: a tela não mostra esse chip;
+ * `semPeriodo`: nem o "Período" (o retrato do dia, como o Estoque), e o mês não vai na consulta.
  */
 export const TELAS_PAINEL: Record<
   TelaPainel,
-  { titulo: string; pergunta: string; comparar?: boolean; semComparar?: boolean }
+  { titulo: string; pergunta: string; comparar?: boolean; semComparar?: boolean; semPeriodo?: boolean }
 > = {
   vendas: {
     titulo: 'Vendas',
@@ -38,5 +39,13 @@ export const TELAS_PAINEL: Record<
   pessoas: {
     titulo: 'Pessoas',
     pergunta: 'Quantas pessoas, quanto custam e quanto cada uma gera de receita?',
+  },
+  // Mockup M3.1.0. O retrato do estoque de hoje: sem mês e sem comparação.
+  estoque: {
+    titulo: 'Estoque',
+    pergunta:
+      'Tenho o estoque certo? Onde o dinheiro está parado, o que falta e qual a qualidade do estoque?',
+    semComparar: true,
+    semPeriodo: true,
   },
 };

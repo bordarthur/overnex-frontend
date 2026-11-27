@@ -1,0 +1,912 @@
+[
+  {
+    "id": "excesso-parados",
+    "largura": 12,
+    "titulo": "Excesso e parados: o dinheiro preso",
+    "subtitulo": "Valor acima do ideal e produtos sem venda há 90 dias ou mais",
+    "explicacao": "Excesso: o que passa de 1,5 vez o ideal, em reais a custo. Parado: produto com estoque e sem venda há 90 dias ou mais (vale o estoque inteiro). A ação sai da Classe BCG do produto.",
+    "tipo": "tabela",
+    "colunas": [
+      {
+        "rotulo": "Produto",
+        "alinhar": "esquerda",
+        "ordenavel": true
+      },
+      {
+        "rotulo": "Classe BCG",
+        "alinhar": "esquerda",
+        "ordenavel": true,
+        "ocultarNoCelular": true
+      },
+      {
+        "rotulo": "Dinheiro preso",
+        "ordenavel": true
+      },
+      {
+        "rotulo": "Cobertura",
+        "ordenavel": true,
+        "ocultarNoCelular": true
+      },
+      {
+        "rotulo": "Sem venda há",
+        "ordenavel": true
+      },
+      {
+        "rotulo": "Ação sugerida",
+        "alinhar": "esquerda",
+        "ocultarNoCelular": true
+      }
+    ],
+    "linhas": [
+      {
+        "celulas": [
+          {
+            "valor": "Filé mignon",
+            "sub": "Cortes nobres · Bovinos",
+            "ordem": "Filé mignon"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 27520.9,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 1,
+              "estilo": "atencao"
+            },
+            "ordem": 27520.899999999994
+          },
+          {
+            "valor": {
+              "valor": 20.4,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 20.448040519799445
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Merluza",
+            "sub": "Pescados · Mercearia",
+            "ordem": "Merluza"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 16581.67,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.603,
+              "estilo": "atencao"
+            },
+            "ordem": 16581.67
+          },
+          {
+            "valor": {
+              "valor": 27.8,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 27.810889153754466
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Liquidar e não recomprar"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Fígado bovino",
+            "sub": "Miúdos · Bovinos",
+            "ordem": "Fígado bovino"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 15412.14,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.56,
+              "estilo": "atencao"
+            },
+            "ordem": 15412.14
+          },
+          {
+            "valor": {
+              "valor": 26.9,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 26.86104298915227
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Liquidar e não recomprar"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Batata palito",
+            "sub": "Congelados · Mercearia",
+            "ordem": "Batata palito"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 14959.78,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.544,
+              "estilo": "atencao"
+            },
+            "ordem": 14959.779999999999
+          },
+          {
+            "valor": {
+              "valor": 21.5,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.539662025720055
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Lombo",
+            "sub": "Cortes suínos · Suínos",
+            "ordem": "Lombo"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 14555.97,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.529,
+              "estilo": "atencao"
+            },
+            "ordem": 14555.970000000001
+          },
+          {
+            "valor": {
+              "valor": 20.8,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 20.820463566126346
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Hambúrguer",
+            "sub": "Congelados · Mercearia",
+            "ordem": "Hambúrguer"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 14405.14,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.523,
+              "estilo": "atencao"
+            },
+            "ordem": 14405.14
+          },
+          {
+            "valor": {
+              "valor": 27.8,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 27.783571950328707
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Liquidar e não recomprar"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Bucho",
+            "sub": "Miúdos · Bovinos",
+            "ordem": "Bucho"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 13452.56,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.489,
+              "estilo": "atencao"
+            },
+            "ordem": 13452.560000000001
+          },
+          {
+            "valor": {
+              "valor": 26.9,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 26.87429466506957
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Liquidar e não recomprar"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Asa de frango",
+            "sub": "Cortes de frango · Aves",
+            "ordem": "Asa de frango"
+          },
+          {
+            "quadrante": {
+              "id": "abacaxi",
+              "rotulo": "Abacaxi"
+            },
+            "ordem": 3
+          },
+          {
+            "valor": {
+              "valor": 13299.47,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.483,
+              "estilo": "atencao"
+            },
+            "ordem": 13299.470000000001
+          },
+          {
+            "valor": {
+              "valor": 27.4,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 27.379554784619835
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Liquidar e não recomprar"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Maminha",
+            "sub": "Cortes nobres · Bovinos",
+            "ordem": "Maminha"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 13065.22,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.475,
+              "estilo": "atencao"
+            },
+            "ordem": 13065.220000000001
+          },
+          {
+            "valor": {
+              "valor": 20.5,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 20.46010360457587
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Filé de peito",
+            "sub": "Cortes de frango · Aves",
+            "ordem": "Filé de peito"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 13004.35,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.473,
+              "estilo": "atencao"
+            },
+            "ordem": 13004.349999999999
+          },
+          {
+            "valor": {
+              "valor": 21.2,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.203904452963723
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Costela suína",
+            "sub": "Cortes suínos · Suínos",
+            "ordem": "Costela suína"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 12917.75,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.469,
+              "estilo": "atencao"
+            },
+            "ordem": 12917.75
+          },
+          {
+            "valor": {
+              "valor": 20.8,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 20.832146316449204
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Filé de tilápia",
+            "sub": "Pescados · Mercearia",
+            "ordem": "Filé de tilápia"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 12643.77,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.459,
+              "estilo": "atencao"
+            },
+            "ordem": 12643.77
+          },
+          {
+            "valor": {
+              "valor": 21.6,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.56351969744721
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Bacon manta",
+            "sub": "Bacon e defumados · Suínos",
+            "ordem": "Bacon manta"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 11858.62,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.431,
+              "estilo": "atencao"
+            },
+            "ordem": 11858.619999999999
+          },
+          {
+            "valor": {
+              "valor": 20.9,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 20.8795357543991
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Nuggets",
+            "sub": "Empanados · Aves",
+            "ordem": "Nuggets"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 11773.33,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.428,
+              "estilo": "atencao"
+            },
+            "ordem": 11773.330000000002
+          },
+          {
+            "valor": {
+              "valor": 21.2,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.227952971913783
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Presunto",
+            "sub": "Frios e laticínios · Mercearia",
+            "ordem": "Presunto"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 11176.27,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.406,
+              "estilo": "atencao"
+            },
+            "ordem": 11176.27
+          },
+          {
+            "valor": {
+              "valor": 21.5,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.51576841209025
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Empanado de frango",
+            "sub": "Empanados · Aves",
+            "ordem": "Empanado de frango"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 10114,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.368,
+              "estilo": "atencao"
+            },
+            "ordem": 10114
+          },
+          {
+            "valor": {
+              "valor": 21.2,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.239342265529842
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Bacon fatiado",
+            "sub": "Bacon e defumados · Suínos",
+            "ordem": "Bacon fatiado"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 9910.67,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.36,
+              "estilo": "atencao"
+            },
+            "ordem": 9910.669999999998
+          },
+          {
+            "valor": {
+              "valor": 21.1,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.144090419806243
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Carvão",
+            "sub": "Temperos e carvão · Mercearia",
+            "ordem": "Carvão"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 5186.08,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.188,
+              "estilo": "atencao"
+            },
+            "ordem": 5186.08
+          },
+          {
+            "valor": {
+              "valor": 21.6,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.587576644584807
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      },
+      {
+        "celulas": [
+          {
+            "valor": "Sal grosso",
+            "sub": "Temperos e carvão · Mercearia",
+            "ordem": "Sal grosso"
+          },
+          {
+            "quadrante": {
+              "id": "interrogacao",
+              "rotulo": "Interrogação"
+            },
+            "ordem": 2
+          },
+          {
+            "valor": {
+              "valor": 4714.06,
+              "unidade": "brl"
+            },
+            "negrito": true,
+            "barra": {
+              "proporcao": 0.171,
+              "estilo": "atencao"
+            },
+            "ordem": 4714.0599999999995
+          },
+          {
+            "valor": {
+              "valor": 21.6,
+              "unidade": "dias",
+              "casas": 0
+            },
+            "sub": "ideal 12",
+            "ordem": 21.600936863543787
+          },
+          {
+            "valor": "vende",
+            "tom": "apagado",
+            "ordem": 0
+          },
+          {
+            "valor": "Reduzir o próximo pedido"
+          }
+        ]
+      }
+    ],
+    "vazio": "Nada preso neste recorte.",
+    "limite": 10,
+    "rodape": [
+      {
+        "texto": "19 produtos somam "
+      },
+      {
+        "texto": "R$ 247 mil",
+        "destaque": true
+      },
+      {
+        "texto": " presos. Mais 34 produtos com excesso fora dos principais: R$ 195 mil."
+      }
+    ]
+  }
+]

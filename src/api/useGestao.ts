@@ -2,6 +2,7 @@ import { queryOptions, useMutation, useQuery, useQueryClient, type QueryKey } fr
 import { semPermissao, useApiClient, type ApiClient, type GestaoApi } from './client';
 import { CHAVE_PAINEL } from './usePainel';
 import { CHAVE_SESSAO } from './useSessao';
+import { CHAVE_VALORES_NEGOCIOS } from './useValoresNegocios';
 import { CHAVE_VISAO_GERAL } from './useVisaoGeral';
 
 /** Começo da query key de tudo da Gestão (/api/admin/*). */
@@ -44,8 +45,12 @@ export const useGestao = () => useQuery(opcoesGestao(useApiClient()));
 /** Tudo das abas de uma empresa. */
 export const useClienteGestao = (slug: string) => useQuery(opcoesClienteGestao(useApiClient(), slug));
 
-/** Todas as pessoas, os filtros da lista e a nota do convite. */
-export const useUsuariosGestao = () => useQuery(opcoesUsuariosGestao(useApiClient()));
+/**
+ * Todas as pessoas, os filtros da lista e a nota do convite. `pedir` false: não pede (quem não tem
+ * `permissoes.usuarios` levaria um 403 certo).
+ */
+export const useUsuariosGestao = (pedir = true) =>
+  useQuery({ ...opcoesUsuariosGestao(useApiClient()), enabled: pedir });
 
 /** O que mais uma gravação da Gestão muda, além das telas da própria Gestão. */
 export type AlcanceDaGravacao =
@@ -56,13 +61,16 @@ export type AlcanceDaGravacao =
   /** escolha gravada da empresa (linhas de custo): muda a Visão geral dela */
   | 'visao-geral'
   /** feriado: muda os dias úteis das telas */
-  | 'telas';
+  | 'telas'
+  /** unidade: muda a bandeja "Negócios", o menu (painéis por setor) e o que as telas somam */
+  | 'unidades';
 
 const TAMBEM: Record<AlcanceDaGravacao, QueryKey[]> = {
   gestao: [],
   acesso: [[CHAVE_SESSAO]],
   'visao-geral': [[CHAVE_VISAO_GERAL]],
   telas: [[CHAVE_VISAO_GERAL], [CHAVE_PAINEL]],
+  unidades: [[CHAVE_SESSAO], [CHAVE_VISAO_GERAL], [CHAVE_PAINEL], [CHAVE_VALORES_NEGOCIOS]],
 };
 
 /**

@@ -17,7 +17,8 @@ import './UsuariosTela.css';
  */
 export function UsuariosTela() {
   const gestao = useGestao();
-  const consulta = useUsuariosGestao();
+  // sem `permissoes.usuarios`, não pede: a moldura manda de volta para as empresas
+  const consulta = useUsuariosGestao(gestao.data?.permissoes.usuarios === true);
   const [params, setParams] = useSearchParams();
   const filtro = params.get('filtro') ?? FILTRO_TODOS;
   const [busca, setBusca] = useState('');

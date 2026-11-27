@@ -1,0 +1,21 @@
+/* listas da gaveta "Editar unidade": o mesmo desenho dos campos de texto da Gestão */
+.gst-campo select.gst-lista {
+  font: inherit;
+  /* 16px: o iOS não dá zoom no campo */
+  font-size: 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 12px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.gst-campo select.gst-lista:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 1px;
+}
+/* UF e cidade lado a lado */
+.gst-duplo {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+}

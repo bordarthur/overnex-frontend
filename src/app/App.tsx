@@ -52,6 +52,7 @@ export function App() {
           <Route path="receber-pagar" element={<PainelTela key="receber-pagar" tela="receber-pagar" />} />
           <Route path="fluxo-caixa" element={<PainelTela key="fluxo-caixa" tela="fluxo-caixa" />} />
           <Route path="pessoas" element={<PainelTela key="pessoas" tela="pessoas" />} />
+          <Route path="estoque" element={<PainelTela key="estoque" tela="estoque" />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/inicio" replace />} />

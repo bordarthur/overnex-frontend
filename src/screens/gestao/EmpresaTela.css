@@ -11,8 +11,7 @@
   color: var(--ink);
 }
 
-/* Implantação: um cartão por camada. A borda de cima marca o grupo, pela ordem em que ele aparece:
-   azul de série e roxo (os do mockup), que não são cor de status. */
+/* Implantação: um cartão por seção de painéis, com os painéis dela e o nível de cada um. */
 .gst-camadas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
@@ -22,18 +21,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
   padding: 14px;
   border: 1px solid var(--line);
-  border-top: 4px solid var(--ink-3);
   border-radius: 12px;
   background: var(--surface);
-}
-.gst-camada.grupo-0 {
-  border-top-color: var(--c4);
-}
-.gst-camada.grupo-1 {
-  border-top-color: var(--dir);
 }
 .gst-camada h2 {
   align-self: stretch;
@@ -44,6 +36,22 @@
   font-size: 14px;
   font-weight: 600;
 }
+.gst-camada-paineis {
+  align-self: stretch;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+.gst-camada-paineis li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+/* A etiqueta do nível vai pela posição dele em `niveis`: azul de série e roxo (os do mockup), e o
+   terceiro em cinza; nenhum é cor de status. */
 .gst-etiqueta {
   font-size: 10.5px;
   font-weight: 700;
@@ -53,11 +61,11 @@
   color: var(--ink-2);
   background: var(--surface-2);
 }
-.grupo-0 .gst-etiqueta {
+.gst-etiqueta.nivel-0 {
   color: var(--c4);
   background: color-mix(in srgb, var(--c4) 12%, var(--surface));
 }
-.grupo-1 .gst-etiqueta {
+.gst-etiqueta.nivel-1 {
   color: var(--dir);
   background: var(--dir-bg);
 }
@@ -98,6 +106,12 @@
 .gst-painel b {
   font-size: 14px;
   font-weight: 600;
+}
+.gst-painel-nome {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
 }
 /* sem dado: a chave fica travada, e a nota diz por quê */
 .gst-painel.travado b {

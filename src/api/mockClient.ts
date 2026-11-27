@@ -3,6 +3,7 @@ import type {
   CartaoProvisoes,
   MudancaGrupoProvisao,
   PainelPayload,
+  PontoBcg,
   TabelaNomes,
   TelaPainel,
 } from '../contracts/painel';
@@ -19,6 +20,7 @@ import {
   criarEmpresa,
   gestaoDoBanco,
   mudarEmpresa,
+  mudarUnidade,
   pedirConvite,
   repedirConvite,
   gravarPreferenciaDoCliente,
@@ -32,12 +34,17 @@ import {
   preferenciaDoCliente,
   salvarFeriado,
   sessaoDoBanco,
+  soAdmin,
   tirarFeriado,
   usuarioDaPersona,
   usuariosDoBanco,
+  valoresNegociosDo,
 } from './mockGestao';
 import fixtureClientes from './fixtures/clientes.json';
 import fixtureEquipe from './fixtures/equipe-comercial.json';
+import fixtureEstoque from './fixtures/estoque.json';
+import fixtureEstoqueExcesso from './fixtures/estoque-lista-excesso.json';
+import fixtureEstoqueParados from './fixtures/estoque-lista-parados.json';
 import fixtureFluxoCaixa from './fixtures/fluxo-caixa.json';
 import fixtureFluxoCaixaProvisoes from './fixtures/fluxo-caixa-provisoes.json';
 import fixturePessoas from './fixtures/pessoas.json';
@@ -64,14 +71,56 @@ export const fixturesPainel: Record<TelaPainel, PainelPayload> = {
   'receber-pagar': fixtureReceberPagar as unknown as PainelPayload,
   'fluxo-caixa': fixtureFluxoCaixa as unknown as PainelPayload,
   pessoas: fixturePessoas as unknown as PainelPayload,
+  // o demo do back (overnex-backend/api/app/telas/paineis/demo/estoque.json), com a regra provisória
+  estoque: fixtureEstoque as unknown as PainelPayload,
 };
 
 /**
+ * Filtros do Estoque, como a API: as opções precisam existir (senão, 422), a Classe BCG marca o item
+ * do "O que fazer", e as bolhas fora da Seção ou da Classe ficam apagadas (não saem da matriz).
+ */
+function aplicarFiltrosEstoque(painel: PainelPayload, filtros: Record<string, string>): PainelPayload {
+  for (const f of painel.filtros) {
+    const valor = filtros[f.id];
+    if (valor !== undefined && !f.opcoes.some((o) => o.id === valor))
+      throw new ApiErro(422, 'Filtro inválido.');
+  }
+  const classe = filtros.classe;
+  const secao = painel.filtros
+    .find((f) => f.id === 'secao')
+    ?.opcoes.find((o) => o.id === filtros.secao)?.rotulo;
+  if (!classe && !secao) return painel;
+  const apagar = (p: PontoBcg): PontoBcg => ({
+    ...p,
+    apagado:
+      (classe !== undefined && p.quadrante !== classe) ||
+      (secao !== undefined && p.dica.find((d) => d.rotulo === 'Seção')?.valor !== secao),
+    produtos: p.produtos?.map(apagar) ?? null,
+  });
+  return {
+    ...painel,
+    cartoes: painel.cartoes.map((c) =>
+      c.tipo === 'bcg'
+        ? { ...c, pontos: c.pontos.map(apagar) }
+        : c.tipo === 'acoes-bcg'
+          ? { ...c, itens: c.itens.map((i) => ({ ...i, selecionado: i.quadrante === classe })) }
+          : // com a Seção, o real contra ideal já começa nela
+            c.tipo === 'real-ideal' && filtros.secao
+            ? { ...c, aberto: [filtros.secao] }
+            : c,
+    ),
+  };
+}
+
+/**
  * Cartões que mudam com um filtro, por `tela?filtro=opção`: no mock, os outros filtros não mudam os
- * números, mas a chave "Só lançados / Lançados + provisões" troca a projeção do Fluxo de caixa.
+ * números, mas a chave "Só lançados / Lançados + provisões" troca a projeção do Fluxo de caixa, e a
+ * "Tudo / Excesso / Parados" troca a lista do Estoque.
  */
 export const variantesPainel: Record<string, Cartao[]> = {
   'fluxo-caixa?projecao=provisoes': fixtureFluxoCaixaProvisoes as unknown as Cartao[],
+  'estoque?lista=excesso': fixtureEstoqueExcesso as unknown as Cartao[],
+  'estoque?lista=parados': fixtureEstoqueParados as unknown as Cartao[],
 };
 
 function aplicarVariantes(painel: PainelPayload, tela: TelaPainel, filtros: Record<string, string>) {
@@ -187,9 +236,12 @@ export function criarMockClient({
   const sessaoDe = async (cliente?: string) =>
     sessaoFixa ?? sessaoDoBanco(banco, await quem(), cliente || undefined);
   // como as rotas de tela: a empresa precisa ser da pessoa, e a tela, estar ligada e liberada a ela
-  const abrirTela = async (cliente: string, tela: TelaApp) => {
+  // e cada unidade de `?unidades=` precisa ser dela (como a API: unidade de fora, 403)
+  const abrirTela = async (cliente: string, tela: TelaApp, unidades?: string) => {
     const s = await sessaoDe(cliente);
     if (!s.cliente || !s.telas.includes(CODIGO_DA_TELA[tela])) throw new ApiErro(403, MSG.negado);
+    const delas = new Set(s.empresas.map((e) => e.id));
+    if (unidades?.split(',').some((u) => !delas.has(u))) throw new ApiErro(403, MSG.negado);
     return { ...s, cliente: s.cliente };
   };
   // as fixtures são da empresa demo; nas outras, o cabeçalho mostra a empresa aberta
@@ -223,12 +275,17 @@ export function criarMockClient({
         reject(signal.reason);
       });
     });
-  // a Gestão é só do Admin BORD; devolve quem está gravando, para as regras que olham o autor
-  const admin = async (signal?: AbortSignal) => {
+  // quem está na Gestão; quem pode abrir cada rota, o banco decide (gestaoDoBanco, clienteDoBanco)
+  const naGestao = async (signal?: AbortSignal) => {
     await esperar(signal);
     if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
-    if (!(await sessaoDe()).gestao) throw new ApiErro(403, MSG.negado);
     return quem();
+  };
+  // usuários e gravações são só do Admin BORD; devolve quem está gravando, para as regras que olham o autor
+  const admin = async (signal?: AbortSignal) => {
+    const id = await naGestao(signal);
+    soAdmin(banco, id);
+    return id;
   };
 
   return {
@@ -237,11 +294,11 @@ export function criarMockClient({
       await esperar(opcoes?.signal);
       return sessaoDe(cliente);
     },
-    async obterVisaoGeral(cliente, _filtros, opcoes) {
+    async obterVisaoGeral(cliente, filtros, opcoes) {
       await esperar(opcoes?.signal);
       if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
       if (cenario === 'sem-permissao') throw new ApiErro(403, MSG.negado);
-      const { cliente: empresa } = await abrirTela(cliente, 'visao-geral');
+      const { cliente: empresa } = await abrirTela(cliente, 'visao-geral', filtros?.unidades);
       const dados = daEmpresa(payload, empresa);
       // Como a API responde antes da primeira carga do cliente.
       if (cenario === 'vazio') return { ...dados, dadosAte: null, atualizadoEm: null, secoes: [] };
@@ -259,14 +316,51 @@ export function criarMockClient({
       if (s.papel === 'leitor') throw new ApiErro(403, 'Você não pode mudar esta escolha.');
       gravarPreferenciaDoCliente(banco, s.cliente?.slug ?? cliente, id, valor);
     },
+    async obterValoresNegocios(cliente, filtros, opcoes) {
+      await esperar(opcoes?.signal);
+      if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
+      const s = await sessaoDe(cliente);
+      if (!s.cliente) throw new ApiErro(403, MSG.negado);
+      return valoresNegociosDo(banco, s.cliente.slug, filtros?.mes);
+    },
     // Os filtros (mês, empresa, canal...) não mudam os números: cada tela tem uma fixture só. A
     // exceção são as variantes (a projeção com provisões) e as provisões gravadas.
     async obterPainel(cliente, tela, filtros = {}, opcoes) {
       await esperar(opcoes?.signal);
       if (cenario === 'erro') throw new ApiErro(500, 'Falha simulada do servidor.');
       if (cenario === 'sem-permissao') throw new ApiErro(403, MSG.negado);
-      const s = await abrirTela(cliente, tela);
+      const s = await abrirTela(cliente, tela, filtros.unidades);
       const painel = daEmpresa(paineis[tela], s.cliente);
+      // painel de um setor sem nenhuma unidade pedida dele: como a API, só o escopo e o aviso
+      const doSetor = painel.escopo
+        ? new Set(
+            (s.negocios?.setores ?? [])
+              .filter((x) => painel.escopo!.setores.includes(x.id))
+              .flatMap((x) => x.grupos.flatMap((g) => g.unidades)),
+          )
+        : null;
+      if (
+        doSetor &&
+        s.negocios &&
+        filtros.unidades &&
+        !filtros.unidades.split(',').some((u) => doSetor.has(u))
+      )
+        return {
+          ...painel,
+          filtros: [],
+          kpis: [],
+          destaques: [],
+          apoios: [],
+          cartoes: [],
+          aviso: {
+            tom: 'info',
+            texto: [
+              {
+                texto: 'Estoque é um painel da Distribuidora. Volta quando ela estiver marcada em Negócios.',
+              },
+            ],
+          },
+        };
       if (cenario === 'vazio')
         return {
           ...painel,
@@ -277,7 +371,11 @@ export function criarMockClient({
           apoios: [],
           cartoes: [],
         };
-      const comVariantes = aplicarVariantes(painel, tela, filtros);
+      const comVariantes = aplicarVariantes(
+        tela === 'estoque' ? aplicarFiltrosEstoque(painel, filtros) : painel,
+        tela,
+        filtros,
+      );
       return {
         ...comVariantes,
         cartoes: comVariantes.cartoes.map((c) =>
@@ -312,12 +410,10 @@ export function criarMockClient({
     },
     gestao: {
       async obterGestao(opcoes) {
-        await admin(opcoes?.signal);
-        return gestaoDoBanco(banco);
+        return gestaoDoBanco(banco, await naGestao(opcoes?.signal));
       },
       async obterCliente(slug, opcoes) {
-        await admin(opcoes?.signal);
-        return clienteDoBanco(banco, slug);
+        return clienteDoBanco(banco, await naGestao(opcoes?.signal), slug);
       },
       async obterUsuarios(opcoes) {
         await admin(opcoes?.signal);
@@ -367,6 +463,10 @@ export function criarMockClient({
       async salvarCliente(slug, mudanca) {
         await admin();
         mudarEmpresa(banco, slug, mudanca);
+      },
+      async salvarUnidade(slug, id, mudanca) {
+        await admin();
+        mudarUnidade(banco, slug, id, mudanca);
       },
       async convidarUsuario(novo) {
         await admin();

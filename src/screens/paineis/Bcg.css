@@ -1,0 +1,194 @@
+/* Matriz BCG e "O que fazer em cada quadrante" (mockup M3.1.0). As cores dos quadrantes são
+   categoria, não status: tokens próprios (--bcg-*), com os mesmos tons do mockup. */
+
+.q-estrela {
+  --bcg: var(--bcg-estrela);
+}
+.q-vaca-leiteira {
+  --bcg: var(--bcg-vaca);
+}
+.q-interrogacao {
+  --bcg: var(--bcg-interrogacao);
+}
+.q-abacaxi {
+  --bcg: var(--bcg-abacaxi);
+}
+
+/* trilha de abertura */
+.bcg-trilha {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  min-height: 22px;
+  margin: -6px 0 2px;
+}
+.bcg-trilha b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* a matriz */
+.bcg .qbg {
+  fill: var(--bcg);
+  opacity: 0.045;
+}
+.bcg .bub {
+  fill: var(--bcg);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+  opacity: 0.9;
+  transition: opacity 0.2s;
+}
+.bcg .bub.abre {
+  cursor: pointer;
+}
+.bcg .bub:hover,
+.bcg .bub:focus-visible {
+  opacity: 1;
+  stroke: var(--ink);
+  outline: none;
+}
+.bcg .bub.dim {
+  opacity: 0.1;
+}
+.bcg .blab {
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  fill: var(--ink-2);
+  pointer-events: none;
+}
+.bcg .dim .blab {
+  opacity: 0.15;
+}
+.bcg .med {
+  stroke: var(--ink);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.55;
+}
+.bcg .medl {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10.5px;
+  fill: var(--ink-3);
+}
+.bcg .qcanto {
+  color: var(--ink-3);
+}
+.bcg .qn {
+  font-family: 'Saira', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  fill: var(--ink-3);
+}
+
+/* legenda dos quadrantes */
+.bcg-leg {
+  margin-top: 8px;
+}
+.qd,
+.legend i.qd {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 0;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: 0;
+  background: var(--bcg);
+}
+
+/* o que fazer em cada quadrante */
+.es-quads {
+  display: flex;
+  flex-direction: column;
+}
+.es-q {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 4px 12px;
+  padding: 13px 10px;
+  border-top: 1px solid var(--line-soft);
+  border-radius: 10px;
+  transition: background 0.15s;
+}
+.es-q:first-child {
+  border-top: 0;
+}
+.es-q:hover {
+  background: var(--surface-2);
+}
+.es-q:focus-visible {
+  outline: 2px solid var(--ok);
+  outline-offset: 2px;
+}
+.es-q[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--ink) 6%, var(--surface));
+  box-shadow: inset 3px 0 0 var(--bcg);
+}
+.es-q .qic {
+  grid-row: 1 / 3;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--bcg);
+}
+.es-q .qt {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.es-q .qt b {
+  font-size: 14px;
+  font-weight: 600;
+}
+.es-q .qt em {
+  font-style: normal;
+  font-size: 12px;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.es-q .qa {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+.es-q .qnums {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 0.7fr 1fr 1fr;
+  gap: 10px;
+  /* o cartão ocupa a largura toda abaixo de 1240 px: os números não se espalham */
+  max-width: 420px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.es-q .qnums b {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 13px;
+}
+.es-q .qnums b.t-crit {
+  color: var(--crit);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .es-q .qic {
+    color: var(--grafite-3);
+  }
+}
+:root[data-theme='dark'] .es-q .qic {
+  color: var(--grafite-3);
+}
