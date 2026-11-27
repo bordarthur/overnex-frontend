@@ -7,7 +7,8 @@ import { erroDaGravacao } from './apoio';
 import './GavetaUsuario.css';
 
 /**
- * O botão "Nova empresa" da barra lateral e a gaveta dele (`POST /api/admin/clientes`): nome e setor.
+ * O botão "Nova empresa" da barra lateral e a gaveta dele (`POST /api/admin/clientes`): só o nome.
+ * Setor, segmento e grupo são de cada unidade (aba Unidades).
  * O identificador (slug) é a API que monta, a partir do nome. A empresa nasce com todas as camadas
  * desligadas e sem pessoas; depois de criada, a gaveta mostra o texto da API e a empresa abre.
  */
@@ -39,7 +40,6 @@ function GavetaNovaEmpresa({ onFechar }: { onFechar: () => void }) {
   const id = useId();
   const navegar = useNavigate();
   const [nome, setNome] = useState('');
-  const [segmento, setSegmento] = useState('');
   const [tentou, setTentou] = useState(false);
   const criar = useGravarGestao((api, nova: CorpoNovaEmpresa) => api.criarCliente(nova));
   const semNome = tentou && !nome.trim();
@@ -48,7 +48,7 @@ function GavetaNovaEmpresa({ onFechar }: { onFechar: () => void }) {
     setTentou(true);
     if (!nome.trim()) return;
     criar.mutate(
-      { nome: nome.trim(), segmento: segmento.trim() || null, slug: null },
+      { nome: nome.trim(), slug: null },
       // a empresa abre atrás da gaveta, que fica com o texto da API
       { onSuccess: (criada) => void navegar(`/gestao/empresas/${criada.slug}`) },
     );
@@ -112,21 +112,6 @@ function GavetaNovaEmpresa({ onFechar }: { onFechar: () => void }) {
             Informe o nome da empresa.
           </span>
         )}
-      </div>
-      <div className="gst-campo">
-        <label htmlFor={`${id}-setor`}>Setor</label>
-        <input
-          id={`${id}-setor`}
-          type="text"
-          autoComplete="off"
-          maxLength={80}
-          value={segmento}
-          aria-describedby={`${id}-setor-dica`}
-          onChange={(e) => setSegmento(e.target.value)}
-        />
-        <span id={`${id}-setor-dica`} className="gst-dica">
-          Opcional. Ex.: Distribuição, Restaurante.
-        </span>
       </div>
     </Gaveta>
   );

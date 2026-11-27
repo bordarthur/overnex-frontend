@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { ApiErro, type FiltrosPainel } from '../../api/client';
 import { useNomes } from '../../api/useNomes';
 import { Chave } from '../../components/Chave';
+import { Trechos } from '../../components/Trechos';
 import type { CartaoTabela, TelaPainel } from '../../contracts/painel';
 import { STATUS } from '../../theme/status';
 import { CaixaCartao } from './CaixaCartao';
 import { ConteudoCelula } from './Celula';
 import { classeCelula } from './classeCelula';
 import { useConsultaPainel } from './consultaPainel';
+import { LinkParaTela } from './LinkParaTela';
 import './TabelaCartao.css';
 
 const ALINHAR = { esquerda: 'l', direita: '', centro: 'c' } as const;
@@ -28,8 +30,18 @@ export function TabelaCartao({ cartao }: { cartao: CartaoTabela }) {
   if (cartao.nomes && consulta)
     return <TabelaComNomes cartao={cartao} rotulo={cartao.nomes.rotulo} {...consulta} />;
   return (
-    <CaixaCartao cartao={cartao}>
-      <Grade tabela={cartao} cartao={cartao} aviso={cartao.vazio ?? 'Nada para mostrar com esses filtros.'} />
+    <CaixaCartao cartao={cartao} controle={cartao.link && <LinkParaTela link={cartao.link} />}>
+      <Grade
+        tabela={cartao}
+        cartao={cartao}
+        aviso={cartao.vazio ?? 'Nada para mostrar com esses filtros.'}
+        limite={cartao.limite ?? undefined}
+      />
+      {cartao.rodape && cartao.rodape.length > 0 && (
+        <p className="tbl-rodape">
+          <Trechos trechos={cartao.rodape} />
+        </p>
+      )}
     </CaixaCartao>
   );
 }
@@ -84,57 +96,116 @@ interface PropsGrade {
   // texto da linha única quando não há linhas (ou, com soAviso, no lugar delas)
   aviso: string;
   soAviso?: boolean;
+  // mostra só as primeiras linhas, com o botão para ver todas
+  limite?: number;
 }
 
-function Grade({ tabela, cartao, aviso, soAviso = false }: PropsGrade) {
-  const { colunas, linhas, variante = 'padrao' } = tabela;
+type Linha = Tabela['linhas'][number];
+
+/** Ordena pelo `ordem` da célula da coluna; célula sem `ordem` vai para o fim. */
+function ordenar(linhas: Linha[], coluna: number, crescente: boolean): { linha: Linha; i: number }[] {
+  const comIndice = linhas.map((linha, i) => ({ linha, i }));
+  return comIndice.sort((a, b) => {
+    const x = a.linha.celulas[coluna]?.ordem;
+    const y = b.linha.celulas[coluna]?.ordem;
+    if (x == null || y == null) return x == null ? (y == null ? a.i - b.i : 1) : -1;
+    const d =
+      typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR');
+    return (crescente ? d : -d) || a.i - b.i;
+  });
+}
+
+function Grade({ tabela, cartao, aviso, soAviso = false, limite }: PropsGrade) {
+  const { colunas, variante = 'padrao' } = tabela;
+  // a ordem escolhida no cabeçalho; sem ela, a ordem da API
+  const [ordem, setOrdem] = useState<{ coluna: number; crescente: boolean } | null>(null);
+  const [todas, setTodas] = useState(false);
+  const ordenadas = ordem
+    ? ordenar(tabela.linhas, ordem.coluna, ordem.crescente)
+    : tabela.linhas.map((linha, i) => ({ linha, i }));
+  const corta = limite != null && !soAviso && ordenadas.length > limite;
+  const visiveis = corta && !todas ? ordenadas.slice(0, limite) : ordenadas;
+  const linhas = visiveis.map((v) => v.linha);
   const rola = !soAviso && cartao.largura < 12 && linhas.length > LINHAS_SEM_ROLAR;
+  // o primeiro clique: texto em ordem alfabética; número do maior para o menor
+  const clicarColuna = (coluna: number) =>
+    setOrdem((atual) =>
+      atual?.coluna === coluna
+        ? { coluna, crescente: !atual.crescente }
+        : {
+            coluna,
+            crescente:
+              typeof tabela.linhas.find((l) => l.celulas[coluna]?.ordem != null)?.celulas[coluna]?.ordem ===
+              'string',
+          },
+    );
   // primeira coluna à esquerda; as outras, números à direita (ou o que a API pedir)
   const classeColuna = (i: number) => {
     const c = colunas[i];
     const alinhar = c?.alinhar ?? (i === 0 ? 'esquerda' : 'direita');
     return [ALINHAR[alinhar], c?.ocultarNoCelular ? 'so-largo' : ''].filter(Boolean).join(' ');
   };
-  const classeLinha = (linha: Tabela['linhas'][number]) =>
+  const classeLinha = (linha: Linha) =>
     [linha.status ? `rowcf-${STATUS[linha.status].classe}` : '', linha.separar ? 'sep' : '']
       .filter(Boolean)
       .join(' ') || undefined;
   return (
-    <div
-      className={`scroll-x${rola ? ' tbl-rola' : ''}`}
-      // área de rolagem alcançável pelo teclado
-      {...(rola && { tabIndex: 0, role: 'group', 'aria-label': `${cartao.titulo}: todas as linhas` })}
-    >
-      <table className={`tbl tbl-${variante}`}>
-        <thead>
-          <tr>
-            {colunas.map((c, i) => (
-              <th key={i} className={classeColuna(i)} scope="col">
-                {c.rotulo}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {soAviso || linhas.length === 0 ? (
+    <>
+      <div
+        className={`scroll-x${rola ? ' tbl-rola' : ''}`}
+        // área de rolagem alcançável pelo teclado
+        {...(rola && { tabIndex: 0, role: 'group', 'aria-label': `${cartao.titulo}: todas as linhas` })}
+      >
+        <table className={`tbl tbl-${variante}`}>
+          <thead>
             <tr>
-              <td colSpan={colunas.length} className="l muted" role={soAviso ? 'status' : undefined}>
-                {aviso}
-              </td>
+              {colunas.map((c, i) => (
+                <th
+                  key={i}
+                  className={classeColuna(i)}
+                  scope="col"
+                  aria-sort={ordem?.coluna === i ? (ordem.crescente ? 'ascending' : 'descending') : undefined}
+                >
+                  {c.ordenavel ? (
+                    <button type="button" className="tbl-ordena" onClick={() => clicarColuna(i)}>
+                      {c.rotulo}
+                      <span className="tbl-seta" aria-hidden="true">
+                        {ordem?.coluna === i ? (ordem.crescente ? '↑' : '↓') : ''}
+                      </span>
+                    </button>
+                  ) : (
+                    c.rotulo
+                  )}
+                </th>
+              ))}
             </tr>
-          ) : (
-            linhas.map((linha, i) => (
-              <tr key={i} className={classeLinha(linha)}>
-                {linha.celulas.map((c, j) => (
-                  <td key={j} className={[classeColuna(j), classeCelula(c)].filter(Boolean).join(' ')}>
-                    <ConteudoCelula celula={c} curto={variante === 'tendencia'} />
-                  </td>
-                ))}
+          </thead>
+          <tbody>
+            {soAviso || linhas.length === 0 ? (
+              <tr>
+                <td colSpan={colunas.length} className="l muted" role={soAviso ? 'status' : undefined}>
+                  {aviso}
+                </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+            ) : (
+              visiveis.map(({ linha, i }) => (
+                <tr key={i} className={classeLinha(linha)}>
+                  {linha.celulas.map((c, j) => (
+                    <td key={j} className={[classeColuna(j), classeCelula(c)].filter(Boolean).join(' ')}>
+                      <ConteudoCelula celula={c} curto={variante === 'tendencia'} />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+      {corta && (
+        <button type="button" className="link tbl-mais" onClick={() => setTodas((t) => !t)}>
+          {todas ? `Mostrar só as ${limite} primeiras` : `Ver todas as ${ordenadas.length}`}
+        </button>
+      )}
+    </>
   );
 }

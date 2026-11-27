@@ -156,7 +156,7 @@ describe('o consultor na Gestão', () => {
     expect(screen.queryByRole('button', { name: 'Nova empresa' })).toBeNull();
 
     // a empresa: só duas abas e, no cabeçalho, só o atalho para os painéis
-    expect(abas()).toEqual(['Implantação', 'Prontidão dos dados']);
+    expect(abas()).toEqual(['Implantação', 'Unidades', 'Prontidão dos dados']);
     expect(screen.queryByRole('button', { name: 'Convidar usuário' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Editar empresa' })).toBeNull();
     expect(screen.getByRole('link', { name: 'Abrir os painéis desta empresa' })).toHaveAttribute(
@@ -172,7 +172,7 @@ describe('o consultor na Gestão', () => {
     const { usuarios } = abrirConsultor('/gestao/empresas/pj?aba=acesso');
     expect(await screen.findByRole('heading', { level: 1, name: 'PJ' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Implantação' })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('article', { name: 'Universal Completo' })).toBeInTheDocument();
+    expect(screen.getByRole('article', { name: 'Financeiro' })).toBeInTheDocument();
     expect(usuarios).not.toHaveBeenCalled();
   });
 

@@ -39,6 +39,15 @@
   border-radius: 999px;
   padding: 1px 9px;
 }
+/* "Conta só a Distribuidora" (mockup M3.1.0): verde da marca, que aqui não é status */
+.vb-only {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--neon);
+  border: 1px solid color-mix(in srgb, var(--neon) 42%, transparent);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
 .vb-score {
   display: flex;
   gap: 6px;

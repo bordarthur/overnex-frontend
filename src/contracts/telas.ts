@@ -16,6 +16,8 @@ export const CODIGO_DA_TELA: Record<TelaApp, string> = {
   'receber-pagar': 'FIN-03',
   'fluxo-caixa': 'FIN-04',
   pessoas: 'PES-01',
+  // só vale em empresas com unidade do setor Distribuidora (a sessão não o manda nas outras)
+  estoque: 'EST-01',
 };
 
 export const ehTelaApp = (rota: string | undefined): rota is TelaApp =>

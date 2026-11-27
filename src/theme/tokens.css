@@ -60,6 +60,17 @@
   --bok: rgba(42, 111, 176, 0.2);
   --bwarn: rgba(217, 138, 0, 0.26);
   --bcrit: rgba(179, 52, 42, 0.2);
+  /* quadrantes da Matriz BCG (mockup M3.1.0): categoria, não status; os tons do mockup */
+  --bcg-estrela: #2a6fb0;
+  --bcg-vaca: #5e5e5e;
+  --bcg-interrogacao: #d98a00;
+  --bcg-abacaxi: #b3342a;
+  /* bandeja "Negócios" (mockup M3.1.0) */
+  --sc-tray: #efefed;
+  --sc-tile: #fdfdfc;
+  --sc-wire: #cacaca;
+  --sc-ghost: #c4c4c4;
+  --sc-badge: #2f2f2f;
   /* links verdes (no escuro o mockup clareia para #5FD18E) */
   --link: var(--verde-texto);
 }
@@ -104,6 +115,15 @@
     --bwarn: rgba(240, 174, 74, 0.26);
     --bcrit: rgba(244, 138, 126, 0.24);
     --link: #5fd18e;
+    --sc-tray: #222;
+    --sc-tile: #2e2e2e;
+    --sc-wire: #4c4c4c;
+    --sc-ghost: #4f4f4f;
+    --sc-badge: #111;
+    --bcg-estrela: #7ab3ea;
+    --bcg-vaca: #bdbdbd;
+    --bcg-interrogacao: #f0ae4a;
+    --bcg-abacaxi: #f48a7e;
   }
 }
 
@@ -146,4 +166,13 @@
   --bwarn: rgba(240, 174, 74, 0.26);
   --bcrit: rgba(244, 138, 126, 0.24);
   --link: #5fd18e;
+  --sc-tray: #222;
+  --sc-tile: #2e2e2e;
+  --sc-wire: #4c4c4c;
+  --sc-ghost: #4f4f4f;
+  --sc-badge: #111;
+  --bcg-estrela: #7ab3ea;
+  --bcg-vaca: #bdbdbd;
+  --bcg-interrogacao: #f0ae4a;
+  --bcg-abacaxi: #f48a7e;
 }

@@ -10,6 +10,7 @@ import { AbaCargas, AbaDados } from './AbaDados';
 import { AbaImplantacao } from './AbaImplantacao';
 import { AbaPaineis } from './AbaPaineis';
 import { AbaPreferencias } from './AbaPreferencias';
+import { AbaUnidades } from './AbaUnidades';
 import { useTituloDaGestao } from './apoio';
 import { ConvidarUsuario } from './ConvidarUsuario';
 import { EditarEmpresa } from './EditarEmpresa';
@@ -48,7 +49,9 @@ export function EmpresaTela() {
       <header className="gst-topo">
         <div>
           <h1>{dados.cliente.nome}</h1>
-          {dados.cliente.segmento && <p>{dados.cliente.segmento}</p>}
+          {dados.cliente.setores.length > 0 && (
+            <p>{dados.cliente.setores.map((s) => s.rotulo).join(' · ')}</p>
+          )}
           <div className="gst-acoes">
             <Link className="btn gst-botao" to={`/${dados.cliente.slug}`}>
               Abrir os painéis desta empresa
@@ -94,11 +97,27 @@ export function EmpresaTela() {
 function ConteudoDaAba({ aba, dados }: { aba: IdAbaEmpresa; dados: ClienteGestaoPayload }) {
   switch (aba) {
     case 'implantacao':
-      return <AbaImplantacao camadas={dados.camadas} />;
+      return <AbaImplantacao camadas={dados.camadas} niveis={dados.niveis} />;
+    case 'unidades':
+      return (
+        <AbaUnidades
+          slug={dados.cliente.slug}
+          unidades={dados.unidades}
+          podeEditar={dados.permissoes.unidades ?? false}
+          setores={dados.opcoesSetor ?? []}
+        />
+      );
     case 'dados':
       return <AbaDados fontes={dados.fontes} />;
     case 'paineis':
-      return <AbaPaineis slug={dados.cliente.slug} paineis={dados.paineis} menu={dados.menu} />;
+      return (
+        <AbaPaineis
+          slug={dados.cliente.slug}
+          paineis={dados.paineis}
+          menu={dados.menu}
+          niveis={dados.niveis}
+        />
+      );
     case 'preferencias':
       return (
         <AbaPreferencias

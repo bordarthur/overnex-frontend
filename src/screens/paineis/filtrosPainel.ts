@@ -8,7 +8,7 @@ import type { ChaveDoCartao } from './consultaPainel';
 const COMPARAR: Record<string, string> = { 'Mês anterior': 'mes-anterior' };
 
 /**
- * Junta os chips da sessão (Período, Comparar com, Empresa: os mesmos da Visão geral) com os
+ * Junta os chips da sessão (Período, Comparar com, Unidade: os mesmos da Visão geral) com os
  * filtros próprios da tela, que vêm no payload. Os chips trabalham com rótulos; aqui eles viram
  * o `id` da opção. Só vai na consulta o que foi trocado. Com `comparar`, o "Comparar com" também
  * vai (por enquanto só no Resultado; nas outras telas ele continua só no rótulo). Com
@@ -17,7 +17,11 @@ const COMPARAR: Record<string, string> = { 'Mês anterior': 'mes-anterior' };
 export function juntarFiltros(
   daSessao: FiltrosDaTela,
   daTela: FiltroPainel[],
-  { comparar = false, semComparar = false }: { comparar?: boolean; semComparar?: boolean } = {},
+  {
+    comparar = false,
+    semComparar = false,
+    semPeriodo = false,
+  }: { comparar?: boolean; semComparar?: boolean; semPeriodo?: boolean } = {},
 ) {
   // o filtro com `cartao` vira a chave no cabeçalho daquele cartão, fora da barra
   const proprios: FiltroDef[] = daTela
@@ -29,7 +33,12 @@ export function juntarFiltros(
       padrao: f.opcoes.find((o) => o.id === f.padrao)?.rotulo ?? f.opcoes[0]?.rotulo ?? '',
     }));
   return {
-    defs: [...daSessao.defs.filter((d) => !(semComparar && d.id === 'comparar')), ...proprios],
+    defs: [
+      ...daSessao.defs.filter(
+        (d) => !(semComparar && d.id === 'comparar') && !(semPeriodo && d.id === 'periodo'),
+      ),
+      ...proprios,
+    ],
     /**
      * As chaves que ficam nos cartões, por id do cartão: a opção escolhida (pelo rótulo guardado em
      * `valores`, ou a padrão) e como trocar.
@@ -66,9 +75,9 @@ export function juntarFiltros(
     },
     consulta(valores: Record<string, string>): FiltrosPainel {
       const consulta: FiltrosPainel = {};
-      const { mes, empresa } = daSessao.consulta(valores);
-      if (mes) consulta.mes = mes;
-      if (empresa) consulta.empresa = empresa;
+      const { mes, unidades } = daSessao.consulta(valores);
+      if (mes && !semPeriodo) consulta.mes = mes;
+      if (unidades) consulta.unidades = unidades;
       const rotuloComparar = valores.comparar;
       if (comparar && !semComparar && rotuloComparar && COMPARAR[rotuloComparar])
         consulta.comparar = COMPARAR[rotuloComparar];
