@@ -43,8 +43,8 @@ export interface CamadaResumo {
 export interface ClienteDaLista {
   slug: string;
   nome: string;
-  // o setor da empresa, texto livre; null = não mostrar nada
-  segmento: string | null;
+  // os setores das unidades, sem repetir, na ordem de cfg.setor; vazio = nenhuma unidade com setor
+  setores: Rotulado[];
   // uma por camada da implantação (a barra de pontos da lista)
   camadas: CamadaResumo[];
 }
@@ -92,10 +92,22 @@ export interface ChipResumo {
   status: StatusGestao;
 }
 
+/** Um painel dentro da camada da aba Implantação, com o nível ao lado. */
+export interface PainelDaCamada {
+  codigo: string;
+  nome: string;
+  // id de um item de `niveis` (a etiqueta "Universal Básico", "Universal Completo", "Módulo Distribuidora")
+  nivel: string;
+}
+
+/**
+ * Camada = seção de painéis do menu ("Comercial", "Financeiro", "Pessoas", "Estoque"; decisão de
+ * 27/11/2026, no lugar das camadas por nível). O estado é o da seção inteira.
+ */
 export interface CamadaDoCliente extends CamadaResumo {
-  // "Universal Básico", "Universal Completo"
-  grupo: string;
-  // o que falta para a camada ficar ativa
+  // os painéis da seção que valem nos setores da empresa, na ordem do menu
+  paineis: PainelDaCamada[];
+  // o que falta para a seção ficar ativa
   pendencias: string[];
 }
 
@@ -113,7 +125,10 @@ export interface FonteDoCliente {
 export interface PainelDoCliente {
   codigo: string;
   nome: string;
-  grupo: string;
+  // a seção do menu ("Financeiro"), o título do grupo na aba Painéis; a lista vem na ordem das seções
+  secao: string;
+  // id de um item de `niveis`
+  nivel: string;
   ligado: boolean;
   // false: sem dado, a chave de ligar fica travada (o motivo vem em `nota`). Ligado sempre desliga.
   podeLigar: boolean;
@@ -224,7 +239,27 @@ export interface GrupoDoMenu {
   itens: { nome: string }[];
 }
 
-export type IdAbaEmpresa = 'implantacao' | 'dados' | 'paineis' | 'preferencias' | 'acesso' | 'cargas';
+export type IdAbaEmpresa =
+  'implantacao' | 'unidades' | 'dados' | 'paineis' | 'preferencias' | 'acesso' | 'cargas';
+
+/**
+ * Uma unidade da empresa (cfg.empresa): uma linha do cadastro que a BORD mantém. Por enquanto só
+ * leitura na Gestão; o cadastro é por SQL.
+ */
+export interface UnidadeDaGestao {
+  id: string;
+  // "Lupo 1"
+  nome: string;
+  setor: Rotulado | null;
+  // "Calçados", "Vestuário"
+  segmento: string | null;
+  // "Lupo"
+  grupo: string | null;
+  uf: string | null;
+  cidade: string | null;
+  bairro: string | null;
+  endereco: string | null;
+}
 
 export interface AbaEmpresa {
   id: IdAbaEmpresa;
@@ -233,10 +268,12 @@ export interface AbaEmpresa {
 
 /** Os botões do cabeçalho da empresa. Admin BORD: true; consultor: false. */
 export interface PermissoesEmpresa {
-  // "Editar" (nome e setor)
+  // "Editar" (o nome)
   editar: boolean;
   // "Convidar usuário"
   convidar: boolean;
+  // "Editar" de cada unidade, na aba Unidades (ausente na API antiga: só leitura)
+  unidades?: boolean;
 }
 
 /**
@@ -245,13 +282,26 @@ export interface PermissoesEmpresa {
  * perfis nem linhas.
  */
 export interface ClienteGestaoPayload {
-  cliente: { slug: string; nome: string; segmento: string | null; logoUrl: string | null };
-  // as abas que a pessoa vê, na ordem (admin: as 6; consultor: implantacao e dados)
+  cliente: {
+    slug: string;
+    nome: string;
+    logoUrl: string | null;
+    // os setores das unidades, como em ClienteDaLista
+    setores: Rotulado[];
+  };
+  // as abas que a pessoa vê, na ordem (admin: as 7; consultor: implantacao, unidades e dados)
   abas: AbaEmpresa[];
   permissoes: PermissoesEmpresa;
   // chips do cabeçalho (para o consultor, sem o de usuários)
   resumo: ChipResumo[];
   camadas: CamadaDoCliente[];
+  // os níveis do catálogo, na ordem ("Universal Básico", "Universal Completo", "Módulo Distribuidora");
+  // a cor da etiqueta vai pela posição aqui
+  niveis: Rotulado[];
+  // as unidades da empresa, por setor, grupo e nome (aba "Unidades")
+  unidades: UnidadeDaGestao[];
+  // opções do campo Setor na edição da unidade (cfg.setor, na ordem); vazio para quem não edita
+  opcoesSetor?: Rotulado[];
   fontes: FonteDoCliente[];
   paineis: PainelDoCliente[];
   acesso: MatrizDeAcesso;
@@ -288,16 +338,31 @@ export interface UsuariosPayload {
  */
 export interface NovaEmpresa {
   nome: string;
-  // o setor, texto livre; null = não informado
-  segmento: string | null;
   slug: string | null;
 }
 
-/** PUT /api/admin/clientes/{slug} (204): troca o nome e o setor. O slug não muda. */
+/**
+ * PUT /api/admin/clientes/{slug} (204): troca o nome. O slug não muda. Setor e segmento são de cada
+ * unidade (MudancaUnidade).
+ */
 export interface MudancaEmpresa {
   nome: string;
-  // null ou em branco = não informado
+}
+
+/**
+ * PUT /api/admin/clientes/{slug}/unidades/{id} (204): troca os dados da unidade, as colunas da tabela
+ * de unidades da LANN. O cliente da unidade não muda. null = não informado; `setor` é um id de
+ * `opcoesSetor`, e `uf`, a sigla em maiúsculas. Muda a bandeja "Negócios" e os painéis por setor.
+ */
+export interface MudancaUnidade {
+  nome: string;
+  setor: string | null;
   segmento: string | null;
+  grupo: string | null;
+  uf: string | null;
+  cidade: string | null;
+  bairro: string | null;
+  endereco: string | null;
 }
 
 /** Resposta (201) de POST /api/admin/clientes. */

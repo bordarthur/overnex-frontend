@@ -1,17 +1,25 @@
 // Contrato dos painéis por cartões: Vendas, Equipe comercial, Clientes e atendimentos, Resultado,
-// Receber e pagar, Fluxo de caixa e Pessoas.
+// Receber e pagar, Fluxo de caixa, Pessoas e Estoque.
 // Hoje escrito à mão; no futuro estes tipos serão gerados do OpenAPI da API.
 // Como na Visão geral, o front só desenha: todo número, status, texto, rótulo, média, projeção
 // e diferença vem pronto. O front formata os números pela unidade e calcula só geometria
 // (largura de barra, escala dos eixos), nunca regra de negócio.
 
+import type { EscopoSetor } from './negocios';
 import type { Kpi, Status, Trecho, Unidade, Valor } from './visaoGeral';
 
 export type { Kpi, Status, Trecho, Unidade, Valor };
 
 /** Telas deste contrato. É também o caminho da rota: GET /api/telas/{tela}. */
 export type TelaPainel =
-  'vendas' | 'equipe-comercial' | 'clientes' | 'resultado' | 'receber-pagar' | 'fluxo-caixa' | 'pessoas';
+  | 'vendas'
+  | 'equipe-comercial'
+  | 'clientes'
+  | 'resultado'
+  | 'receber-pagar'
+  | 'fluxo-caixa'
+  | 'pessoas'
+  | 'estoque';
 
 /** Número a formatar pela unidade, ou texto já pronto quando não é um número só ("2 de 6"). */
 export type Exibicao = Valor | string;
@@ -231,7 +239,27 @@ export type MarcaLegenda =
   | 'quadrado-claro'
   // os tons das barras `serie-azul` e `serie-laranja` (ou `atencao`: o "Lançado" do pago contra lançado)
   | 'quadrado-azul'
-  | 'quadrado-laranja';
+  | 'quadrado-laranja'
+  // o farol das barras (estoque real contra ideal) e o traço do ideal
+  | 'quadrado-saudavel'
+  | 'quadrado-atencao'
+  | 'quadrado-critico'
+  | 'traco';
+
+/**
+ * Tons das faixas de saúde do estoque, que também pintam a barra pequena das listas: o vermelho
+ * cheio e o claro (zerado e abaixo do mínimo), o azul (ideal) e o laranja e o escuro (excesso e parado).
+ */
+export type EstiloFaixa = 'critico' | 'critico-claro' | 'saudavel' | 'atencao' | 'atencao-escura';
+
+/**
+ * Atalho para outra tela do app ("Ver sugestão de compra em Compras →"), pelo trecho da rota. O front
+ * só mostra se a tela existe nele e está em `telas` da sessão.
+ */
+export interface LinkTela {
+  rotulo: string;
+  tela: string;
+}
 
 // ---------- cartões ----------
 
@@ -323,6 +351,14 @@ export interface Celula {
   tomEtiqueta?: 'azul' | 'vermelho' | null;
   // pílula escura antes do texto (o mês, na semana a semana)
   marca?: string | null;
+  // a Classe BCG do produto: a bolinha na cor do quadrante e o nome (as listas do Estoque)
+  quadrante?: { id: IdQuadranteBcg; rotulo: string } | null;
+  // barra pequena embaixo do número ("dinheiro preso"): a proporção (0 a 1) contra o maior da lista
+  barra?: { proporcao: number; estilo: EstiloFaixa } | null;
+  // atalho depois do conteúdo ("Comprar →"), com a mesma regra de `LinkTela`
+  link?: LinkTela | null;
+  // valor para ordenar a coluna (só nas colunas `ordenavel`): número ou texto, sem formatar
+  ordem?: number | string | null;
 }
 
 export interface CartaoTabela extends CartaoBase {
@@ -331,13 +367,80 @@ export interface CartaoTabela extends CartaoBase {
   // não número a número: números curtos (6,64 mi, 26 d) e farol claro, sem negrito (tabela financeira).
   // listrada: linhas alternadas em cinza (semana a semana)
   variante?: 'padrao' | 'compacta' | 'calor' | 'tendencia' | 'listrada';
-  colunas: { rotulo: string; alinhar?: 'esquerda' | 'direita' | 'centro'; ocultarNoCelular?: boolean }[];
+  colunas: {
+    rotulo: string;
+    alinhar?: 'esquerda' | 'direita' | 'centro';
+    ocultarNoCelular?: boolean;
+    // o cabeçalho ordena a tabela pelo `ordem` das células desta coluna (clicar de novo inverte)
+    ordenavel?: boolean | null;
+  }[];
   // status da linha pinta o fundo dela; separar: traço grosso em cima (outro mês começa)
   linhas: { status?: Status; separar?: boolean | null; celulas: Celula[] }[];
   vazio?: string;
   // Chave "Mostrar nomes": a API só manda para quem pode ver dado nominal (perfil de RH). Ligada, o
   // front pede a tabela de uma linha por pessoa em GET /api/telas/{tela}/cartoes/{id}/nomes.
   nomes?: { rotulo: string } | null;
+  // mostra só as primeiras linhas, com o botão para ver todas (as listas do Estoque: 10)
+  limite?: number | null;
+  // texto embaixo da tabela ("Mais 23 produtos abaixo do mínimo fora dos principais.")
+  rodape?: Trecho[] | null;
+  // atalho no cabeçalho do cartão ("Ver sugestão de compra em Compras →")
+  link?: LinkTela | null;
+}
+
+/** Uma linha do "Estoque real contra ideal": seção, família ou produto, com o nível de baixo. */
+export interface ItemRealIdeal {
+  id: string;
+  nome: string;
+  // segunda linha ("ideal de 15 dias", "4 produtos", "cobertura 2,0 dias · ideal 15")
+  sub: string;
+  // em reais, a custo
+  real: number;
+  ideal: number;
+  // embaixo do valor: "+R$ 570 mil · 1,5×", "abaixo do mínimo", "zerado"
+  diferenca: string;
+  // a cor da barra e do texto: saudável até o ideal, atenção até 1,5×, crítico acima disso ou abaixo do mínimo
+  status: Status;
+  // a linha "Outros produtos da seção": apagada e sem abrir
+  outros?: boolean | null;
+  // o nível de baixo (as famílias da seção, os produtos da família); null: não abre
+  itens: ItemRealIdeal[] | null;
+  // o subtítulo do cartão com este item aberto
+  subtituloAberto?: string | null;
+}
+
+/** Estoque real contra o ideal, com o traço do ideal em cada barra e a abertura por nível. */
+export interface CartaoRealIdeal extends CartaoBase {
+  tipo: 'real-ideal';
+  escala: Escala;
+  // o primeiro nível (as seções), do maior desvio para o menor
+  itens: ItemRealIdeal[];
+  // o primeiro passo da trilha ("Todas as seções")
+  rotuloRaiz: string;
+  // ids do caminho aberto de início (com o filtro Seção, a seção dele); null: fechado
+  aberto?: string[] | null;
+}
+
+/** Uma faixa da saúde do estoque (zerado, abaixo do mínimo, ideal, excesso, parado). */
+export interface FaixaSaude {
+  id: string;
+  rotulo: string;
+  // "sem saldo", "cobertura abaixo de metade do ideal"
+  sub: string;
+  estilo: EstiloFaixa;
+  // "38 produtos"
+  produtos: Exibicao;
+  // null: "—" (o zerado não tem valor)
+  valor: Valor | null;
+}
+
+/** Onde está cada real e cada produto: duas barras empilhadas e as faixas por grupo. */
+export interface CartaoSaudeEstoque extends CartaoBase {
+  tipo: 'saude-estoque';
+  // "Em valor" e "Em produtos": a largura de cada parte é `valor` sobre a soma das partes
+  barras: { rotulo: string; total: Exibicao; partes: { faixa: string; valor: number }[] }[];
+  // "Falta", "No ponto", "Sobra"
+  grupos: { rotulo: string; faixas: FaixaSaude[] }[];
 }
 
 /** Resposta de GET /api/telas/{tela}/cartoes/{id}/nomes: a tabela de uma linha por pessoa. */
@@ -684,6 +787,72 @@ export interface CartaoProvisoes extends CartaoBase {
   editavel: boolean;
 }
 
+// ---------- Matriz BCG (Estoque, EST-01) ----------
+
+/** O id do quadrante é também o id da opção do filtro `classe`. A cor fica no front, pelo id. */
+export type IdQuadranteBcg = 'estrela' | 'vaca-leiteira' | 'interrogacao' | 'abacaxi';
+
+/** Uma bolha: família (primeiro nível) ou produto (dentro da família aberta). */
+export interface PontoBcg {
+  // família: "familia-cortes-nobres"; produto: o código do ERP
+  id: string;
+  nome: string;
+  quadrante: IdQuadranteBcg;
+  // giro de venda, vezes por mês (o produto sem estoque hoje fica na borda direita)
+  x: number;
+  // margem bruta, %
+  y: number;
+  // faturamento de 12 meses, em reais (área da bolha)
+  tamanho: number;
+  // fora dos filtros Seção ou Classe BCG: bolha esmaecida (não sai da matriz)
+  apagado: boolean;
+  // escreve o nome ao lado (os maiores do nível)
+  rotular: boolean;
+  dica: ItemValor[];
+  // só nas famílias: os produtos dela, para abrir com o clique; null nos produtos
+  produtos: PontoBcg[] | null;
+  // só nas famílias: a trilha ("Cortes nobres · 5 produtos") e o subtítulo com ela aberta
+  trilha: string | null;
+  subtituloAberto: string | null;
+}
+
+/** Dispersão de bolhas, giro contra margem, com os cortes nas medianas dos produtos. */
+export interface CartaoBcg extends CartaoBase {
+  tipo: 'bcg';
+  eixoX: Escala & { rotulo: string };
+  eixoY: Escala & { rotulo: string };
+  // { valor: 4.2, rotulo: "mediana 4,2×" }
+  corteX: { valor: number; rotulo: string };
+  corteY: { valor: number; rotulo: string };
+  // na ordem: Estrela, Vaca leiteira, Interrogação, Abacaxi
+  quadrantes: { id: IdQuadranteBcg; rotulo: string }[];
+  // primeiro nível: as famílias, da maior para a menor
+  pontos: PontoBcg[];
+  // "15 famílias · 38 principais produtos · clique numa bolha para abrir"
+  trilha: string;
+  // "Todas as famílias"
+  rotuloVoltar: string;
+}
+
+/**
+ * O que fazer em cada quadrante. Clicar num item troca o filtro `classe` para o `quadrante` dele;
+ * clicar de novo (no item `selecionado`) volta ao padrão.
+ */
+export interface CartaoAcoesBcg extends CartaoBase {
+  tipo: 'acoes-bcg';
+  itens: {
+    quadrante: IdQuadranteBcg;
+    rotulo: string;
+    // "3 abaixo do mínimo", "12% do estoque", "43% do faturamento"
+    nota: string;
+    acao: string;
+    // produtos, faturado 12m e em estoque (este com status crítico no alerta)
+    numeros: ItemValor[];
+    // é o valor do filtro `classe` agora
+    selecionado: boolean;
+  }[];
+}
+
 export type Cartao =
   | CartaoAndamentoMes
   | CartaoFatores
@@ -705,7 +874,11 @@ export type Cartao =
   | CartaoListaDetalhe
   | CartaoCicloCaixa
   | CartaoOrigemProjecao
-  | CartaoProvisoes;
+  | CartaoProvisoes
+  | CartaoBcg
+  | CartaoAcoesBcg
+  | CartaoRealIdeal
+  | CartaoSaudeEstoque;
 
 /** Corpo de PUT /api/telas/{tela}/cartoes/{cartao}/periodo (cartão de provisões). */
 export interface MudancaPeriodoProvisoes {
@@ -728,7 +901,12 @@ export interface PainelPayload {
   // ISO 8601. null até a primeira carga do cliente terminar (nesse caso não vem cartão)
   dadosAte: string | null;
   atualizadoEm: string | null;
+  // texto de frescor pronto, nas telas que são o retrato do dia ("Estoque de hoje, 12/10, atualizado
+  // às 9h"); quando vem, fica no lugar do que o front monta com `dadosAte` e `atualizadoEm`
+  frescor?: string | null;
   filtros: FiltroPainel[];
+  // painel que só vale em alguns setores (o Estoque, na Distribuidora); null ou ausente = todos
+  escopo?: EscopoSetor | null;
   aviso?: Aviso;
   // números grandes do topo (até 3)
   destaques: ItemValor[];

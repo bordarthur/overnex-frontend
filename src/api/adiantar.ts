@@ -52,7 +52,7 @@ export function useAdiantarMeses(
   const { getToken } = useAuth();
   // O pedido adiantado em andamento; o próximo só sai depois dele, mesmo vindo de outra rodada.
   const emCurso = useRef<Promise<unknown>>(Promise.resolve());
-  const { mes, empresa } = filtros;
+  const { mes, unidades } = filtros;
   // Em texto, para a dependência do efeito comparar por valor.
   const alvos = mesesParaAdiantar(
     periodos.map((p) => p.id),
@@ -68,13 +68,13 @@ export function useAdiantarMeses(
         await abaVisivel(controle.signal);
         // Filtro trocado, tela fechada ou sessão encerrada no meio do caminho: para por aqui.
         if (controle.signal.aborted || !(await getToken())) return;
-        const pedido = queryClient.prefetchQuery(opcoesVisaoGeral(api, cliente, { mes: alvo, empresa }));
+        const pedido = queryClient.prefetchQuery(opcoesVisaoGeral(api, cliente, { mes: alvo, unidades }));
         emCurso.current = pedido;
         await pedido;
       }
     })();
     return () => controle.abort();
-  }, [pronto, alvos, cliente, empresa, api, queryClient, getToken]);
+  }, [pronto, alvos, cliente, unidades, api, queryClient, getToken]);
 }
 
 // Resolve quando a aba estiver visível (ou quando a rodada for cancelada).

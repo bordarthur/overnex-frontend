@@ -4,6 +4,7 @@ import type {
   ConvitePedido,
   EmpresaCriada,
   MudancaEmpresa,
+  MudancaUnidade,
   GestaoPayload,
   MudancaUsuario,
   NovaEmpresa,
@@ -17,6 +18,7 @@ import type {
   TabelaNomes,
   TelaPainel,
 } from '../contracts/painel';
+import type { NegociosValores } from '../contracts/negocios';
 import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
 
@@ -54,16 +56,16 @@ export const textoDaRecusa = (erro: unknown, generica: string) =>
     ? erro.message
     : generica;
 
-/** Filtros da consulta da Visão geral. Sem valor, a API usa o mês mais recente e todas as empresas. */
+/** Filtros da consulta da Visão geral. Sem valor, a API usa o mês mais recente e todas as unidades. */
 export interface FiltrosVisaoGeral {
   // AAAA-MM, um dos períodos de /api/sessao
   mes?: string;
-  // UUID de uma empresa de /api/sessao
-  empresa?: string;
+  // ids das unidades marcadas (de `empresas` em /api/sessao), separados por vírgula; sem ele, todas
+  unidades?: string;
 }
 
 /**
- * Filtros da consulta de um painel por cartões: `mes` e `empresa` (como na Visão geral) e os
+ * Filtros da consulta de um painel por cartões: `mes` e `unidades` (como na Visão geral) e os
  * filtros próprios da tela, pelo `id` que veio em `filtros` do payload (ex.: `canal`).
  * Só vai o que foi trocado; sem nada, a API usa o padrão.
  */
@@ -98,8 +100,10 @@ export interface GestaoApi {
   apagarUsuario(id: string): Promise<void>;
   /** Cria a empresa (201), com todas as camadas desligadas e sem pessoas. */
   criarCliente(nova: NovaEmpresa): Promise<EmpresaCriada>;
-  /** Troca o nome e o setor da empresa. O slug não muda. */
+  /** Troca o nome da empresa. O slug não muda. */
   salvarCliente(slug: string, mudanca: MudancaEmpresa): Promise<void>;
+  /** Troca os dados de uma unidade da empresa (setor, segmento, grupo e endereço). */
+  salvarUnidade(slug: string, id: string, mudanca: MudancaUnidade): Promise<void>;
   /** Cria a pessoa e põe o convite na fila (202); o e-mail sai depois, por um job do back. */
   convidarUsuario(novo: NovoUsuario): Promise<ConvitePedido>;
   /** Manda o convite de novo a quem ainda não entrou (só quando a pessoa vem com `convite`). */
@@ -122,15 +126,21 @@ export interface ApiClient {
     opcoes?: { signal?: AbortSignal },
   ): Promise<VisaoGeralPayload>;
   /**
-   * Grava a escolha de um seletor da Visão geral para o cliente (PUT, responde 204). Vai com a
-   * mesma `empresa` da tela, se houver.
+   * Grava a escolha de um seletor da Visão geral para o cliente (PUT, responde 204). Vai com as
+   * mesmas `unidades` da tela, se houver.
    */
   salvarPreferenciaVisaoGeral(
     cliente: string,
     id: string,
     valor: string,
-    filtros?: Pick<FiltrosVisaoGeral, 'empresa'>,
+    filtros?: Pick<FiltrosVisaoGeral, 'unidades'>,
   ): Promise<void>;
+  /** Valores da bandeja "Negócios" (GET /api/negocios), pedidos só quando ela abre. */
+  obterValoresNegocios(
+    cliente: string,
+    filtros?: Pick<FiltrosVisaoGeral, 'mes'>,
+    opcoes?: { signal?: AbortSignal },
+  ): Promise<NegociosValores>;
   /** Painéis por cartões (comerciais e financeiros): GET /api/telas/{tela}. */
   obterPainel(
     cliente: string,
@@ -151,14 +161,14 @@ export interface ApiClient {
   ): Promise<TabelaNomes>;
   /**
    * Cartão de provisões: grava o período da média para o cliente (PUT .../cartoes/{cartao}/periodo,
-   * responde 204). Vai com a mesma `empresa` da tela, se houver. Depois, a tela precisa ser pedida de novo.
+   * responde 204). Vai com as mesmas `unidades` da tela, se houver. Depois, a tela precisa ser pedida de novo.
    */
   salvarPeriodoProvisoes(
     cliente: string,
     tela: TelaPainel,
     cartao: string,
     mudanca: MudancaPeriodoProvisoes,
-    filtros?: { empresa?: string },
+    filtros?: { unidades?: string },
   ): Promise<void>;
   /** Cartão de provisões: grava se o grupo entra e o valor dele (PUT .../cartoes/{cartao}/grupos/{grupo}, 204). */
   salvarGrupoProvisao(
@@ -167,7 +177,7 @@ export interface ApiClient {
     cartao: string,
     grupo: string,
     mudanca: MudancaGrupoProvisao,
-    filtros?: { empresa?: string },
+    filtros?: { unidades?: string },
   ): Promise<void>;
   readonly gestao: GestaoApi;
 }

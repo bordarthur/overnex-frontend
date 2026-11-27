@@ -367,7 +367,10 @@
 .legend i.quadrado-medio,
 .legend i.quadrado-claro,
 .legend i.quadrado-azul,
-.legend i.quadrado-laranja {
+.legend i.quadrado-laranja,
+.legend i.quadrado-saudavel,
+.legend i.quadrado-atencao,
+.legend i.quadrado-critico {
   width: 10px;
   height: 10px;
   border-top: 0;
@@ -387,6 +390,23 @@
 }
 .legend i.quadrado-laranja {
   background: var(--c6);
+}
+/* o farol das barras e o traço do ideal (estoque real contra ideal) */
+.legend i.quadrado-saudavel {
+  background: var(--ok);
+}
+.legend i.quadrado-atencao {
+  background: var(--warn-mark);
+}
+.legend i.quadrado-critico {
+  background: var(--crit);
+}
+.legend i.traco {
+  width: 3px;
+  height: 14px;
+  border-top: 0;
+  border-radius: 2px;
+  background: var(--ink);
 }
 .legend i.sq.c0 {
   background: var(--c0);

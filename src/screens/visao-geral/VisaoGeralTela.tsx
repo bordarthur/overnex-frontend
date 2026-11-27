@@ -4,6 +4,7 @@ import { semPermissao } from '../../api/client';
 import { useClienteSlug } from '../../api/useClienteSlug';
 import { useSessao } from '../../api/useSessao';
 import { useVisaoGeral } from '../../api/useVisaoGeral';
+import { estadoDe, useNegocios } from '../../app/negocios';
 import { useAuth } from '../../auth/auth';
 import { Assinatura } from '../../components/Assinatura';
 import { BarraFiltros } from '../../components/BarraFiltros';
@@ -17,12 +18,15 @@ import './VisaoGeral.css';
 
 const TITULO = 'Visão geral';
 const PERGUNTA = 'Como está a empresa hoje, área por área, contra o orçado e a meta?';
+// com mais de um negócio marcado na bandeja (mockup M3.1.0)
+const PERGUNTA_NEGOCIOS = 'Como estão os negócios marcados hoje, área por área, contra o orçado e a meta?';
 
 export function VisaoGeralTela() {
   const { sair } = useAuth();
   const cliente = useClienteSlug();
   const sessao = useSessao();
-  const filtros = useMemo(() => montarFiltros(sessao.data), [sessao.data]);
+  const negocios = useNegocios();
+  const filtros = useMemo(() => montarFiltros(sessao.data, negocios.param), [sessao.data, negocios.param]);
   // Só os chips que o usuário trocou; os outros ficam no padrão do FiltroDef.
   const [valores, setValores] = useState<Record<string, string>>({});
   // Na visão padrão não vai `mes`: é a mesma consulta adiantada ao entrar (adiantar.ts).
@@ -67,7 +71,7 @@ export function VisaoGeralTela() {
             key={s.id}
             secao={s}
             periodos={consulta.data.periodos}
-            empresa={consultaFiltros.empresa}
+            unidades={consultaFiltros.unidades}
             // o "leitor" vê a escolha mas não muda (a API responderia 403)
             soLeitura={sessao.data?.papel === 'leitor'}
           />
@@ -79,13 +83,21 @@ export function VisaoGeralTela() {
     <>
       <Cabecalho
         titulo={TITULO}
-        pergunta={PERGUNTA}
+        pergunta={
+          negocios.arvore &&
+          negocios.arvore.setores
+            .flatMap((s) => s.grupos)
+            .filter((g) => estadoDe(g.unidades, negocios.marcadas) !== 'off').length > 1
+            ? PERGUNTA_NEGOCIOS
+            : PERGUNTA
+        }
         atualizacao={
           dados?.dadosAte && dados.atualizadoEm
             ? formatarAtualizacao(dados.dadosAte, dados.atualizadoEm)
             : undefined
         }
         cliente={dados?.cliente}
+        negocios={{ mes: consultaFiltros.mes }}
       />
       <BarraFiltros
         filtros={filtros.defs}

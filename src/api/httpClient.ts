@@ -5,6 +5,7 @@ import type {
   GestaoPayload,
   UsuariosPayload,
 } from '../contracts/gestao';
+import type { NegociosValores } from '../contracts/negocios';
 import type { PainelPayload, TabelaNomes } from '../contracts/painel';
 import type { SessaoPayload } from '../contracts/sessao';
 import type { VisaoGeralPayload } from '../contracts/visaoGeral';
@@ -73,28 +74,31 @@ export function criarHttpClient({
     },
     obterVisaoGeral(cliente, filtros = {}, opcoes) {
       return obter<VisaoGeralPayload>(
-        `/telas/visao-geral${consulta(cliente, { mes: filtros.mes, empresa: filtros.empresa })}`,
+        `/telas/visao-geral${consulta(cliente, { mes: filtros.mes, unidades: filtros.unidades })}`,
         opcoes?.signal,
       );
     },
     salvarPreferenciaVisaoGeral(cliente, id, valor, filtros = {}) {
       return gravar(
-        `/telas/visao-geral/preferencias/${encodeURIComponent(id)}${consulta(cliente, { empresa: filtros.empresa })}`,
+        `/telas/visao-geral/preferencias/${encodeURIComponent(id)}${consulta(cliente, { unidades: filtros.unidades })}`,
         { valor },
       );
+    },
+    obterValoresNegocios(cliente, filtros = {}, opcoes) {
+      return obter<NegociosValores>(`/negocios${consulta(cliente, { mes: filtros.mes })}`, opcoes?.signal);
     },
     obterPainel(cliente, tela, filtros = {}, opcoes) {
       return obter<PainelPayload>(`/telas/${tela}${consulta(cliente, filtros)}`, opcoes?.signal);
     },
     salvarPeriodoProvisoes(cliente, tela, cartao, mudanca, filtros = {}) {
       return gravar(
-        `${caminhoCartao(tela, cartao)}/periodo${consulta(cliente, { empresa: filtros.empresa })}`,
+        `${caminhoCartao(tela, cartao)}/periodo${consulta(cliente, { unidades: filtros.unidades })}`,
         mudanca,
       );
     },
     salvarGrupoProvisao(cliente, tela, cartao, grupo, mudanca, filtros = {}) {
       return gravar(
-        `${caminhoCartao(tela, cartao)}/grupos/${encodeURIComponent(grupo)}${consulta(cliente, { empresa: filtros.empresa })}`,
+        `${caminhoCartao(tela, cartao)}/grupos/${encodeURIComponent(grupo)}${consulta(cliente, { unidades: filtros.unidades })}`,
         mudanca,
       );
     },
@@ -155,6 +159,9 @@ export function criarHttpClient({
       },
       salvarCliente(slug, mudanca) {
         return gravar(caminhoCliente(slug), mudanca);
+      },
+      salvarUnidade(slug, id, mudanca) {
+        return gravar(`${caminhoCliente(slug)}/unidades/${encodeURIComponent(id)}`, mudanca);
       },
       convidarUsuario(novo) {
         return enviar<ConvitePedido>('/admin/usuarios', novo);

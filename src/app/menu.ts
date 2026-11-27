@@ -20,6 +20,7 @@ export const MENU: { grupo: string; telas: { rota: TelaApp; rotulo: string }[] }
     ],
   },
   { grupo: 'Pessoas', telas: [{ rota: 'pessoas', rotulo: 'Pessoas' }] },
+  { grupo: 'Estoque', telas: [{ rota: 'estoque', rotulo: 'Estoque' }] },
 ];
 
 /** Todos os códigos de tela: o menu inteiro, para quando a sessão não respondeu (a API barra do mesmo jeito). */

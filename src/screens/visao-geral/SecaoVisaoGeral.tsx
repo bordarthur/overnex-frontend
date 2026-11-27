@@ -17,8 +17,8 @@ interface Props {
   secao: Secao;
   /** a chave Mês/Acumulado de cada velocímetro; o primeiro é o padrão */
   periodos: { id: PeriodoId; rotulo: string }[];
-  /** empresa escolhida na tela, para gravar a escolha do seletor */
-  empresa?: string;
+  /** unidades marcadas na tela, para gravar a escolha do seletor */
+  unidades?: string;
   /** o papel da sessão só pode ver a escolha do seletor */
   soLeitura: boolean;
 }
@@ -26,7 +26,7 @@ interface Props {
 const temTela = (tela: string): tela is keyof typeof TELAS_PAINEL => tela in TELAS_PAINEL;
 
 /** Uma seção da Visão geral, desenhada só com o que veio no JSON. */
-export function SecaoVisaoGeral({ secao, periodos, empresa, soLeitura }: Props) {
+export function SecaoVisaoGeral({ secao, periodos, unidades, soLeitura }: Props) {
   const { clienteSlug } = useParams();
   const idTitulo = `secao-${secao.id}`;
   const padrao = periodos[0]?.id ?? 'mes';
@@ -52,11 +52,12 @@ export function SecaoVisaoGeral({ secao, periodos, empresa, soLeitura }: Props) 
         idTitulo={idTitulo}
         titulo={secao.titulo}
         modulo={secao.modulo}
+        escopo={secao.escopo ?? null}
         resumo={secao.resumo}
         contagem={contagem}
       />
       {secao.kpis.length > 0 && <LinhaKpis kpis={secao.kpis} />}
-      {secao.seletor && <SeletorDaSecao seletor={secao.seletor} empresa={empresa} soLeitura={soLeitura} />}
+      {secao.seletor && <SeletorDaSecao seletor={secao.seletor} unidades={unidades} soLeitura={soLeitura} />}
       {secao.cartoes.map((c, i) => {
         const chave = `${c.tipo}-${i}`;
         if (c.tipo === 'inadimplencia') return <CartaoInadimplencia key={chave} cartao={c} />;

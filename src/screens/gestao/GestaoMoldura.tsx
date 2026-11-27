@@ -178,7 +178,7 @@ function ListaEmpresas({
             aria-current={c.slug === aberta ? 'page' : undefined}
           >
             <b>{c.nome}</b>
-            {c.segmento && <small>{c.segmento}</small>}
+            {c.setores.length > 0 && <small>{c.setores.map((s) => s.rotulo).join(' · ')}</small>}
             {/* uma barrinha por camada; o texto fica na dica e para o leitor de tela */}
             <span className="gst-pontos" aria-hidden="true">
               {c.camadas.map((k) => (

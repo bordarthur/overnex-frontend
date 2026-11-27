@@ -2,7 +2,7 @@
 
 Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai para **Concluído** (com data), o que surgiu entra em **A fazer** ou **A decidir**.
 
-Última atualização: 25/11/2026
+Última atualização: 27/11/2026
 
 ## Em andamento
 
@@ -47,6 +47,70 @@ Lista viva do projeto. Atualizada ao fim de cada tarefa: o que foi feito vai par
 - [ ] **Medir o ganho dos pedidos adiantados no navegador.** Aba Network com a API local: tempo do login até a primeira tela e da troca de mês, antes e depois. Não foi medido em 23/10/2026 porque a API local respondia 500 em `/api/sessao` e na Visão geral. Para o "antes", rodar o commit anterior a esta mudança. Ver [adiantar.ts](src/api/adiantar.ts).
 
 ## A fazer
+
+### Painel Estoque e bandeja de Negócios (mockup `overnex-m3_1_0-02-estoque`, plano de 27/11/2026)
+
+O back já fez o setor da empresa e a Matriz BCG em 25/11/2026 (sem commit e com a API não publicada; a migration 34 já está em produção). O prompt dele da Matriz BCG (`prompt-front-estoque-bcg.md`, em `C:\Users\arthur bord\.claude\plans\`) ainda não foi feito. O do setor (`prompt-front-setor-empresa.md`) foi substituído em 27/11/2026: o setor passou a ser da unidade (ver "Bandeja Negócios", abaixo). Uma branch por fase, a partir da `dev`.
+
+- [ ] **Bandeja Negócios e cadastro de unidades: testar com a API e publicar junto com o back.** O front está pronto com o mock, na branch `feat/negocios` (ver Concluído em 27/11/2026). O back fez o pedido em 27/11/2026 (`C:\Users\arthur bord\.claude\plans\prompt-front-negocios-unidades.md`):
+  - migration 35, com as colunas da tabela da LANN em `cfg.empresa` e sem `cfg.cliente.setor`;
+  - `negocios` na sessão, `?unidades=`, `GET /api/negocios`, `escopo` e a aba Unidades.
+
+  O `api/openapi.json` do back foi conferido em 27/11/2026 e bate campo a campo com [negocios.ts](src/contracts/negocios.ts), [sessao.ts](src/contracts/sessao.ts), [gestao.ts](src/contracts/gestao.ts) e [painel.ts](src/contracts/painel.ts). O mock passou a seguir os textos do back: "Sem faturado para mostrar.", 422 "Mês sem dados." e o aviso do Estoque sem unidade da Distribuidora.
+
+  Ainda não está em produção: a migration vai antes da API nova, e back e front precisam ser publicados juntos (o front novo manda `?unidades=`, que a API antiga ignora).
+
+  Falta:
+  - abrir com `VITE_API_MODO=api` e conferir:
+    - a bandeja com a Ana do seed local (Alfa Comércio e Alfa Indústria: um setor, dois grupos);
+    - o chip "Unidade" na demo (Overnex Fortaleza e Recife, um negócio só);
+    - o 403 e o 422 do `?unidades=`;
+    - a aba Unidades;
+  - ver no navegador a bandeja a 1240 e 390 px e no escuro, e a aba Unidades. Com o mock, a bandeja só foi vista a 1440 px no claro (27/11/2026).
+
+  Ver [negocios.ts](src/app/negocios.ts) e [BandejaNegocios.tsx](src/components/negocios/BandejaNegocios.tsx).
+
+- [ ] **Estoque (Matriz BCG): testar com a API.** O front está pronto com o mock (ver Concluído em 27/11/2026). O back fez em 25/11/2026, sem commit e com a API não publicada. Quando ele publicar, abrir com `VITE_API_MODO=api` e conferir:
+  - os filtros Seção e Classe BCG e o 422 "Filtro inválido.";
+  - o 403 da empresa sem unidade da Distribuidora;
+  - o cliente sem fonte de estoque (sem cartões e só o filtro `classe`);
+  - a `nota` do produto sem estoque.
+
+  Os tipos foram copiados do `api/app/telas/paineis/contrato.py` do back, não do `api/openapi.json`.
+
+- [ ] **EST-01 no catálogo da Gestão do mock.** No mock, o Estoque só entra na sessão (para quem vê as Vendas, nas empresas com unidade da Distribuidora). Ele não aparece na aba Painéis nem na matriz de acesso. Entra quando a Gestão tratar os painéis por setor. Ver [mockGestao.ts](src/api/mockGestao.ts).
+- [ ] **Estoque, o resto do painel: o back fazer, e depois testar com a API.** O front está pronto com o mock (ver Concluído em 27/11/2026). Prompt entregue em 27/11/2026 (`C:\Users\arthur bord\.claude\plans\prompt-back-estoque-resto.md`), com o contrato, as regras provisórias e o exemplo ([estoque.json](src/api/fixtures/estoque.json)).
+
+  Pontos que o back responde:
+  - a venda por dia (60 dias, regra D-08, ou 12 meses, a mesma da matriz);
+  - a fonte do "em trânsito" (regra D-12, "a confirmar com o Abraão").
+
+  Depois, abrir com `VITE_API_MODO=api` e conferir:
+  - os filtros Seção (o real contra ideal aberto nela), Classe BCG e `lista`;
+  - os vazios.
+
+- [ ] **Editar unidade pela Gestão: testar com a API e publicar junto com o back.** O front está pronto com o mock (ver Concluído em 27/11/2026). O back fez o pedido em 27/11/2026 sem mudar o contrato (`C:\Users\arthur bord\.claude\plans\prompt-front-editar-unidade.md`), ainda sem commit e não publicado:
+  - a rota `PUT /api/admin/clientes/{slug}/unidades/{id}` (204), que tira os espaços, troca texto em branco por `null` e põe a UF em maiúsculas;
+  - `permissoes.unidades` e `opcoesSetor` na empresa, sempre presentes;
+  - os 422 "Informe o nome da unidade.", "Já existe uma unidade com esse nome nesta empresa.", "Setor inválido." e "UF inválida.", e o 404 "Unidade não encontrada.";
+  - a migration 36, que libera o update só para o admin e só nas colunas da tela, e tira o `insert` e o `delete` de `cfg.empresa` da API. Vai para produção antes da API (depois da 35).
+
+  O `api/openapi.json` do back foi conferido em 27/11/2026 e bate campo a campo com [gestao.ts](src/contracts/gestao.ts) (`MudancaUnidade`, `PermissoesEmpresa`, `ClientePayload.opcoesSetor` e a rota). No front, `permissoes.unidades` e `opcoesSetor` continuam opcionais: sem eles, a aba fica só de leitura.
+
+  Falta conferir com `VITE_API_MODO=api`:
+  - a gravação e os erros;
+  - o consultor sem o "Editar";
+  - a bandeja e o menu mudando depois de trocar setor ou grupo.
+
+  Ver [AbaUnidades.tsx](src/screens/gestao/AbaUnidades.tsx).
+
+- [ ] **Camadas por seção do menu: testar com a API e publicar junto com o back.** O front está pronto com o mock (ver Concluído em 27/11/2026). O back fez em 27/11/2026, sem migration e ainda não publicado: as camadas `comercial`, `financeiro`, `pessoas` e `estoque` (esta só com unidade da Distribuidora, também na barra da lista), `camadas[].paineis` com o `nivel`, `secao` e `nivel` em `PainelDoCliente` no lugar de `grupo`, `niveis` sempre com os três, também para o consultor, e a prévia do menu em Visão, Comercial, Financeiro, Pessoas e Estoque. A seção só fica "Ativa" com todos os painéis ligados e com dado. O `api/openapi.json` foi conferido em 27/11/2026 e bate campo a campo com [gestao.ts](src/contracts/gestao.ts). **Publicar junto com o front:** o front de hoje lê o `grupo`, que saiu, e o novo dá erro na aba Implantação sem `camadas[].paineis`. Falta conferir com `VITE_API_MODO=api`: as duas abas; a seção Estoque e a etiqueta cinza do Módulo Distribuidora numa empresa com Distribuidora (nunca vistas, porque o mock não tem o Estoque no catálogo); o estado do Financeiro; e o consultor na Implantação. Ver [AbaImplantacao.tsx](src/screens/gestao/AbaImplantacao.tsx) e [AbaPaineis.tsx](src/screens/gestao/AbaPaineis.tsx).
+- [ ] **Sem "Ramo" na empresa: testar com a API.** O front está pronto (ver Concluído em 27/11/2026). O back fez em 27/11/2026, ainda não publicado: `segmento` saiu de `ClienteDaLista`, do `cliente` da empresa e dos corpos de `POST /api/admin/clientes` e `PUT /api/admin/clientes/{slug}` (mandar o campo dá o 422 de formato), e a migration 37 apaga `cfg.cliente.segmento`. O `api/openapi.json` foi conferido em 27/11/2026 e bate com [gestao.ts](src/contracts/gestao.ts). **Ordem de publicação:** ao contrário das migrations 35 e 36, primeiro a API nova, depois a migration 37. O front funciona com a API antiga e com a nova. Falta conferir com `VITE_API_MODO=api` a empresa nova e o "Editar" do cabeçalho (só o nome), e a barra lateral com os setores das unidades. Ver [NovaEmpresa.tsx](src/screens/gestao/NovaEmpresa.tsx) e [EditarEmpresa.tsx](src/screens/gestao/EditarEmpresa.tsx).
+- [ ] **Atalhos para o Compras.** "Comprar →" nos críticos e "Ver sugestão de compra em Compras →" ficam escondidos até existir a tela `compras` no front ([LinkParaTela.tsx](src/screens/paineis/LinkParaTela.tsx)).
+- [ ] **Fase 4 · Conferir:**
+  - as checagens do CLAUDE.md;
+  - o navegador a 1440, 1240 e 390 px, no claro e no escuro;
+  - com a API, quando o back publicar.
 
 - [ ] **Gestão só de leitura do consultor: testar com a API e conferir no navegador.** O front está pronto com o mock (ver Concluído em 25/11/2026); o back mudou em 25/11/2026, ainda não publicado (migration 33), e o contrato foi copiado do prompt do back, sem conferir contra o `api/openapi.json`. Falta abrir com `VITE_API_MODO=api` como Caio e conferir: a entrada em `/gestao`, a barra só com as empresas da carteira, sem o seletor Usuários e sem "Nova empresa"; as duas abas e o cabeçalho só com "Abrir os painéis desta empresa"; nenhum `GET /api/admin/usuarios` no log; o 403 da empresa fora da carteira; e, como Dora, tudo igual a antes. Falta também olhar a barra lateral sem o seletor no navegador (claro, escuro e 390 px). Ver [GestaoMoldura.tsx](src/screens/gestao/GestaoMoldura.tsx) e [EmpresaTela.tsx](src/screens/gestao/EmpresaTela.tsx).
 - [ ] **Back: sinal de menos, caixa mínimo e dias úteis** (decisões de 19/11/2026; prompt do back de 19/11/2026): "−" tipográfico em todos os textos prontos; `financeiro.caixa_minimo` por empresa, cadastrado pela LANN, com padrão de cerca de 15 dias de saídas médias; dias úteis com o sábado como preferência de cada empresa e os feriados nacionais mais os cadastrados na Gestão.
@@ -104,9 +168,101 @@ O que o back precisa criar está na seção "Para o front consumir (Visão geral
 - [ ] **Grupos de pagamento da PJ Cortes** ("Contas a pagar lançadas"): o back já tem uma regra, combinada em 03/11/2026, pelo `Id_Descritivo` de cada conta: Fornecedores = 120.01, 120.04 e verbas de fornecedor (2500xx em 180); Capex = classe FCI; Dívida = 400 e 170.01.05; fora dos grupos = retirada de sócios (210), receitas lançadas no a pagar (100, 160 e 190) e conta fora do caixa (900); o resto vai para Custos fixos, despesas e impostos. Falta a LANN validar com os dados, conta a conta: valores por grupo nos 6 meses, contas duvidosas e contas do a pagar sem de-para (prompt de validação entregue ao back em 04/11/2026). Ver `supabase/producao/pj_cortes_grupos_pagamento.sql` no back.
 - [ ] **Textos do mockup de login a confirmar:** "atualizados todo dia às 9h" e "equipe" na coluna da marca; "Um produto BORD", "consultor BORD" e "overnex.app" (o resto do projeto fala em LANN). Ver [LayoutAcesso.tsx](src/screens/login/LayoutAcesso.tsx).
 - [ ] **Regras de negócio dos indicadores.** Qual tabela e qual conta geram cada indicador (meta, orçado, CMV por linha, cobertura de caixa, ciclo de caixa, faixas do farol). O back ainda não tem nenhuma regra definida.
-- [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual?
+- [ ] **Botão "Mostrar fontes de dados".** Ficou de fora desta entrega. Entra em qual? No Estoque (M3.1.0), as fontes citam tabelas e regras internas (`f_Vendas`, `d_bitem`, "regra D-11", "a confirmar com o Abraão"). Recomendação: deixar de fora, ou mostrar só para o perfil BORD.
+- [ ] **Unidades da PJ Cortes** (27/11/2026). O back preparou o `pj_cortes_unidades.sql`, ainda sem rodar: uma unidade, "PJ Cortes", com setor Distribuidora, segmento "Frigorífico" e grupo "PJ Cortes". Com uma unidade só, a PJ fica com o chip "Unidade", sem bandeja. Falta o usuário confirmar esses valores e dizer se o `'2 PJ Cortes'` do estoque (`en_filial` 2) é outra unidade. A demo já ficou com Overnex Fortaleza e Overnex Recife (Distribuidora, "Atacado de alimentos", grupo "Overnex").
 
 ## Concluído
+
+- [x] 27/11/2026 · **Implantação e Painéis por seção do menu**, com o mock. Pedido do usuário: as camadas de antes misturavam seção, painel e nível. Um cartão por seção na Implantação, com os painéis e a etiqueta do nível de cada um ([EtiquetaNivel.tsx](src/screens/gestao/EtiquetaNivel.tsx); cor pela posição em `niveis`); a aba Painéis com os títulos das seções e a etiqueta ao lado do nome; a prévia do menu do mock agrupada como o menu do app. Contrato em [gestao.ts](src/contracts/gestao.ts).
+- [x] 27/11/2026 · **Sem "Ramo" na empresa.** Decisão do usuário: setor e segmento são só das unidades. "Nova empresa" e "Editar empresa" pedem só o nome; a barra lateral e o cabeçalho da Gestão mostram os setores das unidades; `segmento` saiu de `ClienteDaLista`, do `cliente` da empresa, de `NovaEmpresa` e de `MudancaEmpresa` ([gestao.ts](src/contracts/gestao.ts)), do mock e da fixture. A API de hoje aceita os corpos sem o campo. Testes da Gestão e do cliente HTTP ajustados.
+- [x] 27/11/2026 · **Editar unidade pela Gestão**, com o mock, na branch `feat/negocios`. Pedido do usuário: ajustar as unidades às colunas da tabela da LANN pela tela.
+
+  Contrato ([gestao.ts](src/contracts/gestao.ts), [client.ts](src/api/client.ts)): `MudancaUnidade`, `salvarUnidade` (`PUT /api/admin/clientes/{slug}/unidades/{id}`), e `permissoes.unidades` e `opcoesSetor` opcionais (sem eles, só leitura).
+
+  Tela ([AbaUnidades.tsx](src/screens/gestao/AbaUnidades.tsx)):
+  - "Editar" em cada linha da aba Unidades, só com a permissão;
+  - a gaveta tem Unidade, Setor (lista da API e "Não definido"), Segmento e Grupo (com as sugestões do que já existe na empresa), UF (as 27 siglas), Cidade, Bairro e Endereço;
+  - depois de gravar, a Gestão, a sessão, as telas e os valores da bandeja são pedidos de novo (alcance `unidades` em [useGestao.ts](src/api/useGestao.ts));
+  - unidade nova continua por SQL.
+
+  Mock ([mockGestao.ts](src/api/mockGestao.ts)): as validações e os textos da API, e o consultor sem o "Editar".
+
+  Testes em [Gestao.test.tsx](src/screens/gestao/Gestao.test.tsx): a gravação, os erros, o setor novo levando o Estoque e a Distribuidora para a sessão, e o consultor. Visto no Edge sem janela, com o mock, no claro: a aba a 1440 px e a gaveta a 1440 e 390 px.
+
+- [x] 27/11/2026 · **Estoque: o resto do painel** (fase 3 do plano), com o mock. Na branch `feat/negocios`.
+
+  Contrato ([painel.ts](src/contracts/painel.ts)):
+  - cartões novos `real-ideal` (`ItemRealIdeal`, com a árvore seção › família › produto e o `aberto`) e `saude-estoque` (`FaixaSaude`);
+  - na tabela: `limite`, `rodape`, `link`, `ordenavel` na coluna e, na célula, `quadrante`, `barra`, `link` e `ordem`;
+  - `EstiloFaixa`, `LinkTela` e as marcas de legenda `quadrado-saudavel`, `quadrado-atencao`, `quadrado-critico` e `traco`.
+
+  Telas:
+  - "Estoque real contra ideal" ([RealIdealCartao.tsx](src/screens/paineis/RealIdealCartao.tsx)):
+    - barra no farol e traço do ideal;
+    - abre por nível, com a trilha e o subtítulo da API, e o foco vai para o passo aberto;
+    - começa aberto na seção do filtro;
+  - "Saúde do estoque" ([SaudeEstoqueCartao.tsx](src/screens/paineis/SaudeEstoqueCartao.tsx));
+  - a tabela ([TabelaCartao.tsx](src/screens/paineis/TabelaCartao.tsx), [Celula.tsx](src/screens/paineis/Celula.tsx)):
+    - ordena pelo cabeçalho (`aria-sort`);
+    - "Ver todas as N" e "Mostrar só as N primeiras";
+    - rodapé;
+    - bolinha da Classe BCG e barra pequena na célula;
+  - os atalhos para outra tela só aparecem com a tela no front e na sessão ([LinkParaTela.tsx](src/screens/paineis/LinkParaTela.tsx));
+  - a chave Tudo / Excesso / Parados é o filtro `lista` com `cartao`.
+
+  Mock: a fixture foi gerada a partir do demo da matriz (os mesmos produtos), com KPIs, aviso, os quatro cartões e as variantes da lista ([estoque-lista-excesso.json](src/api/fixtures/estoque-lista-excesso.json), [estoque-lista-parados.json](src/api/fixtures/estoque-lista-parados.json)). Com a Seção, o real contra ideal vem aberto nela.
+
+  Testes em [Estoque.test.tsx](src/screens/paineis/Estoque.test.tsx). Visto no Edge sem janela, com o mock, a 1440 px no escuro e a 390 px.
+
+- [x] 27/11/2026 · **Estoque: casca, Matriz BCG e "O que fazer em cada quadrante"** (fase 2 do plano), com o mock e o demo do back ([estoque.json](src/api/fixtures/estoque.json)), pelo prompt do back de 25/11/2026. Na branch `feat/negocios`.
+
+  Contrato ([painel.ts](src/contracts/painel.ts)): a tela `estoque`, `frescor` no `PainelPayload`, `IdQuadranteBcg`, `PontoBcg`, `CartaoBcg` e `CartaoAcoesBcg`.
+
+  Tela:
+  - EST-01 no [menu.ts](src/app/menu.ts) (grupo "Estoque"), na rota ([App.tsx](src/app/App.tsx)) e com o ícone do mockup;
+  - pergunta do mockup, frescor da API e, sem mês, sem os chips Período e Comparar com (`semPeriodo` em [telas.ts](src/screens/paineis/telas.ts)).
+
+  Matriz ([MatrizBcg.tsx](src/charts/MatrizBcg.tsx), [BcgCartao.tsx](src/screens/paineis/BcgCartao.tsx)):
+  - fundo e cor por quadrante em tokens próprios (`--bcg-*`, categoria e não status);
+  - ícone e nome nos cantos, as medianas rotuladas e as bolhas apagadas;
+  - nomes sem passar por cima dos cantos e das medianas;
+  - a família abre os produtos no mesmo gráfico (clique ou Enter), com a trilha e o subtítulo da API, e o foco vai para "Todas as famílias".
+
+  "O que fazer" ([AcoesBcgCartao.tsx](src/screens/paineis/AcoesBcgCartao.tsx)): clicar troca o filtro Classe BCG pelo contexto novo `MudarFiltroContext` ([consultaPainel.ts](src/screens/paineis/consultaPainel.ts)), e clicar de novo volta a "Todas".
+
+  Mock: o EST-01 entra na sessão das empresas com unidade da Distribuidora (a demo), com `telasPorSetor`, e os filtros como na API (422, item marcado, bolhas apagadas).
+
+  Testes em [Estoque.test.tsx](src/screens/paineis/Estoque.test.tsx). Visto no Edge sem janela, com o mock: 1440 px no claro e no escuro, a família aberta, o filtro Estrela, 1240 e 390 px. Os prints mostraram a legenda em traços e um nome em cima do rótulo da mediana; os dois foram corrigidos e conferidos de novo.
+
+- [x] 27/11/2026 · **Bandeja Negócios e cadastro de unidades**, com o mock, na branch `feat/negocios` (mockup M3.1.0 e a tabela de unidades da LANN). Decisões do usuário, no mesmo dia:
+  - a unidade (`cfg.empresa`) tem setor, segmento, grupo e endereço, e pertence a um cliente: cliente › setor › grupo › unidade;
+  - o chip "Empresa" virou "Unidade";
+  - os valores da bandeja vêm da API;
+  - o menu acompanha os setores marcados;
+  - ficaram de fora "Mostrar fontes de dados" no Estoque e o logo nos cartões.
+
+  Contrato:
+  - [negocios.ts](src/contracts/negocios.ts) (árvore, valores e escopo);
+  - `negocios` na sessão;
+  - `?unidades=` no lugar de `?empresa=` em toda chamada ([client.ts](src/api/client.ts), [httpClient.ts](src/api/httpClient.ts));
+  - `escopo` no `PainelPayload` e na `Secao`;
+  - na Gestão, `UnidadeDaGestao`, `unidades`, `setores` e a aba `unidades` ([gestao.ts](src/contracts/gestao.ts)).
+
+  Telas:
+  - a escolha fica na URL e vai junto nos links do menu ([negocios.ts](src/app/negocios.ts), [Moldura.tsx](src/app/Moldura.tsx), [Rail.tsx](src/components/Rail.tsx));
+  - botão "Negócios" na linha do título e bandeja acima dele ([Cabecalho.tsx](src/components/Cabecalho.tsx), [BandejaNegocios.tsx](src/components/negocios/BandejaNegocios.tsx), [BotaoNegocios.tsx](src/components/negocios/BotaoNegocios.tsx)), com:
+    - setor › grupo com fios, "só este" e "Todos";
+    - unidades com busca a partir de 9 e "Todas";
+    - pelo menos uma unidade marcada;
+    - setores fora do `escopo` travados;
+  - o painel de um setor sem unidade dele marcada mostra só o aviso;
+  - a pergunta da Visão geral fala dos "negócios marcados";
+  - a etiqueta "Conta só a Distribuidora" na faixa da seção;
+  - na Gestão, a aba Unidades ([AbaUnidades.tsx](src/screens/gestao/AbaUnidades.tsx)), os setores na lista e no cabeçalho, e "Setor" virou "Ramo" em Nova empresa e Editar.
+
+  Mock: a empresa "Leão de Ouro" com as 6 unidades da tabela (a Dora abre) e as unidades da demo ([gestao.json](src/api/fixtures/gestao.json), [mockGestao.ts](src/api/mockGestao.ts)).
+
+  Testes: [negocios.test.ts](src/app/negocios.test.ts), [Negocios.test.tsx](src/components/negocios/Negocios.test.tsx), a aba Unidades em [Gestao.test.tsx](src/screens/gestao/Gestao.test.tsx) e os ajustes do `?unidades=`. Não foi aberto no navegador.
 
 - [x] 25/11/2026 · **Gestão só de leitura do Consultor por carteira**, com o mock, pelo prompt do back de 25/11/2026. Contrato: `permissoes` (`criarEmpresa`, `usuarios`) em `GestaoPayload`, e `abas` e `permissoes` (`editar`, `convidar`) em `ClienteGestaoPayload` ([gestao.ts](src/contracts/gestao.ts)); `gestao` da sessão vale também para o consultor ([sessao.ts](src/contracts/sessao.ts)). A barra lateral só mostra o seletor Empresas | Usuários e "Nova empresa" com a permissão, e só pede `GET /api/admin/usuarios` (a contagem) com `permissoes.usuarios`; sem ela, `/gestao/usuarios` volta para as empresas ([GestaoMoldura.tsx](src/screens/gestao/GestaoMoldura.tsx), [UsuariosTela.tsx](src/screens/gestao/UsuariosTela.tsx), [useGestao.ts](src/api/useGestao.ts)). As abas da empresa vêm de `abas` (a constante `ABAS` saiu), com `?aba=` fora da lista caindo na primeira, e "Convidar usuário" e "Editar" seguem `permissoes` ([EmpresaTela.tsx](src/screens/gestao/EmpresaTela.tsx)). No mock, o consultor abre a Gestão com as empresas da carteira e a empresa reduzida (2 abas, 2 chips, o resto vazio), 403 fora da carteira, e usuários e gravações só do admin ([mockGestao.ts](src/api/mockGestao.ts), [mockClient.ts](src/api/mockClient.ts), abas na [fixture](src/api/fixtures/gestao.json)). Testes em [entrada.test.tsx](src/app/entrada.test.tsx) (o consultor só de leitura; o teste da escolha de empresa passou a usar o consultor com a sessão sem `gestao`, porque nenhuma pessoa do mock tem duas empresas sem abrir a Gestão) e em [Gestao.test.tsx](src/screens/gestao/Gestao.test.tsx) (o admin com tudo). Não foi aberto no navegador.
 - [x] 19/11/2026 · **Decisões do "A decidir"** (recomendações aprovadas pelo usuário).

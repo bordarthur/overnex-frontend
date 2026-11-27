@@ -7,13 +7,13 @@ import type { SeletorSecao } from '../../contracts/visaoGeral';
 
 /**
  * Escolha da seção que fica salva para o cliente (na Custos, quantas linhas de custo). Grava na API e
- * pede de novo todas as Visões gerais em cache, porque a escolha vale para todos os meses e empresas.
+ * pede de novo todas as Visões gerais em cache, porque a escolha vale para todos os meses e unidades.
  * Enquanto grava, o botão escolhido já aparece marcado.
  */
 interface Props {
   seletor: SeletorSecao;
-  /** a empresa escolhida na tela, que vai junto na gravação */
-  empresa?: string;
+  /** as unidades marcadas na tela, que vão junto na gravação */
+  unidades?: string;
   /** o papel da sessão não pode mudar a escolha (o "leitor"); a API recusaria com 403 */
   soLeitura: boolean;
 }
@@ -22,12 +22,12 @@ interface Props {
 const mensagemDeErro = (erro: unknown) =>
   textoDaRecusa(erro, 'Não foi possível salvar a escolha. Tente de novo.');
 
-export function SeletorDaSecao({ seletor, empresa, soLeitura }: Props) {
+export function SeletorDaSecao({ seletor, unidades, soLeitura }: Props) {
   const api = useApiClient();
   const cliente = useClienteSlug();
   const queryClient = useQueryClient();
   const salvar = useMutation({
-    mutationFn: (valor: string) => api.salvarPreferenciaVisaoGeral(cliente, seletor.id, valor, { empresa }),
+    mutationFn: (valor: string) => api.salvarPreferenciaVisaoGeral(cliente, seletor.id, valor, { unidades }),
     // devolve a promessa: a gravação só termina quando os números novos chegarem
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [CHAVE_VISAO_GERAL, cliente] }),
   });

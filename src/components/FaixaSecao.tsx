@@ -8,13 +8,15 @@ interface PropsFaixa {
   idTitulo: string;
   titulo: string;
   modulo: string | null;
+  /** "Conta só a Distribuidora": a seção soma só um setor, com outros marcados em Negócios */
+  escopo?: string | null;
   resumo: string;
   /** quantos indicadores da seção estão em cada status, no período escolhido */
   contagem: Record<Status, number>;
 }
 
 /** Faixa grafite que abre cada seção da Visão geral. */
-export function FaixaSecao({ idTitulo, titulo, modulo, resumo, contagem }: PropsFaixa) {
+export function FaixaSecao({ idTitulo, titulo, modulo, escopo, resumo, contagem }: PropsFaixa) {
   return (
     <div className="vg-band">
       <Simbolo className="vb-sym" />
@@ -24,6 +26,7 @@ export function FaixaSecao({ idTitulo, titulo, modulo, resumo, contagem }: Props
           Módulo {modulo}
         </span>
       )}
+      {escopo && <span className="vb-only">{escopo}</span>}
       <span className="vb-score" data-testid="contagem-status">
         {ORDEM_STATUS.filter((s) => contagem[s] > 0).map((s) => (
           <span key={s} className={`vb-chip ${STATUS[s].classe}`}>

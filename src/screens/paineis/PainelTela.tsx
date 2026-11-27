@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { semPermissao } from '../../api/client';
 import { useClienteSlug } from '../../api/useClienteSlug';
 import { usePainel } from '../../api/usePainel';
 import { useSessao } from '../../api/useSessao';
+import { useNegocios } from '../../app/negocios';
 import { useAuth } from '../../auth/auth';
 import { Assinatura } from '../../components/Assinatura';
 import { Aviso } from '../../components/Aviso';
@@ -16,7 +17,7 @@ import type { FiltroPainel, TelaPainel } from '../../contracts/painel';
 import { formatarAtualizacao } from '../../format';
 import { montarFiltros } from '../visao-geral/filtros';
 import { CartaoPainel } from './CartaoPainel';
-import { ChavesCartaoContext, ConsultaPainelContext } from './consultaPainel';
+import { ChavesCartaoContext, ConsultaPainelContext, MudarFiltroContext } from './consultaPainel';
 import { juntarFiltros } from './filtrosPainel';
 import { TELAS_PAINEL } from './telas';
 import './PainelTela.css';
@@ -28,23 +29,38 @@ const SEM_FILTROS: FiltroPainel[] = [];
  * payload, na ordem em que veio. Use com `key={tela}` para os filtros não passarem de uma tela a outra.
  */
 export function PainelTela({ tela }: { tela: TelaPainel }) {
-  const { titulo, pergunta, comparar, semComparar } = TELAS_PAINEL[tela];
+  const { titulo, pergunta, comparar, semComparar, semPeriodo } = TELAS_PAINEL[tela];
   const { sair } = useAuth();
   const cliente = useClienteSlug();
   const sessao = useSessao();
+  const negocios = useNegocios();
   // Só os chips que o usuário trocou; os outros ficam no padrão.
   const [valores, setValores] = useState<Record<string, string>>({});
   // Os filtros próprios da tela chegam com o payload; antes dele, ficam só os da sessão. Na troca
   // de filtro o payload anterior continua (placeholder), então os chips não somem.
   const [filtrosDaTela, setFiltrosDaTela] = useState<FiltroPainel[]>(SEM_FILTROS);
   const filtros = useMemo(
-    () => juntarFiltros(montarFiltros(sessao.data), filtrosDaTela, { comparar, semComparar }),
-    [sessao.data, filtrosDaTela, comparar, semComparar],
+    () =>
+      juntarFiltros(montarFiltros(sessao.data, negocios.param), filtrosDaTela, {
+        comparar,
+        semComparar,
+        semPeriodo,
+      }),
+    [sessao.data, negocios.param, filtrosDaTela, comparar, semComparar, semPeriodo],
   );
   const filtrosConsulta = filtros.consulta(valores);
   const chavesCartao = useMemo(
     () => filtros.noCartao(valores, (id, rotulo) => setValores((atual) => ({ ...atual, [id]: rotulo }))),
     [filtros, valores],
+  );
+  // um cartão troca um filtro da barra pelo id da opção (o "O que fazer em cada quadrante")
+  const mudarFiltro = useCallback(
+    (id: string, opcao: string | null) => {
+      const filtro = filtrosDaTela.find((f) => f.id === id);
+      const rotulo = filtro?.opcoes.find((o) => o.id === (opcao ?? filtro.padrao))?.rotulo;
+      if (rotulo) setValores((atual) => ({ ...atual, [id]: rotulo }));
+    },
+    [filtrosDaTela],
   );
   const consulta = usePainel(tela, filtrosConsulta);
   const dados = consulta.data;
@@ -66,8 +82,14 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
   else {
     const d = consulta.data;
     const vazio = d.cartoes.length === 0 && d.destaques.length === 0 && d.kpis.length === 0;
+    // sem cartões, com escopo e aviso: o painel de um setor sem nenhuma unidade dele marcada em
+    // Negócios (fica só o aviso da API)
     conteudo = vazio ? (
-      <EstadoTela tipo="vazio" />
+      d.escopo && d.aviso ? (
+        <Aviso aviso={d.aviso} />
+      ) : (
+        <EstadoTela tipo="vazio" />
+      )
     ) : (
       <>
         {consulta.isPlaceholderData && (
@@ -82,11 +104,13 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
         {d.apoios.length > 0 ? <Apoios itens={d.apoios} /> : <div className="painel-espaco" />}
         <ConsultaPainelContext.Provider value={{ cliente, tela, filtros: filtrosConsulta }}>
           <ChavesCartaoContext.Provider value={chavesCartao}>
-            <div className="grid">
-              {d.cartoes.map((c) => (
-                <CartaoPainel key={c.id} cartao={c} />
-              ))}
-            </div>
+            <MudarFiltroContext.Provider value={mudarFiltro}>
+              <div className="grid">
+                {d.cartoes.map((c) => (
+                  <CartaoPainel key={c.id} cartao={c} />
+                ))}
+              </div>
+            </MudarFiltroContext.Provider>
           </ChavesCartaoContext.Provider>
         </ConsultaPainelContext.Provider>
       </>
@@ -99,11 +123,14 @@ export function PainelTela({ tela }: { tela: TelaPainel }) {
         titulo={titulo}
         pergunta={pergunta}
         atualizacao={
-          dados?.dadosAte && dados.atualizadoEm
+          // o texto pronto da API, nas telas que são o retrato do dia (o Estoque)
+          dados?.frescor ??
+          (dados?.dadosAte && dados.atualizadoEm
             ? formatarAtualizacao(dados.dadosAte, dados.atualizadoEm)
-            : undefined
+            : undefined)
         }
         cliente={dados?.cliente}
+        negocios={{ escopo: dados?.escopo, mes: filtrosConsulta.mes }}
       />
       <BarraFiltros
         filtros={filtros.defs}

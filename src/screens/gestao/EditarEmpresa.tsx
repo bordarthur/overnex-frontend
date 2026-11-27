@@ -8,8 +8,8 @@ import './GavetaUsuario.css';
 type Cliente = ClienteGestaoPayload['cliente'];
 
 /**
- * O botão "Editar" do cabeçalho da empresa e a gaveta dele (`PUT /api/admin/clientes/{slug}`): nome e
- * setor. O identificador (slug) não muda e não aparece. Empresa sem setor é preenchida por aqui.
+ * O botão "Editar" do cabeçalho da empresa e a gaveta dele (`PUT /api/admin/clientes/{slug}`): só o
+ * nome. O identificador (slug) não muda e não aparece. Setor, segmento e grupo são de cada unidade.
  */
 export function EditarEmpresa({ cliente }: { cliente: Cliente }) {
   const [aberta, setAberta] = useState(false);
@@ -35,7 +35,6 @@ export function EditarEmpresa({ cliente }: { cliente: Cliente }) {
 function GavetaEmpresa({ cliente, onFechar }: { cliente: Cliente; onFechar: () => void }) {
   const id = useId();
   const [nome, setNome] = useState(cliente.nome);
-  const [segmento, setSegmento] = useState(cliente.segmento ?? '');
   const [tentou, setTentou] = useState(false);
   // o nome aparece no seletor de empresa e nas telas: a sessão também é pedida de novo
   const salvar = useGravarGestao(
@@ -47,7 +46,7 @@ function GavetaEmpresa({ cliente, onFechar }: { cliente: Cliente; onFechar: () =
   const aoSalvar = () => {
     setTentou(true);
     if (!nome.trim()) return;
-    salvar.mutate({ nome: nome.trim(), segmento: segmento.trim() || null }, { onSuccess: onFechar });
+    salvar.mutate({ nome: nome.trim() }, { onSuccess: onFechar });
   };
 
   return (
@@ -87,21 +86,6 @@ function GavetaEmpresa({ cliente, onFechar }: { cliente: Cliente; onFechar: () =
             Informe o nome da empresa.
           </span>
         )}
-      </div>
-      <div className="gst-campo">
-        <label htmlFor={`${id}-setor`}>Setor</label>
-        <input
-          id={`${id}-setor`}
-          type="text"
-          autoComplete="off"
-          maxLength={80}
-          value={segmento}
-          aria-describedby={`${id}-setor-dica`}
-          onChange={(e) => setSegmento(e.target.value)}
-        />
-        <span id={`${id}-setor-dica`} className="gst-dica">
-          Opcional. Ex.: Distribuição, Restaurante.
-        </span>
       </div>
     </Gaveta>
   );

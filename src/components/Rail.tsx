@@ -57,6 +57,12 @@ const ICONES: Record<TelaApp, ReactNode> = {
       <path d="M5.5 16.5c.6-1.8 1.9-2.8 3.5-2.8s2.9 1 3.5 2.8M15 9h3M15 12.5h3" />
     </>
   ),
+  estoque: (
+    <>
+      <path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z" />
+      <path d="M3 7.5l9 4.5 9-4.5M12 12v9" />
+    </>
+  ),
 };
 
 interface PropsRail {
@@ -64,6 +70,8 @@ interface PropsRail {
   dadosFicticios: boolean;
   /** Códigos das telas liberadas (`telas` de /api/sessao). O menu só mostra essas; sem a sessão, nenhuma. */
   telas: string[];
+  /** A escolha da bandeja "Negócios" (`?unidades=…`), levada de tela em tela; vazio sem escolha. */
+  busca?: string;
   /** As empresas que a pessoa pode abrir. Com mais de uma, o rail ganha o seletor de empresa. */
   clientes: ClienteSessao[];
   /** Quem abre a Gestão (`gestao` da sessão: Admin BORD e consultor): mostra o atalho para ela. */
@@ -71,7 +79,7 @@ interface PropsRail {
 }
 
 /** Coluna de navegação grafite. Vira barra inferior no celular. */
-export function Rail({ clienteSlug, dadosFicticios, telas, clientes, gestao }: PropsRail) {
+export function Rail({ clienteSlug, dadosFicticios, telas, busca = '', clientes, gestao }: PropsRail) {
   const { modo, alternar } = useTema();
   const { usuario, sair } = useAuth();
   const grupos = MENU.map((g) => ({
@@ -95,7 +103,11 @@ export function Rail({ clienteSlug, dadosFicticios, telas, clientes, gestao }: P
           <Fragment key={g.grupo}>
             <span className="ngroup">{g.grupo}</span>
             {g.telas.map((t) => (
-              <NavLink key={t.rota} to={`/${clienteSlug}/${t.rota}`} title={t.rotulo}>
+              <NavLink
+                key={t.rota}
+                to={{ pathname: `/${clienteSlug}/${t.rota}`, search: busca }}
+                title={t.rotulo}
+              >
                 <svg {...ICONE} aria-hidden="true">
                   {ICONES[t.rota]}
                 </svg>

@@ -28,3 +28,12 @@ export const ChavesCartaoContext = createContext<Record<string, ChaveDoCartao>>(
 
 export const useChaveDoCartao = (cartao: string): ChaveDoCartao | undefined =>
   useContext(ChavesCartaoContext)[cartao];
+
+/**
+ * Troca um filtro da barra a partir de um cartão, pelo `id` do filtro e o `id` da opção (o "O que
+ * fazer em cada quadrante" troca a Classe BCG). `null` volta à opção padrão; opção que o filtro não
+ * tem é ignorada.
+ */
+export const MudarFiltroContext = createContext<(filtro: string, opcao: string | null) => void>(() => {});
+
+export const useMudarFiltro = () => useContext(MudarFiltroContext);

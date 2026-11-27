@@ -418,12 +418,12 @@ describe('Visão geral', () => {
       expect(consultar).toHaveBeenCalledWith('demo', { mes: '2026-09' }, expect.anything()),
     );
 
-    await user.click(screen.getByRole('button', { name: /Empresa/ }));
+    await user.click(screen.getByRole('button', { name: /Unidade/ }));
     await user.click(screen.getByRole('menuitemradio', { name: 'Filial Maracanaú' }));
-    // (depois dela sai o mês anterior adiantado, com a mesma empresa)
+    // (depois dela sai o mês anterior adiantado, com a mesma unidade)
     expect(consultar).toHaveBeenCalledWith(
       'demo',
-      { mes: '2026-09', empresa: '0e000000-0000-4000-8000-000000000002' },
+      { mes: '2026-09', unidades: '0e000000-0000-4000-8000-000000000002' },
       expect.anything(),
     );
 
